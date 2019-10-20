@@ -4,7 +4,10 @@ import io.vavr.control.Either
 import io.vavr.control.Option
 import java.lang.IllegalStateException
 
-class DBLikeProvider(val db: DBLike, val conn: TxConnection<DBLike> = DBConnection(db)) :
+class DBLikeProvider(
+        val db: DBLike,
+        val conn: TxConnection<DBLike> = DBConnection(db)
+        ) :
     TxProvider<DBLike, DBLikeProvider> {
     override fun getConnection(): TxConnection<DBLike> =
         if (!db.connected()) {
@@ -17,8 +20,7 @@ class DBLikeProvider(val db: DBLike, val conn: TxConnection<DBLike> = DBConnecti
             conn
         }
 
-
-    override fun setConnectionState(newState: TxConnection<DBLike>): DBLikeProvider =
+    override fun setConnectionState(newState: TxConnection<DBLike>) =
         DBLikeProvider(db, newState)
 }
 
