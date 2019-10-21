@@ -62,7 +62,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
 sealed class CombinedError : TxError, SecurityError {
     class TxError(val internal: pl.setblack.nee.effects.tx.TxError) : CombinedError() {
         override fun txError(): TxErrorType = internal.txError();
-        override fun secError(): SecurityErrorType = TODO("???")
+        override fun secError(): SecurityErrorType = TODO("??? maybe nullability")
     }
 
     class SecurityError(val internal: pl.setblack.nee.effects.security.SecurityError) : CombinedError() {

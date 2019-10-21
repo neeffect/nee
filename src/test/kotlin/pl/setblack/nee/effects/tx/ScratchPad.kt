@@ -10,8 +10,6 @@ fun scratchPad() {
 }
 
 
-
-
 class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
     private val ctx = SimpleSecurityContext(user, roles)
     override fun getSecurityContext(): Either<SecurityError, SecurityCtx<USER, ROLE>> = Either.right(ctx)
