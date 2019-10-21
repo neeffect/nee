@@ -16,14 +16,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             .handleError { e -> CombinedError.SecurityError(e) as CombinedError }
         val combined = secEff.andThen(dbEff)
         When("Called with admin role") {
-            val simpleAction = NEE.pure(combined) { db: CombinedProviders ->
-                val resource = db.getConnection().getResource()
-                val result = resource.query("SELECT * FROM all1")
-                result.map {
-                    Integer.parseInt(it)
-                }
-                    .toEither<CombinedError>(CombinedError.TxError(TxErrorType.CannotQuery("I do not know"))) //TODO this is so so
-            }
+            val simpleAction = NEE.pure(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -31,19 +24,12 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be 6") {
-                result.get() shouldBe 6
+                result(Unit).get() shouldBe 6
             }
         }
 
         When("Called with no roles") {
-            val simpleAction = NEE.pure(combined) { db: CombinedProviders ->
-                val resource = db.getConnection().getResource()
-                val result = resource.query("SELECT * FROM all1")
-                result.map {
-                    Integer.parseInt(it)
-                }
-                    .toEither<CombinedError>(CombinedError.TxError(TxErrorType.CannotQuery("I do not know"))) //TODO this is so so
-            }
+            val simpleAction = NEE.pure(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -51,13 +37,26 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
-                result.left.secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
+                result(Unit).left.secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
             }
         }
     }
 
 
-})
+}) {
+    companion object {
+        val function1 = { db: CombinedProviders ->
+            { _:Unit ->
+                val resource = db.getConnection().getResource()
+                val result = resource.query("SELECT * FROM all1")
+                result.map {
+                    Integer.parseInt(it)
+                }
+                    .toEither<CombinedError>(CombinedError.TxError(TxErrorType.CannotQuery("I do not know"))) //TODO this is so so
+            }
+        }
+    }
+}
 
 sealed class CombinedError : TxError, SecurityError {
     class TxError(val internal: pl.setblack.nee.effects.tx.TxError) : CombinedError() {

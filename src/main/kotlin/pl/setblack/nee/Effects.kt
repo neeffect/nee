@@ -51,12 +51,14 @@ class HandleErrorEffect<R, E, E1 : E>(
             { p2: P ->
                 val innerRes = f(r1)(p2)
                 innerRes
-                    .mapLeft ( handler )
                     .mapLeft { it as E } //OMG what I am doing here
             }
         }
         val wrapped = innerEffect.wrap(adoptedF)
-        return wrapped as (R)->Pair<(P)->Either<E1,A>,R>
+        return {r:R->
+            val result = wrapped(r)
+            Pair({p:P->result.first(p).mapLeft (handler)}, result.second)
+        }
     }
 }
 

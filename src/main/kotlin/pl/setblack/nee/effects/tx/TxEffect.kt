@@ -47,9 +47,9 @@ sealed class TxErrorType : TxError {
     data class InternalException(val cause: java.lang.Exception) : TxErrorType()
 }
 
-class TxEffect<R, P : TxProvider<R, P>>(private  val requiresNew : Boolean = false) : Effect<P, TxError> {
-    override fun <A> wrap(f: (P) -> Either<TxError, A>): (P) -> Pair<Either<TxError, A>, P> {
-        return { res: P ->
+class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = false) : Effect<R, TxError> {
+    override fun <A, P> wrap(f: (R) ->(P)->Either<TxError, A>): (R) -> Pair<(P)->Either<TxError, A>, R> {
+        return { res: R ->
             val connection = res.getConnection()
             val continueOldTransaction = connection.hasTransaction() && !requiresNew
             val tx = if (continueOldTransaction) {
@@ -57,7 +57,7 @@ class TxEffect<R, P : TxProvider<R, P>>(private  val requiresNew : Boolean = fal
             } else {
                 connection.begin()
             }
-            tx.map { startedTransaction ->
+            val z= tx.map { startedTransaction ->
                 try {
                     val result = f(res)
                     val txFinished = if (continueOldTransaction) {
@@ -66,9 +66,9 @@ class TxEffect<R, P : TxProvider<R, P>>(private  val requiresNew : Boolean = fal
                         startedTransaction.commit()
                     }
                     val error = txFinished.first.map {
-                        Pair(Either.left<TxError, A>(it), txFinished.second)
+                        Pair({_:P->Either.left<TxError, A>(it)}, txFinished.second)
                     }.getOrElse {
-                        Pair(result, txFinished.second)
+                        Pair({p:P->result(p)}, txFinished.second)
                     }
                     error
                 } catch (e: Exception) {
@@ -78,7 +78,7 @@ class TxEffect<R, P : TxProvider<R, P>>(private  val requiresNew : Boolean = fal
                         startedTransaction.rollback()
                     }
                     txCancelled.first.map { rollbackError ->
-                        Pair(
+                        Pair({_:P->
                             Either.left<TxError, A>(
                                 TxErrorType.MultipleErrors(
                                     List.of(
@@ -86,21 +86,22 @@ class TxEffect<R, P : TxProvider<R, P>>(private  val requiresNew : Boolean = fal
                                         rollbackError
                                     )
                                 )
-                            ), txCancelled.second
+                            )}, txCancelled.second
                         )
                     }.getOrElse {
-                        Pair(Either.left<TxError, A>(
+                        Pair({_:P->Either.left<TxError, A>(
                             TxErrorType.InternalException(
                                 e
                             )
-                        ), txCancelled.second)
+                        )}, txCancelled.second)
                     }
                 }
             }.map {
                 Pair(it.first, res.setConnectionState(it.second))
             }.getOrElseGet { error ->
-                Pair(Either.left<TxError, A>(error), res)
+                Pair({_:P->Either.left<TxError, A>(error)}, res)
             }
+            z
         }
     }
 }

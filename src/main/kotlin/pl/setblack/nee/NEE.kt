@@ -15,7 +15,7 @@ sealed class NEE<R, E, P, A>(val effect: Effect<R, E>) {
 
     companion object {
         fun <A> pure(a: A): NEE<Any, Nothing, Nothing, A> =
-            FNEE<Any, Nothing, Nothing, A>(NoEffect<Any, Nothing>()) { _ -> Either.right(a) }
+            FNEE<Any, Nothing, Nothing, A>(NoEffect<Any, Nothing>()) { _ -> {_->Either.right(a)} }
 
         fun <R, E, P, A> pure(effect: Effect<R, E>, func: (R) -> (P) -> Either<E, A>): NEE<R, E, P, A> =
             FNEE(effect, func)
@@ -46,26 +46,6 @@ internal class FNEE<R, E, P, A>(
 //class ENEE<R,E,A> (  effect: Effect<R, E>, e: E) : NEE<R,E,A>(effect) {
 //
 //}
-
-
-interface JDBCProvider {
-    fun getConnection(): Connection
-}
-
-class JDBCTx<R : JDBCProvider, E>(private val handler: (SQLException) -> E) : Effect<R, E> {
-    override fun <A> wrap(f: (R) -> Either<E, A>): (R) -> Pair<Either<E, A>, R> = { provider ->
-        val connection = provider.getConnection()
-        connection.autoCommit = true
-        try {
-            val result = f(provider)
-            connection.commit()
-            Pair(result, provider)
-        } catch (e: SQLException) {
-            connection.rollback()
-            Pair(Either.left(handler(e)), provider)
-        }
-    }
-}
 
 
 //fun dup() {

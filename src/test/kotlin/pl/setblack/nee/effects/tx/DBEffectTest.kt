@@ -8,13 +8,7 @@ import pl.setblack.nee.NEE
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
         val eff = TxEffect<DBLike, DBLikeProvider>()
-        val simpleAction = NEE.pure(eff) { db: DBLikeProvider ->
-            val resource = db.getConnection().getResource()
-            val result = resource.query("SELECT * FROM all1")
-            result.map {
-                Integer.parseInt(it)
-            }.toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
-        }
+        val simpleAction = NEE.pure(eff, function1)
         When("runned on db") {
             val db = DBLike()
             db.appendAnswer("6")
@@ -22,22 +16,15 @@ class DBEffectTest : BehaviorSpec({
             val result = simpleAction.perform(provider)
             Then("correct res") {
                 println(result)
-                result shouldBe Either.right<TxError, Int>(6)
+                result(Unit) shouldBe Either.right<TxError, Int>(6)
                 println(db.getLog())
             }
         }
         And("nested second action") {
-            val nestedAction = { orig : Int ->
-                NEE.pure(eff) { db: DBLikeProvider ->
-                    val resource = db.getConnection().getResource()
-                    val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
-                    result.map {
-                        Integer.parseInt(it) + 1000 + orig
-                    }
-                        .toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
-                }
+            val nestedAction = { orig: Int ->
+                NEE.pure(eff, function2(orig))
             }
-            val monad = simpleAction.flatMap (nestedAction)
+            val monad = simpleAction.flatMap(nestedAction)
             When("db connected") {
                 val db = DBLike()
                 db.appendAnswer("6")
@@ -47,23 +34,16 @@ class DBEffectTest : BehaviorSpec({
                 Then("correct res") {
                     println(result)
                     println(db.getLog())
-                    result shouldBe Either.right<TxError, Int>(1076)
+                    result(Unit) shouldBe Either.right<TxError, Int>(1076)
                 }
             }
         }
         And("nested second action in internal tx") {
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
-            val nestedAction = { orig : Int ->
-                NEE.pure(effReqNew) { db: DBLikeProvider ->
-                    val resource = db.getConnection().getResource()
-                    val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
-                    result.map {
-                        Integer.parseInt(it) + 1000 + orig
-                    }
-                        .toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
-                }
+            val nestedAction = { orig: Int ->
+                NEE.pure(effReqNew, function2(orig))
             }
-            val monad = simpleAction.flatMap (nestedAction)
+            val monad = simpleAction.flatMap(nestedAction)
             When("db connected") {
                 val db = DBLike()
                 db.appendAnswer("24")
@@ -73,9 +53,33 @@ class DBEffectTest : BehaviorSpec({
                 Then("correct res") {
                     println(result)
                     println(db.getLog())
-                    result shouldBe Either.right<TxError, Int>(1724)
+                    result(Unit) shouldBe Either.right<TxError, Int>(1724)
                 }
             }
         }
     }
-})
+}) {
+    companion object {
+        val function1 = { db: DBLikeProvider ->
+            { _: Unit ->
+                val resource = db.getConnection().getResource()
+                val result = resource.query("SELECT * FROM all1")
+                result.map {
+                    Integer.parseInt(it)
+                }.toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
+            }
+        }
+        val function2 = { orig : Int ->
+            { db: DBLikeProvider ->
+                { _: Unit ->
+                    val resource = db.getConnection().getResource()
+                    val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
+                    result.map {
+                        Integer.parseInt(it) + 1000 + orig
+                    }
+                        .toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
+                }
+            }
+        }
+    }
+}
