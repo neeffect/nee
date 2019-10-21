@@ -34,7 +34,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
     override fun <A, P> wrap(f: (R) -> (P) -> Either<SecurityError, A>): (R) -> Pair<(P) -> Either<SecurityError, A>, R> {
         return { provider: R ->
-                Pair(
+                Pair( //TODO - fail faster
                     { p: P ->provider.getSecurityContext() .flatMap { securityCtx ->
                     val missingRoles = roles.filter {role ->
                         !securityCtx.hasRole(role)
