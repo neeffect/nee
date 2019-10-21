@@ -12,9 +12,9 @@ import pl.setblack.nee.effects.security.SecurityProvider
 internal class CombinedEffectsTest : BehaviorSpec({
     Given("Combined effects for admin") {
         val dbEff = TxEffect<DBLike, CombinedProviders>()
-            .handleError { e -> if (e is TxError) CombinedError.TxError(e)  else e as CombinedError }
+            .handleError { e -> CombinedError.TxError(e) as CombinedError }
         val secEff = SecuredRunEffect<String, String, CombinedProviders>("admin")
-            .handleError { e -> if (e is SecurityError) CombinedError.SecurityError(e) else e as CombinedError }
+            .handleError { e -> CombinedError.SecurityError(e) as CombinedError}
         val combined = secEff.andThen(dbEff)
         When("Called with admin role") {
             val simpleAction = NEE.pure(combined, function1)
