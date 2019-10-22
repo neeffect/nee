@@ -22,7 +22,7 @@ internal class CacheEffectTest : BehaviorSpec({
                 NEE.Companion.pure(
                     cache
                 ) { _: Unit ->
-                    calc::add.andThen { Either.right<Nothing, Int>(it) }
+                    calc::add
                 }
             Stream.range(0, 100).forEach { businessFunction.perform(Unit)(Pair(it, 2)) }
             Then("registered 100 calls") {
@@ -35,7 +35,7 @@ internal class CacheEffectTest : BehaviorSpec({
                 NEE.Companion.pure(
                     cache
                 ) { _: Unit ->
-                    calc::add.andThen { Either.right<Nothing, Int>(it) }
+                    calc::add
                 }
             Stream.range(0, 100).forEach { businessFunction.perform(Unit)(Pair(1, 5)) }
             Then("single call") {

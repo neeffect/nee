@@ -48,7 +48,7 @@ sealed class TxErrorType : TxError {
 }
 
 class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = false) : Effect<R, TxError> {
-    override fun <A, P> wrap(f: (R) ->(P)->Either<TxError, A>): (R) -> Pair<(P)->Either<TxError, A>, R> {
+    override fun <A, P> wrap(f: (R) ->(P)->A): (R) -> Pair<(P)->Either<TxError, A>, R> {
         return { res: R ->
             val connection = res.getConnection()
             val continueOldTransaction = connection.hasTransaction() && !requiresNew
@@ -68,7 +68,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = f
                     val error = txFinished.first.map {
                         Pair({_:P->Either.left<TxError, A>(it)}, txFinished.second)
                     }.getOrElse {
-                        Pair({p:P->result(p)}, txFinished.second)
+                        Pair({p:P->Either.right<TxError, A>(result(p))}, txFinished.second)
                     }
                     error
                 } catch (e: Exception) {

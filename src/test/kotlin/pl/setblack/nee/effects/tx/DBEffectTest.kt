@@ -66,7 +66,7 @@ class DBEffectTest : BehaviorSpec({
                 val result = resource.query("SELECT * FROM all1")
                 result.map {
                     Integer.parseInt(it)
-                }.toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
+                }.get()
             }
         }
         val function2 = { orig : Int ->
@@ -76,8 +76,7 @@ class DBEffectTest : BehaviorSpec({
                     val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
                     result.map {
                         Integer.parseInt(it) + 1000 + orig
-                    }
-                        .toEither<TxError>(TxErrorType.CannotQuery("I do not know"))
+                    }.get()
                 }
             }
         }

@@ -4,10 +4,12 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
 import pl.setblack.nee.NEE
+import pl.setblack.nee.andThen
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityErrorType
 import pl.setblack.nee.effects.security.SecurityProvider
+import pl.setblack.nee.merge
 
 internal class CombinedEffectsTest : BehaviorSpec({
     Given("Combined effects for admin") {
@@ -25,7 +27,8 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be 6") {
-                result(Unit).get() shouldBe 6
+
+                result(Unit).get().get() shouldBe 6
             }
         }
 
@@ -38,12 +41,10 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
-                result(Unit).left.secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
+                result(Unit).left.merge().secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
             }
         }
     }
-
-
 }) {
     companion object {
         val function1 = { db: CombinedProviders ->
@@ -53,7 +54,6 @@ internal class CombinedEffectsTest : BehaviorSpec({
                 result.map {
                     Integer.parseInt(it)
                 }
-                    .toEither<CombinedError>(CombinedError.TxError(TxErrorType.CannotQuery("I do not know"))) //TODO this is so so
             }
         }
     }

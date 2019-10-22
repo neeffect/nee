@@ -32,7 +32,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
     constructor(singleRole: ROLE) : this(List.of(singleRole))
 
-    override fun <A, P> wrap(f: (R) -> (P) -> Either<SecurityError, A>): (R) -> Pair<(P) -> Either<SecurityError, A>, R> {
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<SecurityError, A>, R> {
         return { provider: R ->
                 Pair( //TODO - fail faster
                     { p: P ->provider.getSecurityContext() .flatMap { securityCtx ->
@@ -40,7 +40,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
                         !securityCtx.hasRole(role)
                     }
                     if ( missingRoles.isEmpty) {
-                        f(provider)(p)
+                        Either.right(f(provider)(p))
                     } else {
                         Either.left<SecurityError, A>(SecurityErrorType.MissingRole(missingRoles))
                     }
