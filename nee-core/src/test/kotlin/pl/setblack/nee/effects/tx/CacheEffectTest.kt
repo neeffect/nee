@@ -1,12 +1,9 @@
 package pl.setblack.nee.effects.tx
 
 
-import arrow.core.andThen
-import arrow.core.compose
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.Stream
-import io.vavr.control.Either
 import pl.setblack.nee.NEE
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.NaiveCacheProvider

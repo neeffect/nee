@@ -2,10 +2,8 @@ package pl.setblack.nee.effects.cache
 
 
 import io.vavr.control.Either
-import io.vavr.collection.Map
 import pl.setblack.nee.Effect
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
 
 class CacheEffect<R, E>(
     private val cacheProvider: CacheProvider

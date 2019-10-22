@@ -2,8 +2,6 @@ package pl.setblack.nee
 
 //import arrow.core.*
 import io.vavr.control.Either
-import java.sql.Connection
-import java.sql.SQLException
 
 
 //NEE - better name naive enterprise effects
