@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicReference
 class CacheEffect<R, E>(
     private val cacheProvider: CacheProvider
 ) : Effect<R, E> {
-    override fun <A, P> wrap(f: (R) -> (P) -> Either<E, A>): (R) -> Pair<(P) -> Either<E, A>, R> = { r: R ->
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<E, A>, R> = { r: R ->
         Pair({ p: P ->
-            cacheProvider.computeIfAbsent(p, { f(r)(p) })
+            Either.right<E,A>(cacheProvider.computeIfAbsent(p, { f(r)(p) }))
         }, r)
     }
 }
