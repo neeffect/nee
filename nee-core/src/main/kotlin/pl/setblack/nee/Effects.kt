@@ -59,13 +59,6 @@ class HandleErrorEffect<R, E, E1>(
     private val handler: (E) -> E1
 ) : Effect<R, E1> {
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<E1, A>, R> {
-//        val adoptedF = { r1: R ->
-//            { p2: P ->
-//                val innerRes = f(r1)(p2)
-//                innerRes
-//                    .mapLeft { it as E } //OMG what I am doing here
-//            }
-//        }
         val wrapped = innerEffect.wrap(f)
         return { r: R ->
             val result = wrapped(r)
