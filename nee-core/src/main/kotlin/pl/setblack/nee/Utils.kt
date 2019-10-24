@@ -3,6 +3,8 @@ package pl.setblack.nee
 import io.vavr.Tuple2
 import io.vavr.Tuple3
 import io.vavr.control.Either
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory.getLogger
 import pl.setblack.nee.effects.Fe
 import pl.setblack.nee.effects.monitoring.TraceProvider
 
@@ -40,8 +42,7 @@ fun <ENV, A, B, C, R> tupled3(f: (ENV) -> (A, B, C) -> R) =
     }
 
 
-fun a() {
-    val xf = { x: Int -> { a: Int, b: Float -> a * b } }
-    val xfp = tupled(xf)
+interface Logging
 
-}
+inline fun <reified T : Logging> T.logger(): Logger =
+    getLogger(T::class.java)
