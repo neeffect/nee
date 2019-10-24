@@ -162,6 +162,13 @@ class DBLike {
 
     fun transactionLevel(): Int  = this.txLevel
 
+    fun close() {
+        if (!connected) {
+            log(DBOperation.Fail("not connected"))
+        }
+        connected = false
+    }
+
 }
 
 

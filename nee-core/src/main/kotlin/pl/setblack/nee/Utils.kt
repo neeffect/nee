@@ -21,7 +21,7 @@ internal fun <P, A> extendR(f: (P) -> A) = { r: Any ->
     { p: P -> f(p) }
 }
 
-inline fun <T> Either<T, T>.merge() = getOrElseGet { it }
+fun <T> Either<T, T>.merge() = getOrElseGet { it }
 
 fun <ENV, A, B, R> tupled2(f: (ENV) -> (A, B) -> R) =
     { env: ENV ->

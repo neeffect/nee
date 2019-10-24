@@ -10,7 +10,7 @@ import java.util.concurrent.Executor
 import kotlin.system.exitProcess
 
 interface ExecutionContext {
-    fun <T> execute(f: () -> T): () -> Future<T>
+    fun <T> execute(f: () -> T): Future<T>
 }
 
 interface ExecutionContextProvider {
@@ -18,11 +18,16 @@ interface ExecutionContextProvider {
 }
 
 class SyncExecutionContext : ExecutionContext {
-    override fun <T> execute(f: () -> T): () -> Future<T> = {
+    override fun <T> execute(f: () -> T): Future<T> =
         Future.successful(f())
-    }
+
 }
 
+object InPlaceExecutor : Executor {
+    override fun execute(command: Runnable)  = command.run()
+}
+
+/* maybe we do not need this radical one
 object NoGoExecutor : Executor {
     override fun execute(command: Runnable) {
         System.err.println("an idiot called NoGoExecutor")
@@ -30,15 +35,16 @@ object NoGoExecutor : Executor {
         exitProcess(2)
     }
 }
+ */
 
 class ExecutorExecutionContext(private val executor: Executor) : ExecutionContext {
-    override fun <T> execute(f: () -> T): () -> Future<T> = {
-        val promise = Promise.make<T>(NoGoExecutor)
-        executor.execute {
-            promise.success(f())
+    override fun <T> execute(f: () -> T): Future<T> =
+        Promise.make<T>(InPlaceExecutor).let { promise ->
+            executor.execute {
+                promise.success(f())
+            }
+            promise.future()
         }
-        promise.future()
-    }
 }
 
 class ECProvider(private val ectx: ExecutionContext, private val localWins: Boolean = true) : ExecutionContextProvider {
@@ -61,9 +67,8 @@ class AsyncEffect<R : ExecutionContextProvider>(
                 val ec = r.findExceutionContext(this.localExecutionContext)
                 val result = ec.execute {
                     f(r)(p)
-                }()
-                Fe.FutureFe(result.map { Either.right<Nothing, A>(it)})
+                }
+                Fe.FutureFe(result.map { Either.right<Nothing, A>(it) })
             }, r)
         }
-
 }

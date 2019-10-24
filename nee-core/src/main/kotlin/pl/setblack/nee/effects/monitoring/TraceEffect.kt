@@ -104,17 +104,5 @@ data class TraceEntry(
     val name: AtomicReference<String?> = AtomicReference()
 )
 
-
 typealias NanoTime = () -> Long
 
-class X {
-    fun a() {
-        println(placeName())
-    }
-}
-
-fun main() {
-    X().a()
-    val z = X()::a
-    println(z.name)
-}

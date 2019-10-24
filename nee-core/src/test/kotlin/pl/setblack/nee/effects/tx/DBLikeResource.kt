@@ -44,6 +44,10 @@ internal open class DBConnection(val db: DBLike) : TxConnection<DBLike> {
         }
 
     override fun getResource(): DBLike = db
+
+    override fun close() {
+        db.close()
+    }
 }
 
 internal class DBTxConnection(db: DBLike) : DBConnection(db), TxStarted<DBLike> {
