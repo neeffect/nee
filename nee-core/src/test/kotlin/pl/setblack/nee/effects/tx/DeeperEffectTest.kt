@@ -5,6 +5,7 @@ import io.kotlintest.should
 import io.kotlintest.specs.BehaviorSpec
 import pl.setblack.nee.NEE
 import pl.setblack.nee.andThen
+import pl.setblack.nee.effects.get
 
 class DeeperEffectTest  : BehaviorSpec ({
     Given("TestEffect") {

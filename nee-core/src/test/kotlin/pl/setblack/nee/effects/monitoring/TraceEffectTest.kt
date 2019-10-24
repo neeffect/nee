@@ -4,6 +4,7 @@ import io.kotlintest.specs.BehaviorSpec
 import io.kotlintest.shouldBe
 import io.vavr.collection.List
 import pl.setblack.nee.NEE
+import pl.setblack.nee.effects.get
 import pl.setblack.nee.extendR
 import java.util.concurrent.atomic.AtomicLong
 

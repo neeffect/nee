@@ -7,6 +7,7 @@ import io.vavr.collection.Stream
 import pl.setblack.nee.NEE
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.NaiveCacheProvider
+import pl.setblack.nee.effects.get
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class CacheEffectTest : BehaviorSpec({

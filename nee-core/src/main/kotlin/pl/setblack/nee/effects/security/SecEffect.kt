@@ -3,6 +3,7 @@ package pl.setblack.nee.effects.security
 import io.vavr.collection.List
 import io.vavr.control.Either
 import pl.setblack.nee.Effect
+import pl.setblack.nee.effects.Fe
 
 interface SecurityCtx<USER, ROLE> {
     fun getCurrentUser(): USER
@@ -10,7 +11,7 @@ interface SecurityCtx<USER, ROLE> {
 }
 
 interface SecurityProvider<USER, ROLE> {
-    fun getSecurityContext(): Either<SecurityError, SecurityCtx<USER, ROLE>>
+    fun getSecurityContext(): Fe<SecurityError, SecurityCtx<USER, ROLE>>
 }
 
 interface SecurityError {
@@ -32,7 +33,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
     constructor(singleRole: ROLE) : this(List.of(singleRole))
 
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<SecurityError, A>, R> {
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<SecurityError, A>, R> {
         return { provider: R ->
                 Pair( //TODO - fail faster
                     { p: P ->provider.getSecurityContext() .flatMap { securityCtx ->
@@ -40,9 +41,9 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
                         !securityCtx.hasRole(role)
                     }
                     if ( missingRoles.isEmpty) {
-                        Either.right(f(provider)(p))
+                        Fe.right(f(provider)(p))
                     } else {
-                        Either.left<SecurityError, A>(SecurityErrorType.MissingRole(missingRoles))
+                        Fe.left<SecurityError, A>(SecurityErrorType.MissingRole(missingRoles))
                     }
                 }}, provider)
         }

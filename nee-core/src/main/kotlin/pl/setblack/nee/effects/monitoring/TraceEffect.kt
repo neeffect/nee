@@ -3,11 +3,12 @@ package pl.setblack.nee.effects.monitoring
 import io.vavr.collection.List
 import io.vavr.control.Either
 import pl.setblack.nee.Effect
+import pl.setblack.nee.effects.Fe
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<Nothing, A>, R> = { r: R ->
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<Nothing, A>, R> = { r: R ->
         val entry = r.getTrace().begin(tracerName)
         val traced = r.setTrace(entry.first)
         Pair({ p: P ->
@@ -17,7 +18,7 @@ class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect
                 name ?: r1.javaClass.name
             }
             val ended = traced.getTrace().end(tracerName, entry.second)
-            Either.right<Nothing, A>(result)
+            Fe.right<Nothing, A>(result)
         }, r)
     }
 }
@@ -45,7 +46,6 @@ class TraceResource(
                 )
                 , traceEntry
             )
-
         }
 
 
@@ -87,7 +87,7 @@ inline fun placeName(idx: Int = 1): String {
     val stackTrace = Thread.currentThread().stackTrace
     return if (stackTrace.size > idx) {
         val st = stackTrace[idx]
-        "${st.moduleName} ${st.fileName} ${st.lineNumber} ${st.methodName}"
+        "${st.fileName} ${st.lineNumber} ${st.methodName}"
     } else {
         "<unknown place>"
     }

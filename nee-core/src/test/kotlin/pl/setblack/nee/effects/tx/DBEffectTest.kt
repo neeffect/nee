@@ -4,6 +4,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.vavr.control.Either
 import pl.setblack.nee.NEE
+import pl.setblack.nee.effects.get
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
@@ -16,7 +17,7 @@ class DBEffectTest : BehaviorSpec({
             val result = simpleAction.perform(provider)
             Then("correct res") {
                 println(result)
-                result(Unit) shouldBe Either.right<TxError, Int>(6)
+                result(Unit).get() shouldBe 6
                 println(db.getLog())
             }
         }
@@ -34,7 +35,7 @@ class DBEffectTest : BehaviorSpec({
                 Then("correct res") {
                     println(result)
                     println(db.getLog())
-                    result(Unit) shouldBe Either.right<TxError, Int>(1076)
+                    result(Unit).get() shouldBe (1076)
                 }
             }
         }
@@ -53,7 +54,7 @@ class DBEffectTest : BehaviorSpec({
                 Then("correct res") {
                     println(result)
                     println(db.getLog())
-                    result(Unit) shouldBe Either.right<TxError, Int>(1724)
+                    result(Unit).get()  shouldBe(1724)
                 }
             }
         }

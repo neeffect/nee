@@ -3,14 +3,15 @@ package pl.setblack.nee.effects.cache
 
 import io.vavr.control.Either
 import pl.setblack.nee.Effect
+import pl.setblack.nee.effects.Fe
 import java.util.concurrent.ConcurrentHashMap
 
 class CacheEffect<R, E>(
     private val cacheProvider: CacheProvider
 ) : Effect<R, E> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Either<E, A>, R> = { r: R ->
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<E, A>, R> = { r: R ->
         Pair({ p: P ->
-            Either.right<E,A>(cacheProvider.computeIfAbsent(p, { f(r)(p) }))
+            Fe.right<E,A>(cacheProvider.computeIfAbsent(p, { f(r)(p) }))
         }, r)
     }
 }

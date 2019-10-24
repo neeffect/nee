@@ -2,6 +2,7 @@ package pl.setblack.nee
 
 //import arrow.core.*
 import io.vavr.control.Either
+import pl.setblack.nee.effects.Fe
 import pl.setblack.nee.effects.monitoring.TraceProvider
 import pl.setblack.nee.effects.monitoring.TraceResource
 
@@ -9,7 +10,7 @@ import pl.setblack.nee.effects.monitoring.TraceResource
 //NEE - better name naive enterprise effects
 
 sealed class NEE<R, E, P, A>(val effect: Effect<R, E>) {
-    abstract fun perform(env: R): (P) -> Either<E, A>
+    abstract fun perform(env: R): (P) -> Fe<E, A>
     abstract fun <B> map(f: (A) -> B): NEE<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> NEE<R, E, P, B>): NEE<R, E, P, B>
 
@@ -28,13 +29,13 @@ internal fun <T, T1> T.map(f: (T) -> T1) = f(this) //TODO watch this
 
 internal class FNEE<R, E, P, A>(
     effect: Effect<R, E>,
-    private val func: (R) -> (P) -> Either<E, A>
+    private val func: (R) -> (P) -> Fe<E, A>
 ) : NEE<R, E, P, A>(effect) {
 
     //constructor(effect: Effect<R, E>, f : (R)->(P)->A) : this(effect, {r:R-> {p:P-> Either.right<E,A>(f(r)(p))}} )
 
     private fun action() = effect.wrap(func)
-    override fun perform(env: R): (P) -> Either<E, A> = { p: P -> action()(env).first(p).flatMap { it } }//f(env)
+    override fun perform(env: R): (P) -> Fe<E, A> = { p: P -> action()(env).first(p).flatMap { it } }//f(env)
     //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
     override fun <B> map(f: (A) -> B): NEE<R, E, P, B> =
         FNEE(effect) { r -> { p: P -> func(r)(p).map(f) } }

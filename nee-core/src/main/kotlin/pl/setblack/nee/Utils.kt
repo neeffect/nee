@@ -3,6 +3,7 @@ package pl.setblack.nee
 import io.vavr.Tuple2
 import io.vavr.Tuple3
 import io.vavr.control.Either
+import pl.setblack.nee.effects.Fe
 import pl.setblack.nee.effects.monitoring.TraceProvider
 
 internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
@@ -10,7 +11,7 @@ internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
     if (r is TraceProvider<*>) {
         r.getTrace().guessPlace(pfunc)
     }
-    { p: P -> Either.right<E, A>(pfunc(p)) }
+    { p: P -> Fe.right<E, A>(pfunc(p)) }
 }
 
 internal fun <P, A> extendR(f: (P) -> A) = { r: Any ->

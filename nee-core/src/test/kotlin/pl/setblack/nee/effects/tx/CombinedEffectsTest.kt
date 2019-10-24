@@ -5,6 +5,8 @@ import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
 import pl.setblack.nee.NEE
 import pl.setblack.nee.andThen
+import pl.setblack.nee.effects.get
+import pl.setblack.nee.effects.getLeft
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityErrorType
@@ -41,7 +43,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
-                result(Unit).left.merge().secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
+                result(Unit).getLeft().merge().secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
             }
         }
     }

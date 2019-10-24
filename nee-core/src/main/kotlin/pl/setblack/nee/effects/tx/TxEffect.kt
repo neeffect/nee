@@ -4,6 +4,7 @@ import io.vavr.collection.List
 import io.vavr.control.Either
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
+import pl.setblack.nee.effects.Fe
 import java.lang.Exception
 
 interface TxConnection<R> {
@@ -14,6 +15,8 @@ interface TxConnection<R> {
     fun hasTransaction(): Boolean
 
     fun getResource(): R
+
+    fun close() : Unit
 }
 
 interface TxStarted<R> : TxConnection<R> {
@@ -48,7 +51,7 @@ sealed class TxErrorType : TxError {
 }
 
 class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = false) : Effect<R, TxError> {
-    override fun <A, P> wrap(f: (R) ->(P)->A): (R) -> Pair<(P)->Either<TxError, A>, R> {
+    override fun <A, P> wrap(f: (R) ->(P)->A): (R) -> Pair<(P)-> Fe<TxError, A>, R> {
         return { res: R ->
             val connection = res.getConnection()
             val continueOldTransaction = connection.hasTransaction() && !requiresNew
@@ -66,9 +69,9 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = f
                         startedTransaction.commit()
                     }
                     val error = txFinished.first.map {
-                        Pair({_:P->Either.left<TxError, A>(it)}, txFinished.second)
+                        Pair({_:P->Fe.left<TxError, A>(it)}, txFinished.second)
                     }.getOrElse {
-                        Pair({p:P->Either.right<TxError, A>(result(p))}, txFinished.second)
+                        Pair({p:P->Fe.right<TxError, A>(result(p))}, txFinished.second)
                     }
                     error
                 } catch (e: Exception) {
@@ -79,7 +82,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = f
                     }
                     txCancelled.first.map { rollbackError ->
                         Pair({_:P->
-                            Either.left<TxError, A>(
+                            Fe.left<TxError, A>(
                                 TxErrorType.MultipleErrors(
                                     List.of(
                                         TxErrorType.InternalException(e),
@@ -89,7 +92,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = f
                             )}, txCancelled.second
                         )
                     }.getOrElse {
-                        Pair({_:P->Either.left<TxError, A>(
+                        Pair({_:P->Fe.left<TxError, A>(
                             TxErrorType.InternalException(
                                 e
                             )
@@ -99,7 +102,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private  val requiresNew : Boolean = f
             }.map {
                 Pair(it.first, res.setConnectionState(it.second))
             }.getOrElseGet { error ->
-                Pair({_:P->Either.left<TxError, A>(error)}, res)
+                Pair({_:P->Fe.left<TxError, A>(error)}, res)
             }
             z
         }
