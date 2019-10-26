@@ -2,6 +2,8 @@ package pl.setblack.nee.effects.jdbc
 
 import io.vavr.control.Either
 import io.vavr.control.Option
+import io.vavr.control.Option.none
+import io.vavr.kotlin.some
 import pl.setblack.nee.Logging
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxError
@@ -9,6 +11,7 @@ import pl.setblack.nee.effects.tx.TxStarted
 import pl.setblack.nee.logger
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.Savepoint
 import java.util.concurrent.atomic.AtomicReference
 
 class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Logging {
@@ -19,10 +22,16 @@ class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Lo
         connectionRef.set(DriverManager.getConnection(cfg.url, cfg.user, cfg.password))
     }
 
-    override fun begin(): Either<TxError, TxStarted<Connection>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun begin(): Either<TxError, TxStarted<Connection>> =
+        if (hasTransaction()) {
+            val savepoint = getResource().setSavepoint()
+            JDBCTransaction(this, some(savepoint))
+        } else {
+            getResource().autoCommit = false
+            JDBCTransaction(this)
+        }.let { Either.right<TxError, TxStarted<Connection>>(it) }
 
+    //TODO handle in nested trx when
     override fun cont(): Either<TxError, TxStarted<Connection>> =
         Either.right<TxError, TxStarted<Connection>>(JDBCTransaction(this)).also {
             if (!hasTransaction()) {
@@ -31,7 +40,6 @@ class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Lo
         }
 
     override fun hasTransaction(): Boolean = !this.getResource().autoCommit
-
 
     override fun getResource(): Connection =
         this.connectionRef.get().let { connection ->
@@ -48,16 +56,24 @@ class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Lo
     }
 }
 
-class JDBCTransaction(val conn: JDBCConnection) : TxConnection<Connection> by conn,
+class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint> = none()) :
+    TxConnection<Connection> by conn,
     TxStarted<Connection> {
-    override fun commit(): Pair<Option<TxError>, TxConnection<Connection>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun commit(): Pair<Option<TxError>, TxConnection<Connection>> =
+        getResource().commit().let {
+            Pair(Option.none(), conn) //TODO what about autocommit?
+        }
+
 
     override fun rollback(): Pair<Option<TxError>, TxConnection<Connection>> =
-        getResource().rollback().let {
-            Pair(Option.none(), conn)
+        this.savepoint.map { sp ->
+            getResource().rollback(sp)
+            Pair(Option.none<TxError>(), conn)
+        }.getOrElse {
+            getResource().rollback()
+            Pair(Option.none<TxError>(), conn)
         }
+
 
 }
 
