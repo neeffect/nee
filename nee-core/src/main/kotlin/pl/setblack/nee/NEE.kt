@@ -1,10 +1,7 @@
 package pl.setblack.nee
 
 //import arrow.core.*
-import io.vavr.control.Either
 import pl.setblack.nee.effects.Fe
-import pl.setblack.nee.effects.monitoring.TraceProvider
-import pl.setblack.nee.effects.monitoring.TraceResource
 
 
 //NEE - better name naive enterprise effects
@@ -13,10 +10,17 @@ sealed class NEE<R, E, P, A>(val effect: Effect<R, E>) {
     abstract fun perform(env: R): (P) -> Fe<E, A>
     abstract fun <B> map(f: (A) -> B): NEE<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> NEE<R, E, P, B>): NEE<R, E, P, B>
+    abstract fun  u(): (P) -> NEE<R, E, Unit, A>
 
     companion object {
         fun <A> pure(a: A): NEE<Any, Nothing, Nothing, A> =
             FNEE<Any, Nothing, Nothing, A>(NoEffect<Any, Nothing>(), extend({ _: Any -> { _: Nothing -> a } }))
+
+        fun <R, E, P, A> wrapP(effect: Effect<R, E>, func: (P) -> A): NEE<R, E, P, A> =
+            FNEE(effect, extendR(func))
+
+        fun <R, E, A> wrapR(effect: Effect<R, E>, func: (R) -> A): NEE<R, E, Unit, A> =
+            FNEE(effect, extendP(func))
 
         fun <R, E, P, A> pure(effect: Effect<R, E>, func: (R) -> (P) -> A): NEE<R, E, P, A> =
             FNEE(effect, extend(func))
@@ -49,6 +53,16 @@ internal class FNEE<R, E, P, A>(
         }
         return FNEE(effect, f2)
     }
+
+    override fun  u(): (P) -> NEE<R, E, Unit, A> = { p: P ->
+        val f2 = { r: R ->
+            { _: Unit ->
+                this.perform(r)(p)
+            }
+        }
+        FNEE(effect, f2)
+    }
+
 }
 
 

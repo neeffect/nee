@@ -7,6 +7,7 @@ import io.vavr.kotlin.some
 import pl.setblack.nee.Logging
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxError
+import pl.setblack.nee.effects.tx.TxProvider
 import pl.setblack.nee.effects.tx.TxStarted
 import pl.setblack.nee.logger
 import java.sql.Connection
@@ -14,13 +15,9 @@ import java.sql.DriverManager
 import java.sql.Savepoint
 import java.util.concurrent.atomic.AtomicReference
 
-class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Logging {
-    private val connectionRef = AtomicReference<Connection>()
+class JDBCConnection(private val connection: Connection) : TxConnection<Connection>, Logging {
 
-    init {
-        Class.forName(cfg.driverClassName)
-        connectionRef.set(DriverManager.getConnection(cfg.url, cfg.user, cfg.password))
-    }
+
 
     override fun begin(): Either<TxError, TxStarted<Connection>> =
         if (hasTransaction()) {
@@ -41,11 +38,7 @@ class JDBCConnection(private val cfg: JDBCConfig) : TxConnection<Connection>, Lo
 
     override fun hasTransaction(): Boolean = !this.getResource().autoCommit
 
-    override fun getResource(): Connection =
-        this.connectionRef.get().let { connection ->
-            assert(connection != null)
-            connection
-        }
+    override fun getResource(): Connection = this.connection
 
     override fun close(): Unit = getResource().let { conn ->
         if (conn.isClosed) {
@@ -64,7 +57,6 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
             Pair(Option.none(), conn) //TODO what about autocommit?
         }
 
-
     override fun rollback(): Pair<Option<TxError>, TxConnection<Connection>> =
         this.savepoint.map { sp ->
             getResource().rollback(sp)
@@ -73,7 +65,20 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
             getResource().rollback()
             Pair(Option.none<TxError>(), conn)
         }
+}
 
+
+class JDBCProvider(private  val connection: Connection) : TxProvider<Connection, JDBCProvider> {
+
+    constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {
+        DriverManager.getConnection(cfg.url, cfg.user, cfg.password)
+    })
+
+    override fun getConnection(): TxConnection<Connection>  =
+        JDBCConnection(connection)
+
+    override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider =
+        JDBCProvider(newState.getResource())
 
 }
 

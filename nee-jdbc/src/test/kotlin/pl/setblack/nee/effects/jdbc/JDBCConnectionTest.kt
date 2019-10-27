@@ -12,8 +12,10 @@ import pl.setblack.nee.effects.tx.TxError
 class JDBCConnectionTest : DescribeSpec({
     describe("jdbc connection") {
         val cfg = JDBCConfig("org.h2.Driver", "jdbc:h2:mem:test_mem", "sa")
+        val provider = { JDBCProvider(cfg) }
+
         context("connection") {
-            val conn = JDBCConnection(cfg)
+            val conn = provider().getConnection()
             it("is created") {
                 conn shouldNotBe null
             }
@@ -32,7 +34,7 @@ class JDBCConnectionTest : DescribeSpec({
             }
         }
         context("creation of data") {
-            val conn = JDBCConnection(cfg)
+            val conn = provider().getConnection()
             it("should create table") {
                 val res = simpleUpdate(
                     conn.getResource(),
@@ -60,7 +62,7 @@ class JDBCConnectionTest : DescribeSpec({
 
         }
         context("transactions") {
-            val conn = JDBCConnection(cfg)
+            val conn = provider().getConnection()
             context("simple trx") {
                 val trx = conn.cont()
                 it("should start  trx") {
@@ -148,6 +150,7 @@ fun simpleUpdate(jdbcConnection: Connection, sql: String) = jdbcConnection.let {
 }
 
 fun Connection.q(sql: String) = simpleQuery(this, sql)
+
 fun Connection.x(sql: String) = simpleUpdate(this, sql)
 
 tailrec fun resultToRow(resultSet: ResultSet, rows: List<String>): List<String> =

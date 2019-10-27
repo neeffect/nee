@@ -16,7 +16,21 @@ internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
     { p: P -> Fe.right<E, A>(pfunc(p)) }
 }
 
-internal fun <P, A> extendR(f: (P) -> A) = { r: Any ->
+internal fun <R, E, A> extendP(f: (R) -> A) = { r: R ->
+    if (r is TraceProvider<*>) {
+        r.getTrace().guessPlace(f)
+    }
+    { _: Unit -> Fe.right<E, A>(f(r)) }
+}
+
+internal fun <R, E, P, A> extendR(f: (P) -> A) = { r: R ->
+    if (r is TraceProvider<*>) {
+        r.getTrace().guessPlace(f)
+    }
+    { p: P -> Fe.right<E, A>(f(p)) }
+}
+
+internal fun <P, A> ignoreR(f: (P) -> A) = { r: Any ->
     if (r is TraceProvider<*>) {
         r.getTrace().guessPlace(f)
     }

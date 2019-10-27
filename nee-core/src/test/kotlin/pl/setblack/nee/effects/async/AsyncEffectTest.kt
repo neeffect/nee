@@ -8,7 +8,7 @@ import io.vavr.concurrent.Future
 import io.vavr.concurrent.Promise
 import io.vavr.control.Option
 import pl.setblack.nee.NEE
-import pl.setblack.nee.extendR
+import pl.setblack.nee.ignoreR
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -21,7 +21,7 @@ class AsyncEffectTest : DescribeSpec({
         context( "test function") {
             val runned = AtomicBoolean(false)
             val testFunction = { _:Unit -> runned.set(true)}
-            val async =  NEE.Companion.pure(eff, extendR(testFunction))
+            val async =  NEE.Companion.pure(eff, ignoreR(testFunction))
             val performed = async.perform(ecProvider)(Unit)
             it("does not run before executor calls") {
                 runned.get() shouldBe false
@@ -37,7 +37,7 @@ class AsyncEffectTest : DescribeSpec({
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))
             val runned = AtomicBoolean(false)
             val testFunction = { _:Unit -> runned.set(true)}
-            val async =  NEE.Companion.pure(localEff, extendR(testFunction))
+            val async =  NEE.Companion.pure(localEff, ignoreR(testFunction))
             it( "will not run  on global") {
                 val performed = async.perform(ecProvider)(Unit)
                 controllableExecutionContext.runSingle()
