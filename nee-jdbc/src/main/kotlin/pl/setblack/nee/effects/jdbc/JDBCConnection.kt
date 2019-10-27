@@ -15,10 +15,7 @@ import java.sql.DriverManager
 import java.sql.Savepoint
 import java.util.concurrent.atomic.AtomicReference
 
-class JDBCConnection(private val connection: Connection) : TxConnection<Connection>, Logging {
-
-
-
+class JDBCConnection(private val connection: Connection, val close: Boolean = false ) : TxConnection<Connection>, Logging {
     override fun begin(): Either<TxError, TxStarted<Connection>> =
         if (hasTransaction()) {
             val savepoint = getResource().setSavepoint()
@@ -41,10 +38,13 @@ class JDBCConnection(private val connection: Connection) : TxConnection<Connecti
     override fun getResource(): Connection = this.connection
 
     override fun close(): Unit = getResource().let { conn ->
+
         if (conn.isClosed) {
             logger().warn("connection already closed")
         } else {
-            conn.close()
+            if (close) {
+                conn.close()
+            }
         }
     }
 }
@@ -68,18 +68,14 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
 }
 
 
-class JDBCProvider(private  val connection: Connection) : TxProvider<Connection, JDBCProvider> {
-
+class JDBCProvider(private  val connection: Connection, private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
     constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {
         DriverManager.getConnection(cfg.url, cfg.user, cfg.password)
-    })
-
+    }, true)
     override fun getConnection(): TxConnection<Connection>  =
-        JDBCConnection(connection)
-
+        JDBCConnection(connection, close)
     override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider =
         JDBCProvider(newState.getResource())
-
 }
 
 data class JDBCConfig(
