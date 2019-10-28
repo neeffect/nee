@@ -5,7 +5,7 @@ import io.vavr.Tuple3
 import io.vavr.control.Either
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
-import pl.setblack.nee.effects.Fe
+import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.monitoring.TraceProvider
 
 internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
@@ -13,21 +13,22 @@ internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
     if (r is TraceProvider<*>) {
         r.getTrace().guessPlace(pfunc)
     }
-    { p: P -> Fe.right<E, A>(pfunc(p)) }
+    { p: P -> Out.right<E, A>(pfunc(p)) }
 }
 
-internal fun <R, E, A> extendP(f: (R) -> A) = { r: R ->
+//was extendP
+internal fun <R, E, A> constP(f: (R) -> A) = { r: R ->
     if (r is TraceProvider<*>) {
         r.getTrace().guessPlace(f)
     }
-    { _: Unit -> Fe.right<E, A>(f(r)) }
+    { _: Unit -> Out.right<E, A>(f(r)) }
 }
 
-internal fun <R, E, P, A> extendR(f: (P) -> A) = { r: R ->
+internal fun <R, E, P, A> constR(f: (P) -> A) = { r: R ->
     if (r is TraceProvider<*>) {
         r.getTrace().guessPlace(f)
     }
-    { p: P -> Fe.right<E, A>(f(p)) }
+    { p: P -> Out.right<E, A>(f(p)) }
 }
 
 internal fun <P, A> ignoreR(f: (P) -> A) = { r: Any ->

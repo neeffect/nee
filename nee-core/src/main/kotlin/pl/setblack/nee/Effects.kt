@@ -1,10 +1,10 @@
 package pl.setblack.nee
 
 import io.vavr.control.Either
-import pl.setblack.nee.effects.Fe
+import pl.setblack.nee.effects.Out
 
 interface Effect<R, E> {
-    fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<E, A>, R>
+    fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R>
 
     fun <XE> handleError(handler: (E) -> XE): Effect<R, XE> =
         HandleErrorEffect(this, handler)
@@ -19,7 +19,7 @@ class Effects<R1, R2, E1, E2>(
 ) : Effect<R2, Either<E1, E2>>
         where R2 : R1 {
 
-    override fun <A, P> wrap(f: (R2) -> (P) -> A): (R2) -> Pair<(P) -> Fe<Either<E1, E2>, A>, R2> {
+    override fun <A, P> wrap(f: (R2) -> (P) -> A): (R2) -> Pair<(P) -> Out<Either<E1, E2>, A>, R2> {
         @Suppress("UNCHECKED_CAST")
         val internalFunct = { r: R2 -> f(r) } as (R1) -> (P) -> A
         val innerWrapped =
@@ -58,15 +58,15 @@ class Effects<R1, R2, E1, E2>(
 }
 
 class NoEffect<R, E> : Effect<R, E> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<E, A>, R> =
-        { r -> Pair({ p -> Fe.right<E, A>(f(r)(p)) }, r) }
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R> =
+        { r -> Pair({ p -> Out.right<E, A>(f(r)(p)) }, r) }
 }
 
 class HandleErrorEffect<R, E, E1>(
     private val innerEffect: Effect<R, E>,
     private val handler: (E) -> E1
 ) : Effect<R, E1> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<E1, A>, R> {
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E1, A>, R> {
         val wrapped = innerEffect.wrap(f)
         return { r: R ->
             val result = wrapped(r)

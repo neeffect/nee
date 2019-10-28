@@ -1,14 +1,13 @@
 package pl.setblack.nee.effects.monitoring
 
 import io.vavr.collection.List
-import io.vavr.control.Either
 import pl.setblack.nee.Effect
-import pl.setblack.nee.effects.Fe
+import pl.setblack.nee.effects.Out
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Fe<Nothing, A>, R> = { r: R ->
+    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<Nothing, A>, R> = { r: R ->
         val entry = r.getTrace().begin(tracerName)
         val traced = r.setTrace(entry.first)
         Pair({ p: P ->
@@ -18,7 +17,7 @@ class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect
                 name ?: r1.javaClass.name
             }
             val ended = traced.getTrace().end(tracerName, entry.second)
-            Fe.right<Nothing, A>(result)
+            Out.right<Nothing, A>(result)
         }, r)
     }
 }

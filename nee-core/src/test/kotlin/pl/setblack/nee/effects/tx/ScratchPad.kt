@@ -1,8 +1,7 @@
 package pl.setblack.nee.effects.tx
 
-import io.vavr.control.Either
 import io.vavr.collection.List
-import pl.setblack.nee.effects.Fe
+import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.security.*
 
 fun scratchPad() {
@@ -13,7 +12,7 @@ fun scratchPad() {
 
 class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
     private val ctx = SimpleSecurityContext(user, roles)
-    override fun getSecurityContext(): Fe<SecurityError, SecurityCtx<USER, ROLE>> = Fe.right(ctx)
+    override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> = Out.right(ctx)
 
     internal class SimpleSecurityContext<USER, ROLE>(private val user: USER, private val roles: List<ROLE>) :
         SecurityCtx<USER, ROLE> {
