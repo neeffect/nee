@@ -107,6 +107,13 @@ Notice: first version is in fact even more flexible - allows for nested transact
     - style check
     - naming & long lambdas clean 
     
+ - Ideas:
+    - R extract (for effect) - multiple db support
+    - R as Map (ugly but practical)
+    - arrow?
+    - Swap P, E in  -> NEE R,P,E,A
+        
+    
 - Tests:
     - real assertions
     - unhappy paths
