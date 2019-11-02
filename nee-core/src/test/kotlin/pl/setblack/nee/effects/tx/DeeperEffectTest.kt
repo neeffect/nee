@@ -3,7 +3,7 @@ package pl.setblack.nee.effects.tx
 import io.kotlintest.be
 import io.kotlintest.should
 import io.kotlintest.specs.BehaviorSpec
-import pl.setblack.nee.NEE
+import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
 import pl.setblack.nee.effects.get
 
@@ -11,7 +11,7 @@ class DeeperEffectTest  : BehaviorSpec ({
     Given("TestEffect") {
         val log = mutableListOf<String>()
         val eff = TestEffect("ef1", log)
-        val nee = NEE.Companion.pure(eff, function1(log))
+        val nee = Nee.Companion.pure(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))(Unit)
             Then ("log is ok") {
@@ -27,7 +27,7 @@ class DeeperEffectTest  : BehaviorSpec ({
         val eff1 = TestEffect("ef1", log)
         val eff2 = TestEffect("ef2", log)
         val eff = eff1.andThen(eff2)
-        val nee = NEE.Companion.pure(eff, function1(log))
+        val nee = Nee.Companion.pure(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))(Unit)
             Then ("log is ok") {

@@ -2,14 +2,13 @@ package pl.setblack.nee.effects.tx
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
-import io.vavr.control.Either
-import pl.setblack.nee.NEE
+import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.get
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
         val eff = TxEffect<DBLike, DBLikeProvider>()
-        val simpleAction = NEE.pure(eff, function1)
+        val simpleAction = Nee.pure(eff, function1)
         When("runned on db") {
             val db = DBLike()
             db.appendAnswer("6")
@@ -23,7 +22,7 @@ class DBEffectTest : BehaviorSpec({
         }
         And("nested second action") {
             val nestedAction = { orig: Int ->
-                NEE.pure(eff, function2(orig))
+                Nee.pure(eff, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
             When("db connected") {
@@ -42,7 +41,7 @@ class DBEffectTest : BehaviorSpec({
         And("nested second action in internal tx") {
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
             val nestedAction = { orig: Int ->
-                NEE.pure(effReqNew, function2(orig))
+                Nee.pure(effReqNew, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
             When("db connected") {

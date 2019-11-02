@@ -1,8 +1,6 @@
 package pl.setblack.nee.scratchpad
 
 import kotlinx.coroutines.*
-import pl.setblack.nee.Effect
-import pl.setblack.nee.NEE
 
 
 //public fun <T,R,E> CoroutineScope.eff(

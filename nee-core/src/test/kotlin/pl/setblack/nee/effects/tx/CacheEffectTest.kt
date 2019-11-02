@@ -4,7 +4,7 @@ package pl.setblack.nee.effects.tx
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.Stream
-import pl.setblack.nee.NEE
+import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.NaiveCacheProvider
 import pl.setblack.nee.effects.get
@@ -17,7 +17,7 @@ internal class CacheEffectTest : BehaviorSpec({
         When("Called 100 times with different params") {
             val calc = Calculator()
             val businessFunction =
-                NEE.Companion.pure(
+                Nee.Companion.pure(
                     cache
                 ) { _: Unit ->
                     calc::add
@@ -30,7 +30,7 @@ internal class CacheEffectTest : BehaviorSpec({
         When("Called 100 times with same param") {
             val calc = Calculator()
             val businessFunction =
-                NEE.Companion.pure(
+                Nee.Companion.pure(
                     cache
                 ) { _: Unit ->
                     calc::add

@@ -3,7 +3,7 @@ package pl.setblack.nee.effects.monitoring
 import io.kotlintest.specs.BehaviorSpec
 import io.kotlintest.shouldBe
 import io.vavr.collection.List
-import pl.setblack.nee.NEE
+import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.get
 import pl.setblack.nee.ignoreR
 import java.util.concurrent.atomic.AtomicLong
@@ -16,7 +16,7 @@ class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = NEE.Companion.pure(eff, ignoreR(::plainFunction))
+            val f = Nee.Companion.pure(eff, ignoreR(::plainFunction))
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
@@ -27,7 +27,7 @@ class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = NEE.Companion.pure(eff, ::traceableFunction)
+            val f = Nee.Companion.pure(eff, ::traceableFunction)
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
@@ -38,7 +38,7 @@ class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = NEE.Companion.pure(eff, ignoreR(SomeObject::plainFunction))
+            val f = Nee.Companion.pure(eff, ignoreR(SomeObject::plainFunction))
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
@@ -49,7 +49,7 @@ class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = NEE.Companion.pure(eff, SomeObject::traceableFunction)
+            val f = Nee.Companion.pure(eff, SomeObject::traceableFunction)
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6

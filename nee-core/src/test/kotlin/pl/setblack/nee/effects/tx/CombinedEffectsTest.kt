@@ -3,7 +3,7 @@ package pl.setblack.nee.effects.tx
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
-import pl.setblack.nee.NEE
+import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
 import pl.setblack.nee.effects.get
 import pl.setblack.nee.effects.getLeft
@@ -21,7 +21,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             .handleError { e -> CombinedError.SecurityError(e) as CombinedError}
         val combined = secEff.andThen(dbEff)
         When("Called with admin role") {
-            val simpleAction = NEE.pure(combined, function1)
+            val simpleAction = Nee.pure(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -35,7 +35,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
         }
 
         When("Called with no roles") {
-            val simpleAction = NEE.pure(combined, function1)
+            val simpleAction = Nee.pure(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
