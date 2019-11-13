@@ -26,7 +26,7 @@ class JDBCConnection(private val connection: Connection, val close: Boolean = fa
         }.let { Either.right<TxError, TxStarted<Connection>>(it) }
 
     //TODO handle in nested trx when
-    override fun cont(): Either<TxError, TxStarted<Connection>> =
+    override fun continueTx(): Either<TxError, TxStarted<Connection>> =
         Either.right<TxError, TxStarted<Connection>>(JDBCTransaction(this)).also {
             if (!hasTransaction()) {
                 getResource().autoCommit = false

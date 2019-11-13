@@ -7,7 +7,6 @@ import java.sql.Connection
 import java.sql.ResultSet
 import io.vavr.collection.List
 import io.vavr.control.Option
-import pl.setblack.nee.effects.tx.TxError
 
 class JDBCConnectionTest : DescribeSpec({
     describe("jdbc connection") {
@@ -64,7 +63,7 @@ class JDBCConnectionTest : DescribeSpec({
         context("transactions") {
             val conn = provider().getConnection()
             context("simple trx") {
-                val trx = conn.cont()
+                val trx = conn.continueTx()
                 it("should start  trx") {
                     trx.isRight shouldBe (true)
                 }
@@ -88,7 +87,7 @@ class JDBCConnectionTest : DescribeSpec({
                 }
             }
             context("nested transaction") {
-                val trx = conn.cont()
+                val trx = conn.continueTx()
                 it("should start  trx") {
                     trx.isRight shouldBe (true)
                 }

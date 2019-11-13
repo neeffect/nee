@@ -7,7 +7,7 @@ import java.io.Closeable
 interface TxConnection<R> : Closeable {
     fun begin(): Either<TxError, TxStarted<R>>
 
-    fun cont(): Either<TxError, TxStarted<R>>
+    fun continueTx(): Either<TxError, TxStarted<R>>
 
     fun hasTransaction(): Boolean
 

@@ -37,7 +37,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                 try {
                     val continueOldTransaction = connection.hasTransaction() && !requiresNew
                     val tx = if (continueOldTransaction) {
-                        connection.cont()
+                        connection.continueTx()
                     } else {
                         connection.begin()
                     }

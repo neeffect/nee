@@ -35,7 +35,7 @@ internal open class DBConnection(val db: DBLike) : TxConnection<DBLike> {
                 TxErrorType.CannotStartTransaction)
         }
 
-    override fun cont(): Either<TxError, TxStarted<DBLike>> =
+    override fun continueTx(): Either<TxError, TxStarted<DBLike>> =
         if (db.continueTransaction()) {
             Either.right(DBTxConnection(db))
         } else {
