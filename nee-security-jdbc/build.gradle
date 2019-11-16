@@ -1,14 +1,21 @@
+buildscript {
+    ext {
+        liquibase_version='3.6.1'
+    }
+}
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-
 dependencies {
     implementation project(':nee-core')
-    implementation project(':nee-jdbc')
+    implementation project(':nee-jdbc') //TODO move jdbc part to a separate project
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation group: 'io.vavr', name: 'vavr-kotlin', version: '0.10.2'
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.2'
+    testRuntime 'com.h2database:h2:1.4.193'
+    testImplementation "org.liquibase:liquibase-core:$liquibase_version"
 }
 repositories {
     mavenCentral()

@@ -36,7 +36,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<SecurityError, A>, R> {
         return { provider: R ->
-            Pair( //TODO - fail faster
+            Pair( //TODO - fail faster?
                 { p: P ->
                     provider.getSecurityContext().flatMap { securityCtx ->
                         val missingRoles = roles.filter { role ->
@@ -57,10 +57,10 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
 class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) : Effect<FlexibleEnv, SecurityError> {
     private val internal = SecuredRunEffect<USER, ROLE, FlexSecurityProvider<USER, ROLE>>(roles)
-    override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> {
-        val x = { env: FlexibleEnv ->
+    override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> =
+        { env: FlexibleEnv ->
             val secProviderChance = env.get(ResourceId(SecurityProvider::class))
-            val z= secProviderChance.map { secProvider ->
+            secProviderChance.map { secProvider ->
                 val flexSecProvider = FlexSecurityProvider<USER, ROLE>(env)
                 val internalF = { secProviderInternal: SecurityProvider<USER, ROLE> ->
                     f(env)
@@ -68,12 +68,10 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) : Effect<Flexible
                 val wrapped = internal.wrap(internalF)
                 val result = wrapped(flexSecProvider)
                 Pair(result.first, env.set(result.second, ResourceId(SecurityProvider::class)))
-            }
-            z.getOrElse(Pair({_:P->Out.left<SecurityError, A>(SecurityErrorType.NoSecurityCtx)}, env))
+            }.getOrElse(Pair({ _: P -> Out.left<SecurityError, A>(SecurityErrorType.NoSecurityCtx) }, env))
         }
-        return x
-    }
 }
+
 
 class FlexSecurityProvider<USER, ROLE>(private val env: FlexibleEnv) :
     FlexibleEnv by env,

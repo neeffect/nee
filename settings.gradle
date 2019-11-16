@@ -2,5 +2,5 @@ rootProject.name = 'nee'
 
 include 'nee-core',
         'nee-jdbc',
-        'nee-security',
+        'nee-security-jdbc',
         'scratchpad'
