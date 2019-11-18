@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     implementation project(':nee-core')
+    implementation project(':nee-security')
+
     implementation project(':nee-jdbc') //TODO move jdbc part to a separate project
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

@@ -4,4 +4,6 @@ include 'nee-core',
         'nee-jdbc',
         'nee-security',
         'nee-security-jdbc',
+        'nee-cache-caffeine',
+        'nee-ctx-web-ktor',
         'scratchpad'
