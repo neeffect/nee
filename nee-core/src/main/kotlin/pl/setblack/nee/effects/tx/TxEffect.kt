@@ -25,7 +25,6 @@ sealed class TxErrorType : TxError {
     object CannotCommitTransaction : TxErrorType()
     object CannotRollbackTransaction : TxErrorType()
     data class CannotQuery(val msg: String) : TxErrorType()
-
     data class MultipleErrors(val errors: List<TxError>) : TxErrorType()
     data class InternalException(val cause: java.lang.Exception) : TxErrorType()
 }

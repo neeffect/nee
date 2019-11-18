@@ -12,7 +12,7 @@ import kotlinx.coroutines.*
 
 fun main() {
     val deferredResult: Deferred<String> = GlobalScope.async {
-        val x = delay(1000L)
+        delay(1000L)
         "World!"
     }
     println("now I am here")
