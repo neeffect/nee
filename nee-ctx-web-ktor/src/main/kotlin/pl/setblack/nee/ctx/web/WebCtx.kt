@@ -28,7 +28,6 @@ class WebContext(
             cacheProvider,
             securityProvider)
 }
-
 object WebEffects {
     val jdbc = TxEffect<Connection, WebContext>()
     val cache = CacheEffect<WebContext, Nothing>(NaiveCacheProvider())

@@ -19,8 +19,8 @@ sealed class Out<E, A> {
     abstract fun toFuture() : Future<Either<E,A>>
 
     companion object {
-        internal fun <E,A> left(e:E) = InstantOut(Either.left<E,A>(e));
-        internal fun <E,A> right(a:A) = InstantOut(Either.right<E,A>(a));
+        fun <E,A> left(e:E): Out<E,A> = InstantOut(Either.left<E,A>(e));
+        fun <E,A> right(a:A): Out<E,A> = InstantOut(Either.right<E,A>(a));
     }
 
     internal class InstantOut<E, A>(internal val v: Either<E, A>) : Out<E, A>() {

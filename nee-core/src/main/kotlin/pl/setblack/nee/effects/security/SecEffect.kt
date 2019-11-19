@@ -7,7 +7,7 @@ import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.env.ResourceId
 
 interface SecurityCtx<USER, ROLE> {
-    fun getCurrentUser(): USER
+    fun getCurrentUser(): Out<SecurityError, USER>
     fun hasRole(role: ROLE): Boolean
 }
 
@@ -21,7 +21,7 @@ interface SecurityError {
 
 sealed class SecurityErrorType : SecurityError {
     override fun secError() = this
-
+    class WrongCredentials(val message : String = "") : SecurityErrorType()
     object UnknownUser : SecurityErrorType()
     object NoSecurityCtx : SecurityErrorType()
     data class MissingRole<ROLE>(val roles: List<ROLE>) : SecurityErrorType()

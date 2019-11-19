@@ -7,7 +7,6 @@ import pl.setblack.nee.effects.jdbc.JDBCProvider
 import java.nio.ByteBuffer
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.*
 import java.util.UUID
 
 data class User(
@@ -23,7 +22,8 @@ data class UserRole(val roleName: String) {
     }
 }
 
-class DBUserRealm(private val dbProvider: JDBCProvider) : UserRealm<User, UserRole> {
+class DBUserRealm(private val dbProvider: JDBCProvider) :
+    UserRealm<User, UserRole> {
 
     override fun loginUser(userLogin: String, password: CharArray): Option<User> =
         dbProvider.getConnection().getResource().let { jdbcConnection: Connection ->

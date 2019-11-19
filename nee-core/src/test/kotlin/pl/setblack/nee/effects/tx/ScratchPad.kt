@@ -16,7 +16,7 @@ class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : Securi
 
     internal class SimpleSecurityContext<USER, ROLE>(private val user: USER, private val roles: List<ROLE>) :
         SecurityCtx<USER, ROLE> {
-        override fun getCurrentUser(): USER = user
+        override fun getCurrentUser(): Out<SecurityError, USER> = Out.right(user)
         override fun hasRole(role: ROLE): Boolean = roles.contains(role)
     }
 }

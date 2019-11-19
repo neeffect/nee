@@ -1,3 +1,8 @@
+buildscript {
+    ext {
+        ktor_version = '1.2.4'
+    }
+}
 plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
@@ -7,4 +12,6 @@ dependencies {
     implementation project(':nee-core')
     implementation project(':nee-jdbc')
     implementation project(':nee-security')
+
+    implementation "io.ktor:ktor-server-core:$ktor_version"
 }
