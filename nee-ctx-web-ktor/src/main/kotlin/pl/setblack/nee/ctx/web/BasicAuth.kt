@@ -20,7 +20,6 @@ class BasicAuth<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
             : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
         request.header("Authorization").option(), userRealm)
 
-
 }
 
 
