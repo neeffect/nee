@@ -32,7 +32,7 @@ sealed class TxErrorType : TxError {
 class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = false) : Effect<R, TxError> {
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<TxError, A>, R> {
         return { res: R ->
-            res.getConnection().use { connection ->
+            res.getConnection().let { connection ->
                 try {
                     val continueOldTransaction = connection.hasTransaction() && !requiresNew
                     val tx = if (continueOldTransaction) {
@@ -42,7 +42,13 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                     }
                     val z = tx.map { startedTransaction ->
                         try {
-                            val result = f(res)
+                            val result = { p: P ->
+                                try {
+                                    f(res)(p)
+                                } finally {
+                                    connection.close() //just added
+                                }
+                            }
                             val txFinished = if (continueOldTransaction) {
                                 Pair(Option.none<TxError>(), connection)
                             } else {

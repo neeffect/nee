@@ -10,9 +10,9 @@ import java.sql.ResultSet
 import java.util.UUID
 
 data class User(
-    internal val id: UUID,
-    internal val login: String,
-    internal val roles: List<UserRole>
+    val id: UUID,
+    val login: String,
+    val roles: List<UserRole>
 )
 
 data class UserRole(val roleName: String) {
@@ -70,12 +70,12 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
     }
 }
 
-internal fun ByteArray.toUUID() =
+fun ByteArray.toUUID() =
     ByteBuffer.wrap(this).let {
         UUID(it.long, it.long)
     }
 
-internal fun UUID.toBytes(): ByteArray =
+fun UUID.toBytes(): ByteArray =
     ByteBuffer.wrap(ByteArray(16)).let {
         it.putLong(this.mostSignificantBits)
         it.putLong(this.leastSignificantBits)

@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    api 'io.vavr:vavr-kotlin:0.10.2'
+    api "io.vavr:vavr-kotlin:$vavr_version"
     implementation group: 'io.github.krasnoludkolo', name: 'haste', version: '0.2.1'
-    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.2'
+    testImplementation "io.kotlintest:kotlintest-runner-junit5:${kotlintest_version}"
 }
 

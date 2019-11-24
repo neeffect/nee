@@ -38,7 +38,6 @@ class JDBCConnection(private val connection: Connection, val close: Boolean = fa
     override fun getResource(): Connection = this.connection
 
     override fun close(): Unit = getResource().let { conn ->
-
         if (conn.isClosed) {
             logger().warn("connection already closed")
         } else {

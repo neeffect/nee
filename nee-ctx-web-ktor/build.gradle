@@ -9,9 +9,16 @@ plugins {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
     implementation project(':nee-core')
     implementation project(':nee-jdbc')
     implementation project(':nee-security')
+    implementation project(':nee-security-jdbc')
+    implementation project(':nee-cache-caffeine')
 
     implementation "io.ktor:ktor-server-core:$ktor_version"
+
+    testImplementation project (':nee-test:nee-security-jdbc-test')
+    testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
+    testImplementation "io.kotlintest:kotlintest-runner-junit5:${kotlintest_version}"
 }

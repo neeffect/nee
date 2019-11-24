@@ -5,13 +5,13 @@ plugins {
 dependencies {
     implementation project(':nee-core')
     implementation project(':nee-security')
-
-    implementation project(':nee-jdbc') //TODO move jdbc part to a separate project
+    implementation project(':nee-jdbc')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation group: 'io.vavr', name: 'vavr-kotlin', version: '0.10.2'
-    testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.2'
-    testRuntime 'com.h2database:h2:1.4.193'
+    implementation group: 'io.vavr', name: 'vavr-kotlin', version: vavr_version
+    testImplementation project(':nee-test:nee-security-jdbc-test')
+    testImplementation "io.kotlintest:kotlintest-runner-junit5:$kotlintest_version"
+    testRuntime "com.h2database:h2:$h2_version"
     testImplementation "org.liquibase:liquibase-core:$liquibase_version"
 }
 
