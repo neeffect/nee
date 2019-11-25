@@ -14,9 +14,9 @@ sealed class Out<E, out A> {
 
     abstract fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B>
 
-    abstract fun onComplete(f: (Either<E, A>) -> Unit)
+    abstract fun onComplete(f: (Either<E, out A>) -> Unit)
 
-    abstract fun toFuture(): Future<Either<E, A>>
+    abstract fun toFuture(): Future<out Either<E, out A>>
 
     companion object {
         fun <E, A> left(e: E): Out<E, A> = InstantOut(Either.left<E, A>(e));
@@ -24,9 +24,9 @@ sealed class Out<E, out A> {
     }
 
     internal class InstantOut<E, A>(internal val v: Either<E, A>) : Out<E, A>() {
-        override fun toFuture(): Future<Either<E, A>> = Future.successful(v)
+        override fun toFuture(): Future<Either<E, out A>> = Future.successful(v)
 
-        override fun onComplete(f: (Either<E, A>) -> Unit) = f(v)
+        override fun onComplete(f: (Either<E, out A>) -> Unit) = f(v)
 
         override fun <B> map(f: (A) -> B): Out<E, B> = InstantOut(v.map(f))
 
@@ -45,7 +45,7 @@ sealed class Out<E, out A> {
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
         override fun toFuture(): Future<Either<E, A>> = futureVal
 
-        override fun onComplete(f: (Either<E, A>) -> Unit) = futureVal.onComplete { value ->
+        override fun onComplete(f: (Either<E, out A>) -> Unit) = futureVal.onComplete { value ->
             f(value.get())
         }.let { Unit }
 

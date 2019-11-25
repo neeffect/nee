@@ -50,7 +50,8 @@ class JDBCConnection(private val connection: Connection, val close: Boolean = fa
 
 class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint> = none()) :
     TxConnection<Connection> by conn,
-    TxStarted<Connection> {
+    TxStarted<Connection>,
+    Logging {
     override fun commit(): Pair<Option<TxError>, TxConnection<Connection>> =
         getResource().commit().let {
             Pair(Option.none(), conn) //TODO what about autocommit?
@@ -64,6 +65,10 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
             getResource().rollback()
             Pair(Option.none<TxError>(), conn)
         }
+
+    override fun close() {
+        logger().info("we do not close ongoing transaction")
+    }
 }
 
 
