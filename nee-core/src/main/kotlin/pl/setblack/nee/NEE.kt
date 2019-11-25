@@ -1,6 +1,5 @@
 package pl.setblack.nee
 
-//import arrow.core.*
 import pl.setblack.nee.effects.Out
 
 typealias UNee<R,E,A> = Nee<R,E,Unit,A>
@@ -16,6 +15,8 @@ sealed class Nee<R, E, P, A>(val effect: Effect<R, E>) {
     abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
     abstract fun  constP(): (P) -> Nee<R, E, Unit, A>
+
+    fun anyError() : ANee<R, P, A> = this as ANee<R,P,A>
 
     companion object {
         fun <A> pure(a: A): Nee<Any, Nothing, Nothing, A> =
@@ -70,19 +71,3 @@ internal class FNEE<R, E, P, A>(
 
 }
 
-
-//class ENEE<R,E,A> (  effect: Effect<R, E>, e: E) : NEE<R,E,A>(effect) {
-//
-//}
-
-
-//fun dup() {
-//    val f1 = businessFunc("irreg")
-//    //val enterprisol = NEE<>
-//}
-
-//fun businessFunc(a: String) = { securityCtx: SecurityCtxProvider ->
-//    { connection: JDBCProvider ->
-//        TODO()
-//    }
-//}

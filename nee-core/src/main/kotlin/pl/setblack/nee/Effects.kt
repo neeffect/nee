@@ -39,11 +39,6 @@ class Effects<R1, R2, E1, E2>(
                 val finalR = res.second
                 //TODO - ? finalR or r ?
                 val called = res.first(finalR)
-//                val z = called
-//                    .map { Pair(it, finalR) }
-//                    .mapLeft {  error -> Pair({ _: P -> Fe.left<Either<E1, E2>, A>(error) }, finalR)}
-//
-//                z
                 val x= { p:P ->
                     called.flatMap { fp -> fp(p) }
                 }
@@ -75,3 +70,5 @@ class HandleErrorEffect<R, E, E1>(
     }
 }
 
+
+fun <R,E> Effect<R,E>.anyError() : Effect<R,Any> = HandleErrorEffect(this ) { it as Any}
