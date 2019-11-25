@@ -2,18 +2,50 @@
 
 Not so enterprisy effects.
 
-This is Work in Progress project.
+Status: *Work in Progress*.
 
-Goal is to provide kotlin friendly extensible effects using functional approach.
+## Goal 
+
+Provide kotlin friendly extensible effects using functional approach.
+
 
 It should enable (more or less) features known from aspect oriented frameworks, 
-but in a clean  non magic way 
+but in a clean, non magic way. 
+
+Instead of writing:
+
+``` kotlin
+{
+@Resource
+val jdbcConnection: Connection
+
+@Transactional
+@Secure
+@Cacheable
+@Retryable
+fun f(p:P) {
+    //code
+}
+
+}
+```
+
+It is possible to write:
+```kotlin
+    val  f =  {jdbcConnection:Connection ->
+            {p: P ->
+            //code
+        }
+    }
+    val enterprisyF = Nee.pure(secure.and(retryable).and(cacheable).and(transactional), f)
+//declaration above means security is checked before retrial
+//and retrial before cache which is before transaction 
+ 
+```
 
 
 motto :  
 https://twitter.com/mdiep/status/1187088700724989952
-
-
 
 
 # Core concept
@@ -34,20 +66,21 @@ In order to use NEE we have to represent our logic in this form - which is mostl
 (we will show it later)
 
 
-## Putting inside NEE Monad
+## Putting inside Nee Monad
 
-Next step is to put business function inside NEE monad. Why?
-Because NEE moands connects business logic with infrastructure. After all
-you want to use your code on a real hardware with some nasty side effects.
+Next step is to put business function inside NEE monad.
+Nee monad wraps business logic with a given infrastructure.
 
 ```
-NEE.pure(Nop)(businessFunction)
+val functionOnRealHardware = NEE.pure(Nop)(businessFunction)
 ```
 
-Above there is  how businessFunctions is blessed with side effects and now is 
-wrapped inside NEE monad. (Actually this looks as an applicative functor - but it does not matter).
+Now `functionOnRealHardware` is blessed with side effects and now is 
+wrapped inside Nee monad. It is enclosed in a monad to make it "composable"
+with other functions. Just think of performing multiple jdbc calls inside one transaction. 
 
-As for side effects we see Nop... meaning not a real one - but it is time to tell more about `Effects`
+
+As for side effects we see `Nop`... meaning not a real one - but it is time to tell more about `Effects`
 
 ## Effects
 
@@ -67,38 +100,57 @@ Where:
             (notice - it does not have to be Exception)
             
 ```Out``` is special object that represents the final result of calculation. 
-Think of it as `Out<E,T> = Future<Either<E,T>>`
+Think of it as:  `Out<E,T>  =~= Future<Either<E,T>>`
 
-Lets see what effect does:
-takes a function (businessFunction) which may rely on enviroment `R`, and on a  parameter `P`, 
+An effect:
+takes a function (businessFunction) which may rely on environment `R`, and on a  parameter `P`, 
 giving  some result `A`. 
 Then wraps it into a function that:
-    takes environment `R` (no change), 
-      -  later takes `P` and returns `Out` object (the result)
-      -  it also returns   changed environment `(R)` - think that maybe transaction is now started            
+    takes environment `R` (no change),
+      - runs some infrastructure code (effect),  
+      - later takes `P` and returns `Out` object (the result)
+      - it also returns  changed environment `(R)` - think that maybe transaction is now started            
 
 ## Monads
 
-`NEE` is in fact a monad. This means that we can chain various business functions executions.
-`Out` is also a monad. This means we can chain results.
+`Nee` is in fact a monad. This means that it is possible to chain various business functions executions.
+
+`Out` is also a monad. This means it is possible to chain results.
 
 ### Explanation
 
 If you want both methods to run inside same transaction 
 ```kotlin
+ val f1 = Nee.constP(jdbcTransaction) {connection ->
+            connection.prepareStatement()
+            [F1 code]
+    }
 
+ val f2 = Nee.constP(jdbcTransaction) {connection ->
+            connection.prepareStatement()
+            [F2 code]
+    }
+
+// f has both logic of f1 and f2 enclosed in a single transaction
+val f = f1.flatMap { f2 }.perform(jdbcConfig)
 ```
 
 
 if you want to run in separate transactions
 ```kotlin
+ val f1 = Nee.constP(jdbcTransaction) {connection ->
+            connection.prepareStatement()
+            [F1 code]
+    }
 
+ val f2 = Nee.constP(jdbcTransaction) {connection ->
+            connection.prepareStatement()
+            [F2 code]
+    }
+
+//we join results but with separate transactions
+val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)} 
 ```
-
-Notice: first version is in fact even more flexible - allows for nested transactions.
-
-
-
 
 # TODO
 - Code:
