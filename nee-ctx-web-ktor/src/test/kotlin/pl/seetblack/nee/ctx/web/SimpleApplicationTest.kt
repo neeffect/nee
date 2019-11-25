@@ -15,7 +15,7 @@ import io.ktor.util.toByteArray
 import kotlinx.coroutines.runBlocking
 import pl.setblack.nee.Nee
 import pl.setblack.nee.ctx.web.WebContext
-import pl.setblack.nee.ctx.web.WebCtxEffects
+
 import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.merge
 import pl.setblack.nee.security.test.TestDB
@@ -25,7 +25,7 @@ import kotlin.test.assertFalse
 fun Application.main(jdbcConfig: JDBCConfig) {
     routing {
         get("/") {
-            val function = Nee.constP(WebCtxEffects.jdbc) { webCtx ->
+            val function = Nee.constP(WebContext.Effects.jdbc) { webCtx ->
                 webCtx.getConnection().getResource()
                     .prepareStatement("select 41 from dual").use { preparedStatement ->
                         preparedStatement.executeQuery().use { resultSet ->

@@ -2,21 +2,21 @@ package pl.setblack.nee
 
 import pl.setblack.nee.effects.Out
 
-typealias UNee<R,E,A> = Nee<R,E,Unit,A>
+typealias UNee<R, E, A> = Nee<R, E, Unit, A>
 
-typealias ANee<R,P,A> = Nee<R,Any,P, A>
+typealias ANee<R, P, A> = Nee<R, Any, P, A>
 
-typealias UANee<R,A> = Nee<R, Any, Unit,A>
+typealias UANee<R, A> = Nee<R, Any, Unit, A>
 
 //NEE - better name naive enterprise effects
 
-sealed class Nee<R, E, P, A>(val effect: Effect<R, E>) {
+sealed class Nee<R, E, P, out A>(val effect: Effect<R, E>) {
     abstract fun perform(env: R): (P) -> Out<E, A>
     abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
-    abstract fun  constP(): (P) -> Nee<R, E, Unit, A>
+    abstract fun constP(): (P) -> Nee<R, E, Unit, A>
 
-    fun anyError() : ANee<R, P, A> = this as ANee<R,P,A>
+    fun anyError(): ANee<R, P, A> = this as ANee<R, P, A>
 
     companion object {
         fun <A> pure(a: A): Nee<Any, Nothing, Nothing, A> =
@@ -60,7 +60,7 @@ internal class FNEE<R, E, P, A>(
         return FNEE(effect, f2)
     }
 
-    override fun  constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
+    override fun constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
         val f2 = { r: R ->
             { _: Unit ->
                 this.perform(r)(p)

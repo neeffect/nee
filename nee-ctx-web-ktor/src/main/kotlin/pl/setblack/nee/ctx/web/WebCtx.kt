@@ -1,13 +1,17 @@
 package pl.setblack.nee.ctx.web
 
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.ByteArrayContent
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.TextContent
 import io.ktor.request.header
 import io.ktor.response.respond
+import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.option
 import kotlinx.coroutines.runBlocking
 import pl.setblack.nee.ANee
@@ -41,25 +45,40 @@ class WebContext(
             applicationCall
         )
 
-    fun <P> serveText(businessFunction: ANee<WebContext, P, String>, param: P) {
-        val result = businessFunction.perform(this)(param)
-        result.onComplete { outcome ->
-            val message = outcome.bimap({ errorResult ->
-                TextContent(
-                    text = "error:" + errorResult.toString(),
-                    contentType = ContentType.Text.Plain,
-                    status = HttpStatusCode.InternalServerError
-                )
-            }, { regularResult ->
-                TextContent(
-                    text = regularResult,
-                    contentType = ContentType.Text.Plain,
+    fun <P> serveText(businessFunction: ANee<WebContext, P, String>, param: P) =
+        businessFunction.perform(this)(param)
+            .onComplete { outcome ->
+                val message = outcome.bimap(::serveError, { regularResult ->
+                    TextContent(
+                        text = regularResult,
+                        contentType = ContentType.Text.Plain,
+                        status = HttpStatusCode.OK
+                    )
+                }).merge()
+                runBlocking { applicationCall.respond(message) }
+            }
+
+
+    fun <P> serveMessage(businessFunction: ANee<WebContext, P, Any>, param: P) = businessFunction.perform(this)(param)
+        .onComplete { outcome ->
+            val message = outcome.bimap({ serveError(it) as OutgoingContent }, { regularResult ->
+                val bytes = jacksonMapper.writeValueAsBytes(regularResult)
+                ByteArrayContent(
+                    bytes = bytes,
+                    contentType = ContentType.Application.Json,
                     status = HttpStatusCode.OK
-                )
+                ) as OutgoingContent
             }).merge()
             runBlocking { applicationCall.respond(message) }
         }
-    }
+
+    private fun serveError(errorResult: Any): TextContent =
+        TextContent(
+            text = "error:" + errorResult.toString(),
+            contentType = ContentType.Text.Plain,
+            status = HttpStatusCode.InternalServerError
+        )
+
 
     companion object {
         fun create(jdbc: JDBCConfig, call: ApplicationCall): WebContext =
@@ -72,13 +91,12 @@ class WebContext(
                 WebContext(jdbcProvider, authProvider, call)
             }
 
+        internal val jacksonMapper = ObjectMapper()
+            .registerModule(VavrModule())
 
     }
-}
-
-object WebCtxEffects {
-    val jdbc = TxEffect<Connection, WebContext>().anyError()
-    val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
-
-
+    object Effects {
+        val jdbc = TxEffect<Connection, WebContext>().anyError()
+        val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
+    }
 }
