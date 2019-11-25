@@ -42,20 +42,20 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                     }
                     val z = tx.map { startedTransaction ->
                         try {
-                            val result = f(res)
-                            val txFinished = if (continueOldTransaction) {
-                                Pair(Option.none<TxError>(), connection)
-                            } else {
-                                startedTransaction.commit().also {
-                                    it.second.close() //just added TODO - make it part of commit maybe?
+                            val result ={ p:P ->
+                                try {
+                                    f(res) (p)
+                                } finally {
+                                    if (continueOldTransaction) {
+                                        Pair(Option.none<TxError>(), connection)
+                                    } else {
+                                        startedTransaction.commit().also {
+                                            it.second.close() //just added TODO - make it part of commit maybe?
+                                        }
+                                    }
                                 }
                             }
-                            val error = txFinished.first.map {
-                                Pair({ _: P -> Out.left<TxError, A>(it) }, txFinished.second)
-                            }.getOrElse {
-                                Pair({ p: P -> Out.right<TxError, A>(result(p)) }, txFinished.second)
-                            }
-                            error
+                            Pair({ p: P -> Out.right<TxError, A>(result(p)) }, startedTransaction)
                         } catch (e: Exception) {
                             val txCancelled = if (continueOldTransaction) {
                                 Pair(Option.none<TxError>(), connection)
