@@ -62,13 +62,14 @@ Where:
 
 This is very generic way to present any piece of work.
 
-In order to use NEE we have to represent our logic in this form - which is mostly easy.
-(we will show it later)
+In order to use NEE logic must be presented in this form ( which is mostly simple).
 
+(we will show it later)
+(let me be honest, the only reason this crazy param P is used is the possibility to define `caching`)
 
 ## Putting inside Nee Monad
 
-Next step is to put business function inside NEE monad.
+Next step is to put business function inside Nee monad.
 Nee monad wraps business logic with a given infrastructure.
 
 ```
