@@ -12,23 +12,61 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 package pl.setblack.nee
 
 import pl.setblack.nee.effects.Out
 
+/**
+ * Nee on function without param.
+ *
+ * Does not actually mean function is constant,
+ * means it does not declare any params for Nee framework.
+ */
 typealias UNee<R, E, A> = Nee<R, E, Unit, A>
 
+/**
+ * Nee returning Any error.
+ *
+ * It is bad but practical. Having common (Any) error type
+ * allows for monad binding.
+ * I consider it less ugly then Error inheriting from Exception / Throwable
+ * //CONTROVERSIAL
+ */
 typealias ANee<R, P, A> = Nee<R, Any, P, A>
 
+/**
+ *  Very Generic  Nee monad.
+ *
+ *  Error is any and does not declare any business param. (it is Unit)
+ */
 typealias UANee<R, A> = Nee<R, Any, Unit, A>
 
-//NEE - better name naive enterprise effects
-
-sealed class Nee<R, E, P, out A>(val effect: Effect<R, E>) {
+/**
+ * Nee monad.
+ *
+ *  Naive enterprise effects
+ *  Wraps business  function inside some "effects".
+ *
+ *
+ *  @param R environment to run function on
+ *  @param P param of function (business)
+ *  //CONTROVERSIAL P is only added to handle caching
+ *   - causes lot of complexity, does not give much
+ *  @param E error that can happen (because of effects)
+ *  @param A expected result type
+ */
+sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
+    /**
+     * Call Nee with given environment.
+     *
+     * @return function ready to apply business param
+     */
     abstract fun perform(env: R): (P) -> Out<E, A>
+
     abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
+
     abstract fun constP(): (P) -> Nee<R, E, Unit, A>
 
     fun anyError(): ANee<R, P, A> = this as ANee<R, P, A>
@@ -49,7 +87,8 @@ sealed class Nee<R, E, P, out A>(val effect: Effect<R, E>) {
     }
 }
 
-internal fun <T, T1> T.map(f: (T) -> T1) = f(this) //TODO watch this
+internal fun <T, T1> T.map(f: (T) -> T1) = f(this)
+//CONTROVERSIAL
 
 
 internal class FNEE<R, E, P, A>(
