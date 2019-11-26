@@ -29,7 +29,7 @@ class Hasiok {
 }
 ```
 
-It is possible to write:
+It is possible to have similar goodies rewriting code like below:
 ```kotlin
 class  Hasiok {
     private val  f =  {jdbcConnection:Connection ->
