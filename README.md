@@ -15,32 +15,32 @@ but in a clean, non magic way.
 Instead of writing:
 
 ``` kotlin
-{
-@Resource
-val jdbcConnection: Connection
+class Hasiok {
+    @Resource
+    val jdbcConnection: Connection
 
-@Transactional
-@Secure
-@Cacheable
-@Retryable
-fun f(p:P) {
-    //code
-}
-
+    @Transactional
+    @Secure
+    @Cacheable
+    @Retryable
+    fun f(p:P) {
+        //code
+    }
 }
 ```
 
 It is possible to write:
 ```kotlin
-    val  f =  {jdbcConnection:Connection ->
+class  Hasiok {
+    private val  f =  {jdbcConnection:Connection ->
             {p: P ->
             //code
         }
     }
     val enterprisyF = Nee.pure(secure.and(retryable).and(cacheable).and(transactional), f)
-//declaration above means security is checked before retrial
-//and retrial is made before cache which happens before transaction 
- 
+    //declaration above means security is checked before retrial
+    //and retrial is made before cache which happens before transaction 
+ }
 ```
 
 
