@@ -73,7 +73,7 @@ Next step is to put business function inside Nee monad.
 Nee monad wraps business logic with a given infrastructure.
 
 ```
-val functionOnRealHardware = NEE.pure(Nop)(businessFunction)
+val functionOnRealHardware = Nee.pure(Nop)(businessFunction)
 ```
 
 Now `functionOnRealHardware` is blessed with side effects and now is 
