@@ -3,13 +3,35 @@ package pl.setblack.nee
 import io.vavr.control.Either
 import pl.setblack.nee.effects.Out
 
+/**
+ * An effect, or maybe aspect :-)
+ *
+ * @param R some environment param used by effect and business function
+ * @param E error caused by this effect
+ */
 interface Effect<R, E> {
+    /**
+     * Wrap a business function in a given effect
+     *
+     * Gives back "wrapped function"
+     */
     fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R>
 
+    /**
+     * Installs error handler (kind of mapLeft).
+     *
+     * Returns new Effect.
+     */
     fun <XE> handleError(handler: (E) -> XE): Effect<R, XE> =
         HandleErrorEffect(this, handler)
 }
 
+/**
+ * Composition of effects.
+ *
+ * (Notice: it is actually like kleisli composition of monads...
+ * maybe in fact Nee and Effect should be a one type?)
+ */
 fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.andThen(otherEffect: Effect<R1, E1>) = Effects.combine(otherEffect, this)
 
 
