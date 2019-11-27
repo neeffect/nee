@@ -21,6 +21,7 @@ buildscript {
 allprojects {
     apply plugin: "kotlin"
     apply plugin: "maven-publish"
+    apply plugin: "jacoco"
 
     group 'pl.setblack'
     version '0.2.0-SNAPSHOT'
@@ -51,6 +52,14 @@ allprojects {
         useJUnitPlatform()
     }
 
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            xml.enabled = false
+            csv.enabled = false
+        }
+    }
+
     publishing {
         publications {
             maven(MavenPublication) {
@@ -59,11 +68,3 @@ allprojects {
         }
     }
 }
-
-subprojects {
-    test {
-        useJUnitPlatform()
-    }
-}
-
-
