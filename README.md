@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b7bc721d1d92494b90f5346b33dc398c)](https://www.codacy.com/manual/jarekratajski/nee?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neeffect/nee&amp;utm_campaign=Badge_Grade)
+
 # NEE
 
 Not so enterprisy effects.
