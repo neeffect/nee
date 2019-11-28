@@ -13,7 +13,7 @@ interface ExecutionContext {
 }
 
 interface ExecutionContextProvider {
-    fun findExceutionContext(local: Option<ExecutionContext>): ExecutionContext
+    fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext
 }
 
 class SyncExecutionContext : ExecutionContext {
@@ -47,7 +47,7 @@ class ExecutorExecutionContext(private val executor: Executor) : ExecutionContex
 }
 
 class ECProvider(private val ectx: ExecutionContext, private val localWins: Boolean = true) : ExecutionContextProvider {
-    override fun findExceutionContext(local: Option<ExecutionContext>): ExecutionContext =
+    override fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext =
         local.map { localCtx ->
             if (localWins) {
                 localCtx
@@ -63,7 +63,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<Nothing, A>, R> =
         { r: R ->
             Pair({ p: P ->
-                val ec = r.findExceutionContext(this.localExecutionContext)
+                val ec = r.findExecutionContext(this.localExecutionContext)
                 val result = ec.execute {
                     f(r)(p)
                 }
