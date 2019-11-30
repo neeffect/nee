@@ -24,16 +24,21 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 - Fork this repo and check it out.
 
 - add this repository as an upstream to your repository:
+
 `git remote add upstream git@github.com:neeffect/nee.git`
 
 - fetch branches and commits from this repository to your local repository:
+
 `git fetch upstream`
 
 - check if you are on develop branch out:
+
 `git checkout develop`
 
 - merge new develop changes to your fork:
+
 `git merge upstream/develop`
 
 - Push your changes to your GitHub fork:
+
 `git push origin develop`
