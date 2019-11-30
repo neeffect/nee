@@ -21,10 +21,10 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 
 # Cheat sheet
 
-Fork this repo and checkout it.
+- Fork this repo and check it out.
 
 - add this repository as an upstream to your repository:
-`git remote add upstream https://github.com/neefect/nee.git`
+`git remote add upstream git@github.com:neeffect/nee.git`
 
 - fetch branches and commits from this repository to your local repository:
 `git fetch upstream`

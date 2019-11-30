@@ -5,10 +5,12 @@
 Not so enterprisy effects.
 
 Status: *Work in Progress*.
-Help needed.
 
 
-## Goal 
+Help needed. If you want to contribute read [this](contributing.md)
+
+
+## Goal
 
 Provide kotlin friendly extensible effects using functional approach.
 
