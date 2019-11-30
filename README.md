@@ -42,10 +42,10 @@ class  Hasiok {
         }
     }
     val enterprisyF = Nee.pure(
-secure
-.and(retryable)
-.and(cacheable)
-.and(transactional), f)
+        secure
+        .and(retryable)
+        .and(cacheable)
+        .and(transactional), f)
     //declaration above means security is checked before retrial
     //and retrial is made before cache which happens before transaction 
  }
