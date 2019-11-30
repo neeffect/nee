@@ -6,7 +6,11 @@ Not so enterprisy effects.
 
 Status: *Work in Progress*.
 
-## Goal 
+
+Help needed. If you want to contribute read [this](contributing.md)
+
+
+## Goal
 
 Provide kotlin friendly extensible effects using functional approach.
 
@@ -39,7 +43,11 @@ class  Hasiok {
             //code
         }
     }
-    val enterprisyF = Nee.pure(secure.and(retryable).and(cacheable).and(transactional), f)
+    val enterprisyF = Nee.pure(
+        secure
+        .and(retryable)
+        .and(cacheable)
+        .and(transactional), f)
     //declaration above means security is checked before retrial
     //and retrial is made before cache which happens before transaction 
  }
@@ -114,6 +122,10 @@ Then wraps it into a function that:
       - later takes `P` and returns `Out` object (the result)
       - it also returns  changed environment `(R)` - think that maybe transaction is now started            
 
+*Notice  - this no a typical effect as known from haskell 
+more a Side Effect or simply maybe it should be called Aspect, 
+cause it tries to mimic runtime aspects.
+
 ## Monads
 
 `Nee` is in fact a monad. This means that it is possible to chain various business functions executions.
@@ -154,6 +166,8 @@ if you want to run in separate transactions
 //we join results but with separate transactions
 val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)} 
 ```
+
+
 
 # TODO
 - Code:
