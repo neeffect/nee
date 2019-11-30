@@ -23,6 +23,7 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 
 - Fork this repo and check it out.
 
+
 - add this repository as an upstream to your repository:
 
 `git remote add upstream git@github.com:neeffect/nee.git`
@@ -41,4 +42,6 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 
 - Push your changes to your GitHub fork:
 
-`git push origin develop`
+`git push origin develop
+
+- create pull request for develop branch`
