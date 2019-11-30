@@ -42,4 +42,6 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 
 - Push your changes to your GitHub fork:
 
-`git push origin develop`
+`git push origin develop
+
+- create pull request for develop branch`
