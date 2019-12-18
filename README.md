@@ -171,6 +171,7 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
 
 # TODO
 - Code:
+    - CI (github actions  tried)
     - remove warnings
     - code checker
     - style check
