@@ -69,6 +69,8 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
 
     abstract fun constP(): (P) -> Nee<R, E, Unit, A>
 
+
+    @Suppress("UNCHECKED_CAST")
     fun anyError(): ANee<R, P, A> = this as ANee<R, P, A>
 
     companion object {

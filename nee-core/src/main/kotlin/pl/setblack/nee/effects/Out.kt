@@ -38,8 +38,10 @@ sealed class Out<E, out A> {
                     is InstantOut -> InstantOut(res.v)
                     is FutureOut -> FutureOut(res.futureVal)
                 }
-            }.mapLeft { error: E -> this as Out<E, B> } // a small cast for a compiler not a  change at all for the  runtime
-                .merge()
+            }.mapLeft { _: E ->
+                @Suppress("UNCHECKED_CAST")
+                this as Out<E, B>
+            }.merge()
     }
 
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
