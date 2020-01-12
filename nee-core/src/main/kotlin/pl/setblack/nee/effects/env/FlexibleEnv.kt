@@ -37,6 +37,7 @@ data class WrappedEnv<Y : Any>(
 ) : FlexibleEnv {
     override fun <T : Any> get(id: ResourceId<T>): Option<T> =
         if (id == resId) {
+            @Suppress("UNCHECKED_CAST")
             some(env) as Option<T>
         } else {
             inner.get(id)
