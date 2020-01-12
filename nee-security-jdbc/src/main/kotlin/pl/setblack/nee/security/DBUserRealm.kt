@@ -9,19 +9,6 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.util.UUID
 
-data class User(
-    val id: UUID,
-    val login: String,
-    val roles: List<UserRole>
-)
-
-data class UserRole(val roleName: String) {
-    companion object {
-        fun roles(vararg names: String): List<UserRole> = names.toVavrList()
-            .map {UserRole(it)}
-    }
-}
-
 class DBUserRealm(private val dbProvider: JDBCProvider) :
     UserRealm<User, UserRole> {
 

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class CaffeineProvider(private val cache : Cache<Any, Any>  = defaultCache())  : CacheProvider {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <K, V> computeIfAbsent(key: K, func: (K) -> V): V  =
         cache.get(key as Any, func as (Any)->Any) as V
 
