@@ -61,3 +61,4 @@ interface Logging
 
 inline fun <reified T : Logging> T.logger(): Logger =
     getLogger(T::class.java)
+

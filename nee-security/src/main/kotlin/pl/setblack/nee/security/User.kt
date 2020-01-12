@@ -5,9 +5,9 @@ import io.vavr.collection.List
 import java.util.UUID
 
 data class User(
-    internal val id: UUID,
-    internal val login: String,
-    internal val roles: List<UserRole>
+    val id: UUID,
+    val login: String,
+    val roles: List<UserRole>
 )
 
 data class UserRole(val roleName: String) {

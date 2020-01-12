@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    implementation project(':nee-core')
-    implementation project(':nee-security')
+    api project(':nee-core')
+    api project(':nee-security')
     implementation project(':nee-jdbc')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"

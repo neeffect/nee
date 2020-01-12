@@ -1,25 +1,23 @@
 package pl.setblack.nee.effects.tx
 
-import io.vavr.collection.List
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.env.ResourceId
-import pl.setblack.nee.effects.security.*
 import pl.setblack.nee.effects.tx.FlexTxProvider.Companion.txProviderResource
-import java.lang.IllegalStateException
 
 class FlexTxEffect<R>() : Effect<FlexibleEnv, TxError> {
     private val internal = TxEffect<R, FlexTxProvider<R>>()
 
     override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<TxError, A>, FlexibleEnv> =
         { env: FlexibleEnv ->
+            @Suppress("UNCHECKED_CAST")
             val providerChance = env.get(txProviderResource)
                 as Option<TxProvider<R,*>>
-            providerChance.map { txProvider  ->
+            providerChance.map { _  ->
                 val flexProvider = FlexTxProvider<R>(env)
-                val internalF = { providerInternal: TxProvider<R, *> ->
+                val internalF = { _: TxProvider<R, *> ->
                     f(env)
                 }
                 val wrapped = internal.wrap(internalF)
@@ -34,7 +32,10 @@ class FlexTxProvider<R>(private val env: FlexibleEnv) :
     FlexibleEnv by env,
     TxProvider<R, FlexTxProvider<R>> {
     override fun getConnection(): TxConnection<R>  =
-        env.get(txProviderResource).map { it.getConnection()  as TxConnection<R>}.getOrElseThrow{
+        env.get(txProviderResource).map {
+            @Suppress("UNCHECKED_CAST")
+            it.getConnection()  as TxConnection<R>
+        }.getOrElseThrow{
             IllegalStateException("no connection for tx")
         }
 

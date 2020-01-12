@@ -60,9 +60,9 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) : Effect<Flexible
     override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> =
         { env: FlexibleEnv ->
             val secProviderChance = env.get(ResourceId(SecurityProvider::class))
-            secProviderChance.map { secProvider ->
+            secProviderChance.map { _ ->
                 val flexSecProvider = FlexSecurityProvider<USER, ROLE>(env)
-                val internalF = { secProviderInternal: SecurityProvider<USER, ROLE> ->
+                val internalF = { _: SecurityProvider<USER, ROLE> ->
                     f(env)
                 }
                 val wrapped = internal.wrap(internalF)
@@ -76,6 +76,7 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) : Effect<Flexible
 class FlexSecurityProvider<USER, ROLE>(private val env: FlexibleEnv) :
     FlexibleEnv by env,
     SecurityProvider<USER, ROLE> {
+    @Suppress("UNCHECKED_CAST")
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> =
         env.get(ResourceId(SecurityProvider::class)).map { it.getSecurityContext() }
             .getOrElse(Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx)) as Out<SecurityError, SecurityCtx<USER, ROLE>>

@@ -63,8 +63,6 @@ class BasicAuthProvider<USERID, ROLE>(
 
         override fun hasRole(role: ROLE): Boolean  =
             userRealm.hasRole(user, role)
-
-
     }
 }
 

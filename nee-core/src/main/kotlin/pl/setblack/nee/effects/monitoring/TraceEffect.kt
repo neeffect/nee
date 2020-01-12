@@ -16,7 +16,7 @@ class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect
             entry.second.name.updateAndGet { name ->
                 name ?: r1.javaClass.name
             }
-            val ended = traced.getTrace().end(tracerName, entry.second)
+            traced.getTrace().end(tracerName)
             Out.right<Nothing, A>(result)
         }, r)
     }
@@ -34,6 +34,8 @@ class TraceResource(
     val traces: List<TraceEntry> = List.empty<TraceEntry>()
 ) {
 
+
+    @Suppress("NOTHING_TO_INLINE")
     internal inline fun begin(tracerName: String): Pair<TraceResource, TraceEntry> =
         TraceEntry(tracerName, generateUUID(), nanoTime()).let { traceEntry ->
             Pair(
@@ -52,17 +54,20 @@ class TraceResource(
 
     private fun lastTrace() = this.traces.headOption()
 
+    @Suppress("NOTHING_TO_INLINE")
     internal inline fun monitor() =
         this.traces.headOption().forEach {
             it.name.compareAndSet(null, placeName())
         }
 
-    internal inline fun guessPlace( f: Any) =
+    @Suppress("NOTHING_TO_INLINE")
+    internal inline fun guessPlace(f: Any) =
         this.traces.headOption().forEach {
             it.name.compareAndSet(null, f.toString() )
         }
 
-    internal inline fun end(tracerName: String, first: TraceEntry): TraceResource = lastTrace().let {
+    @Suppress("NOTHING_TO_INLINE")
+    internal inline fun end(tracerName: String): TraceResource = lastTrace().let {
         it.map { traceEntry ->
             val totalTime = nanoTime()
             val diff = totalTime - traceEntry.time
@@ -82,6 +87,7 @@ class TraceResource(
 
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun placeName(idx: Int = 1): String {
     val stackTrace = Thread.currentThread().stackTrace
     return if (stackTrace.size > idx) {
