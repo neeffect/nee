@@ -13,9 +13,14 @@ import io.ktor.request.header
 import io.ktor.response.respond
 import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.option
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
-import pl.setblack.nee.ANee
-import pl.setblack.nee.anyError
+import pl.setblack.nee.*
+import pl.setblack.nee.effects.Out
+import pl.setblack.nee.effects.async.AsyncEffect
+import pl.setblack.nee.effects.async.ECProvider
+import pl.setblack.nee.effects.async.ExecutionContextProvider
+import pl.setblack.nee.effects.async.ExecutorExecutionContext
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
@@ -24,24 +29,29 @@ import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxEffect
 import pl.setblack.nee.effects.tx.TxProvider
-import pl.setblack.nee.merge
 import pl.setblack.nee.security.DBUserRealm
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRole
+import java.lang.Exception
 import java.sql.Connection
+import java.util.concurrent.Executors
 
 class WebContext(
     private val jdbcProvider: TxProvider<Connection, JDBCProvider>,
     private val securityProvider: SecurityProvider<User, UserRole>,
+    private val executionContextProvider: ExecutionContextProvider,
     private val applicationCall: ApplicationCall
 ) : TxProvider<Connection, WebContext>,
-    SecurityProvider<User, UserRole> by securityProvider {
+    SecurityProvider<User, UserRole> by securityProvider,
+    ExecutionContextProvider by executionContextProvider,
+    Logging {
     override fun getConnection(): TxConnection<Connection> = jdbcProvider.getConnection()
 
     override fun setConnectionState(newState: TxConnection<Connection>): WebContext =
         WebContext(
             jdbcProvider.setConnectionState(newState),
             securityProvider,
+            executionContextProvider,
             applicationCall
         )
 
@@ -58,10 +68,9 @@ class WebContext(
                 runBlocking { applicationCall.respond(message) }
             }
 
-
-    fun <P> serveMessage(businessFunction: ANee<WebContext, P, Any>, param: P) = businessFunction.perform(this)(param)
-        .onComplete { outcome ->
-            val message = outcome.bimap({ serveError(it) as OutgoingContent }, { regularResult ->
+    suspend fun <E,A> serveMessage(msg : Out<E, A>) : Unit =
+        msg.toFuture().toCompletableFuture().await().let { outcome ->
+            val message = outcome.bimap({ serveError(it as Any) as OutgoingContent }, { regularResult ->
                 val bytes = jacksonMapper.writeValueAsBytes(regularResult)
                 ByteArrayContent(
                     bytes = bytes,
@@ -69,8 +78,15 @@ class WebContext(
                     status = HttpStatusCode.OK
                 ) as OutgoingContent
             }).merge()
-            runBlocking { applicationCall.respond(message) }
+            try {
+                applicationCall.respond(message)
+            } catch (e: Exception) {
+                logger().warn("exception in sending response", e)
+            }
         }
+
+    suspend fun <P> serveMessage(businessFunction: ANee<WebContext, P, Any>, param: P) =
+        serveMessage(businessFunction.perform(this)(param))
 
     private fun serveError(errorResult: Any): TextContent =
         TextContent(
@@ -79,8 +95,12 @@ class WebContext(
             status = HttpStatusCode.InternalServerError
         )
 
-
     companion object {
+        private val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
+
+        private val jdbcExecutionContextProvider =
+            ECProvider(ExecutorExecutionContext(jdbcTasksScheduler))
+
         fun create(jdbc: JDBCConfig, call: ApplicationCall): WebContext =
             JDBCProvider(jdbc).let { jdbcProvider ->
                 val dbUserRealm = DBUserRealm(jdbcProvider)
@@ -88,14 +108,21 @@ class WebContext(
                     call.request.header("Authorization").option(),
                     dbUserRealm
                 )
-                WebContext(jdbcProvider, authProvider, call)
+                WebContext(
+                    jdbcProvider,
+                    authProvider,
+                    jdbcExecutionContextProvider,
+                    call
+                )
             }
 
         internal val jacksonMapper = ObjectMapper()
             .registerModule(VavrModule())
 
     }
+
     object Effects {
+        val async = AsyncEffect<WebContext>()
         val jdbc = TxEffect<Connection, WebContext>().anyError()
         val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
     }

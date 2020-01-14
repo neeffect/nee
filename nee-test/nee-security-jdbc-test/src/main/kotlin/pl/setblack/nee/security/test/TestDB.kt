@@ -6,7 +6,11 @@ import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
 import pl.setblack.nee.effects.jdbc.JDBCConfig
-import pl.setblack.nee.security.*
+import pl.setblack.nee.security.PBKDF2Hasher
+import pl.setblack.nee.security.Salt
+import pl.setblack.nee.security.User
+import pl.setblack.nee.security.UserRole
+import pl.setblack.nee.security.toBytes
 import java.sql.Connection
 import java.sql.DriverManager
 import java.util.*
