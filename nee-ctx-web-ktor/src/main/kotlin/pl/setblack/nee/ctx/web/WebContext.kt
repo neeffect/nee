@@ -1,6 +1,5 @@
 package pl.setblack.nee.ctx.web
 
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -35,6 +34,7 @@ import pl.setblack.nee.security.UserRole
 import java.lang.Exception
 import java.sql.Connection
 import java.util.concurrent.Executors
+
 
 class WebContext(
     private val jdbcProvider: TxProvider<Connection, JDBCProvider>,
@@ -127,3 +127,5 @@ class WebContext(
         val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
     }
 }
+
+
