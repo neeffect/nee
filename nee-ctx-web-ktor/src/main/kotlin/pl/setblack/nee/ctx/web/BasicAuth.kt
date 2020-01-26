@@ -10,24 +10,28 @@ import pl.setblack.nee.effects.security.SecurityCtx
 import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityErrorType
 import pl.setblack.nee.effects.security.SecurityProvider
-import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRealm
-import pl.setblack.nee.security.UserRole
 import java.nio.charset.Charset
 import java.util.*
 
+/**
+ * Basic auth implementation.
+ *
+ * This is not very secure type of credential delivery.
+ * Use JWT or other method if possible.
+ */
 object BasicAuth {
     val authorizationHeader = "Authorization"
 
+    /**
+     * Context for basic auth check.
+     */
     class BasicAuthCtx<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
         fun createSecurityProviderFromRequest(request: ApplicationRequest)
                 : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
             request.header(authorizationHeader).option(), userRealm)
     }
 }
-
-
-
 
 class BasicAuthProvider<USERID, ROLE>(
     private val headerVal: Option<String>,
@@ -49,7 +53,7 @@ class BasicAuthProvider<USERID, ROLE>(
                     Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
                 }
             } else {
-                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongSecurityData("no colon inside header: $baseAuth"))
+                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.MalformedCredentials("no colon inside header: $baseAuth"))
             }
         }.getOrElse {
             Out.right(AnonymousSecurityContext())

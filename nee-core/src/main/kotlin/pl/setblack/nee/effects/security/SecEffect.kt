@@ -19,12 +19,29 @@ interface SecurityError {
     fun secError(): SecurityErrorType
 }
 
+/**
+ * Error on security check.
+ */
 sealed class SecurityErrorType : SecurityError {
     override fun secError() = this
     class WrongCredentials(val message : String = "") : SecurityErrorType()
+    /**
+     * User not recognized.
+     */
     object UnknownUser : SecurityErrorType()
+
+    /**
+     * Security context nott available.
+     */
     object NoSecurityCtx : SecurityErrorType()
-    data class WrongSecurityData(val message : String = "") : SecurityErrorType()
+    /**
+     * Credential cannot be parsed.
+     */
+    data class MalformedCredentials(val message : String = "") : SecurityErrorType()
+
+    /**
+     * Expected role is missing.
+     */
     data class MissingRole<ROLE>(val roles: List<ROLE>) : SecurityErrorType()
 }
 

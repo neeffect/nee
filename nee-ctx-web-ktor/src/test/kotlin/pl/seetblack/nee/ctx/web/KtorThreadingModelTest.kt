@@ -12,6 +12,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
+import pl.setblack.nee.INVALID
 import pl.setblack.nee.Nee
 import pl.setblack.nee.ctx.web.WebContext
 import pl.setblack.nee.effects.Out
@@ -31,20 +32,13 @@ import java.util.concurrent.Executors
 
 fun Application.slowApp() {
     val  myTxProvider  = object :  TxProvider<Connection, JDBCProvider> {
-        override fun getConnection(): TxConnection<Connection> {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+        override fun getConnection(): TxConnection<Connection> = INVALID()
 
-        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
+        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider  =INVALID()
     }
 
     val noSecurity = object : SecurityProvider<User, UserRole> {
-        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>> {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
+        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>>  = INVALID()
     }
 
     val serverExecutor = Executors.newFixedThreadPool(KtorThreadingModelTest.reqs)
@@ -66,7 +60,7 @@ fun Application.slowApp() {
     }
 }
 
-class KtorThreadingModelTest : BehaviorSpec({
+internal class KtorThreadingModelTest : BehaviorSpec({
     System.setProperty(IO_PARALLELISM_PROPERTY_NAME, "2")
     Given("ktor app") {
         val engine = TestApplicationEngine(createTestEnvironment())
