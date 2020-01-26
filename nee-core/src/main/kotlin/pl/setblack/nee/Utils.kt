@@ -62,3 +62,7 @@ interface Logging
 inline fun <reified T : Logging> T.logger(): Logger =
     getLogger(T::class.java)
 
+/**
+ * Marks invalid function (expected to not be called).
+ */
+fun INVALID(): Nothing = throw NotImplementedError()

@@ -49,7 +49,6 @@ class AsyncEffectTest : DescribeSpec({
                 runned.get() shouldBe true
             }
         }
-
     }
 })
 
