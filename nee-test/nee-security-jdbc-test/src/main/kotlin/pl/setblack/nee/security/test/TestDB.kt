@@ -16,8 +16,6 @@ import java.sql.DriverManager
 import java.util.*
 
 class TestDB(val jdbcConfig: JDBCConfig = h2InMemDatabase) {
-
-
     private val hasher = PBKDF2Hasher()
     private val randomGeneratorForUUID = Random(42)
     private val testSalt = UUID.fromString("699add98-2aa2-49ad-8d09-d35f2a36f36b").toBytes()

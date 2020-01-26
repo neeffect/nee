@@ -24,6 +24,7 @@ import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.effects.jdbc.JDBCProvider
+import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxEffect
@@ -34,6 +35,7 @@ import pl.setblack.nee.security.UserRole
 import java.lang.Exception
 import java.sql.Connection
 import java.util.concurrent.Executors
+import io.vavr.collection.List
 
 
 class WebContext(
@@ -123,6 +125,7 @@ class WebContext(
 
     object Effects {
         val async = AsyncEffect<WebContext>()
+        fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext>(roles)
         val jdbc = TxEffect<Connection, WebContext>().anyError()
         val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
     }

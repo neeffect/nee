@@ -24,6 +24,7 @@ sealed class SecurityErrorType : SecurityError {
     class WrongCredentials(val message : String = "") : SecurityErrorType()
     object UnknownUser : SecurityErrorType()
     object NoSecurityCtx : SecurityErrorType()
+    data class WrongSecurityData(val message : String = "") : SecurityErrorType()
     data class MissingRole<ROLE>(val roles: List<ROLE>) : SecurityErrorType()
 }
 

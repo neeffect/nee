@@ -13,14 +13,20 @@ import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRealm
 import pl.setblack.nee.security.UserRole
+import java.nio.charset.Charset
 import java.util.*
 
-class BasicAuth<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
-    fun createSecurityProviderFromRequest(request: ApplicationRequest)
-            : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
-        request.header("Authorization").option(), userRealm)
+object BasicAuth {
+    val authorizationHeader = "Authorization"
 
+    class BasicAuthCtx<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
+        fun createSecurityProviderFromRequest(request: ApplicationRequest)
+                : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
+            request.header(authorizationHeader).option(), userRealm)
+    }
 }
+
+
 
 
 class BasicAuthProvider<USERID, ROLE>(
@@ -33,8 +39,8 @@ class BasicAuthProvider<USERID, ROLE>(
             val decodedAut = base64Decoder.decode(baseAuth)
             val colonIndex = decodedAut.indexOf(':'.toByte())
             if (colonIndex > 0) {
-                val login = decodedAut.sliceArray(0..colonIndex).toString()
-                val pass = decodedAut.sliceArray(colonIndex..decodedAut.size)
+                val login = decodedAut.sliceArray(0 until colonIndex).toString(Charset.forName("UTF-8"))
+                val pass = decodedAut.sliceArray(colonIndex+1 until decodedAut.size)
                     .toCharArray()
                 userRealm.loginUser(login, pass).map {user ->
                     pass.fill(0.toChar()) //I know that cleaning password in such insecure protocol is useless
@@ -43,7 +49,7 @@ class BasicAuthProvider<USERID, ROLE>(
                     Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
                 }
             } else {
-                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.NoSecurityCtx)
+                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongSecurityData("no colon inside header: $baseAuth"))
             }
         }.getOrElse {
             Out.right(AnonymousSecurityContext())
@@ -69,7 +75,7 @@ class BasicAuthProvider<USERID, ROLE>(
 
 internal fun ByteArray.toCharArray() = CharArray(this.size).also {
     chars ->
-    for (index in 0 .. this.size) {
+    for (index in this.indices) {
         chars[index] = this[index].toChar()
     }
 }
