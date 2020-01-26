@@ -4,3 +4,5 @@ out/
 *.iml
 .kotlintest/
 build/
+./coverage.sh
+./codacy-coverage-reporter
