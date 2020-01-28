@@ -53,9 +53,9 @@ class  Hasiok {
 motto :  
 https://twitter.com/mdiep/status/1187088700724989952
 
-# Core concept
+## Core concept
 
-## Business function
+### Business function
 ```
 businessFunction  = (R) -> (P) -> A 
 ```
@@ -72,7 +72,7 @@ In order to use NEE logic must be presented in this form ( which is mostly simpl
 (we will show it later)
 (let me be honest, the only reason this crazy param P is used is the possibility to define `caching`)
 
-## Putting inside Nee Monad
+### Putting inside Nee Monad
 
 Next step is to put business function inside Nee monad.
 Nee monad wraps business logic with a given infrastructure.
@@ -87,11 +87,11 @@ with other functions. Just think of performing multiple jdbc calls inside one tr
 
 As for side effects we see `Nop`... meaning not a real one - but it is time to tell more about `Effects`
 
-## Effects
+### Effects
 
  Effect is a special class that tells how to connect businessFunction with a reality.
  
- ```
+ ```kotlin
  interface Effect<R, E> {
      fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R>
   }
@@ -99,9 +99,11 @@ As for side effects we see `Nop`... meaning not a real one - but it is time to t
 
 In order to provide effect we need to implement interface as above.
 Where:
- - **R** as before is some environment object, think this is how to get DB connection from,
- - **P** is a generic parameter that might be used by effect (actually it is only needed for caching)
- - **E** is an error that might happen during application of effect 
+- **R** as before is some environment object, think this is how to get DB connection from,
+ 
+- **P** is a generic parameter that might be used by effect (actually it is only needed for caching)
+ 
+- **E** is an error that might happen during application of effect 
             (notice - it does not have to be Exception)
             
 ```Out``` is special object that represents the final result of calculation. 
@@ -120,15 +122,15 @@ Then wraps it into a function that:
 more a Side Effect or simply maybe it should be called Aspect, 
 cause it tries to mimic runtime aspects.
 
-## Monads
+### Monads
 
 `Nee` is in fact a monad. This means that it is possible to chain various business functions executions.
 
 `Out` is also a monad. This means it is possible to chain results.
 
-### Explanation
+#### Explanation
 
-If you want both methods to run inside same transaction 
+If you want both methods to run inside same transaction: 
 ```kotlin
  val f1 = Nee.constP(jdbcTransaction) {connection ->
             connection.prepareStatement()
@@ -144,7 +146,7 @@ If you want both methods to run inside same transaction
 val f = f1.flatMap { f2 }.perform(jdbcConfig)
 ```
 
-if you want to run in separate transactions
+if you want to run in separate transactions:
 ```kotlin
  val f1 = Nee.constP(jdbcTransaction) {connection ->
             connection.prepareStatement()
@@ -160,12 +162,12 @@ if you want to run in separate transactions
 val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)} 
 ```
 
-# TODO
+## TODO
 - Code:
     - remove warnings
     - naming & long lambdas clean 
     
- - Ideas:
+- Ideas:
     - R extract (for effect) - multiple db support
     - R as Map (ugly but practical)
     - arrow?
