@@ -164,17 +164,14 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
 
 ## TODO
 - Code:
-
- - remove warnings
- - naming & long lambdas clean 
-    
+  - remove warnings
+  - naming & long lambdas clean 
 - Ideas:
   - R extract (for effect) - multiple db support
   - R as Map (ugly but practical)
   - arrow?
   - Swap P, E in  -> NEE R,P,E,A
-    
--  Tests:
+- Tests:
   - real assertions
   - unhappy paths
   - load tests (sanity)
