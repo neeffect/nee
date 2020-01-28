@@ -16,8 +16,6 @@ buildscript {
     }
 }
 
-
-
 allprojects {
     apply plugin: "kotlin"
     apply plugin: "maven-publish"

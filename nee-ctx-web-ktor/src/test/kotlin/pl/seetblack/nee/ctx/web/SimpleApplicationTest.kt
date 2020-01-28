@@ -1,26 +1,22 @@
 package pl.seetblack.nee.ctx.web
 
 import io.kotlintest.specs.BehaviorSpec
-import io.ktor.application.*
-import io.ktor.content.TextContent
-import io.ktor.features.*
-import io.ktor.http.ContentType
+import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.server.testing.*
-import io.ktor.sessions.*
-import io.ktor.util.toByteArray
-import kotlinx.coroutines.runBlocking
+import io.ktor.routing.get
+import io.ktor.routing.routing
+import io.ktor.server.testing.TestApplicationEngine
+import io.ktor.server.testing.createTestEnvironment
+import io.ktor.server.testing.handleRequest
+import io.vavr.collection.List
 import pl.setblack.nee.Nee
+import pl.setblack.nee.ctx.web.BasicAuth
 import pl.setblack.nee.ctx.web.WebContext
-
 import pl.setblack.nee.effects.jdbc.JDBCConfig
-import pl.setblack.nee.merge
+import pl.setblack.nee.security.UserRole
 import pl.setblack.nee.security.test.TestDB
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 fun Application.main(jdbcConfig: JDBCConfig) {
     routing {
@@ -40,6 +36,12 @@ fun Application.main(jdbcConfig: JDBCConfig) {
             }.anyError()
             WebContext.create(jdbcConfig, call).serveText(function, Unit)
         }
+        get("/secured") {
+            val function = Nee.constP(WebContext.Effects.secured(List.of(UserRole("badmin")))) { _ ->
+                "Secret message"
+            }.anyError()
+            WebContext.create(jdbcConfig, call).serveText(function, Unit)
+        }
     }
 }
 
@@ -47,6 +49,7 @@ class SimpleApplicationTest : BehaviorSpec({
     Given("Test ktor app") {
         val engine = TestApplicationEngine(createTestEnvironment())
         val testDb = TestDB()
+        testDb.addUser("test", "test",List.of("badmin"))
         engine.start(wait = false)
         engine.application.main(testDb.jdbcConfig)
 
@@ -56,6 +59,17 @@ class SimpleApplicationTest : BehaviorSpec({
                     assertEquals("Hello! Result is 41", call.response.content)
                 }
             }
+
+        }
+        When("request with authentication") {
+            Then("db connection works") {
+                engine.handleRequest(HttpMethod.Get, "/secured") {
+                    addHeader(BasicAuth.authorizationHeader, "dGVzdDp0ZXN0")
+                }.let { call ->
+                    assertEquals("Secret message", call.response.content)
+                }
+            }
+
         }
     }
 })

@@ -40,8 +40,6 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 
 `git merge upstream/develop`
 
-- Push your changes to your GitHub fork:
-
 `git push origin develop
 
 - create pull request for develop branch`
