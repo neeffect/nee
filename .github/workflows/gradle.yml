@@ -14,7 +14,7 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: ./cibuild ${{ secrets.CODACY_COVERAGE_TOKEN }}
+      run: ./cibuild.sh ${{ secrets.CODACY_COVERAGE_TOKEN }}
   build13:
 
     runs-on: ubuntu-latest
