@@ -6,14 +6,11 @@ Not so enterprisy effects.
 
 Status: *Work in Progress*.
 
-
 Help needed. If you want to contribute read [this](contributing.md)
-
 
 ## Goal
 
 Provide kotlin friendly extensible effects using functional approach.
-
 
 It should enable (more or less) features known from aspect oriented frameworks, 
 but in a clean, non magic way. 
@@ -53,10 +50,8 @@ class  Hasiok {
  }
 ```
 
-
 motto :  
 https://twitter.com/mdiep/status/1187088700724989952
-
 
 # Core concept
 
@@ -89,7 +84,6 @@ val functionOnRealHardware = Nee.pure(Nop)(businessFunction)
 Now `functionOnRealHardware` is blessed with side effects and now is 
 wrapped inside Nee monad. It is enclosed in a monad to make it "composable"
 with other functions. Just think of performing multiple jdbc calls inside one transaction. 
-
 
 As for side effects we see `Nop`... meaning not a real one - but it is time to tell more about `Effects`
 
@@ -150,7 +144,6 @@ If you want both methods to run inside same transaction
 val f = f1.flatMap { f2 }.perform(jdbcConfig)
 ```
 
-
 if you want to run in separate transactions
 ```kotlin
  val f1 = Nee.constP(jdbcTransaction) {connection ->
@@ -167,14 +160,9 @@ if you want to run in separate transactions
 val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)} 
 ```
 
-
-
 # TODO
 - Code:
-    - CI (github actions  tried)
     - remove warnings
-    - code checker
-    - style check
     - naming & long lambdas clean 
     
  - Ideas:
@@ -182,7 +170,6 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
     - R as Map (ugly but practical)
     - arrow?
     - Swap P, E in  -> NEE R,P,E,A
-        
     
 - Tests:
     - real assertions
