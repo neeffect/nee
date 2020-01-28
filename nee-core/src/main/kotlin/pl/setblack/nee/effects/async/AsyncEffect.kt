@@ -8,18 +8,33 @@ import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 import java.util.concurrent.Executor
 
+/**
+ * Technical interface for threading model.
+ *
+ * Allows intrhead or real async execution.
+ */
 interface ExecutionContext {
     fun <T> execute(f: () -> T): Future<T>
 }
 
+/**
+ * Provider of execution context.
+ */
 interface ExecutionContextProvider {
+    /**
+     * Find correct execution context.
+     *
+     * Implementation may choose to allow overriding by local.
+     */
     fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext
 }
 
+/**
+ * In thread execution (immediate).
+ */
 class SyncExecutionContext : ExecutionContext {
     override fun <T> execute(f: () -> T): Future<T> =
         Future.successful(f())
-
 }
 
 object InPlaceExecutor : Executor {
@@ -29,7 +44,7 @@ object InPlaceExecutor : Executor {
 /* maybe we do not need this radical one
 object NoGoExecutor : Executor {
     override fun execute(command: Runnable) {
-        System.err.println("an idiot called NoGoExecutor")
+        System.err.println("someone called NoGoExecutor")
         Thread.dumpStack()
         exitProcess(2)
     }
@@ -57,6 +72,11 @@ class ECProvider(private val ectx: ExecutionContext, private val localWins: Bool
         }.getOrElse(ectx)
 }
 
+/**
+ * Aynchority effect.
+ *
+ * Local execution context might be allowed.
+ */
 class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
 ) : Effect<R, Nothing> {
