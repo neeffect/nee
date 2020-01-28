@@ -56,7 +56,7 @@ motto :
 ## Core concept
 
 ### Business function
-```
+```kotlin
 businessFunction  = (R) -> (P) -> A 
 ```
 
@@ -163,17 +163,18 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
 ```
 
 ## TODO
--  Code:
-    - remove warnings
-    - naming & long lambdas clean 
+- Code:
+
+ - remove warnings
+ - naming & long lambdas clean 
     
--  Ideas:
-    - R extract (for effect) - multiple db support
-    - R as Map (ugly but practical)
-    - arrow?
-    - Swap P, E in  -> NEE R,P,E,A
+- Ideas:
+  - R extract (for effect) - multiple db support
+  - R as Map (ugly but practical)
+  - arrow?
+  - Swap P, E in  -> NEE R,P,E,A
     
 -  Tests:
-    - real assertions
-    - unhappy paths
-    - load tests (sanity)
+  - real assertions
+  - unhappy paths
+  - load tests (sanity)
