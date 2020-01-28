@@ -1,5 +1,6 @@
 package pl.setblack.nee.effects.jdbc
 
+import com.mchange.v2.c3p0.ComboPooledDataSource
 import io.vavr.control.Either
 import io.vavr.control.Option
 import io.vavr.control.Option.none
@@ -72,14 +73,33 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
 }
 
 
-class JDBCProvider(private  val connection: Connection, private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
+class JDBCProvider(private  val connection: ConnectionWrapper, private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
+    constructor(connection: Connection) : this(ConnectionWrapper.DirectConnection(connection))
+
     constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {
-        DriverManager.getConnection(cfg.url, cfg.user, cfg.password)
+        val pool = ComboPooledDataSource()
+        pool.user = cfg.user
+        pool.password =cfg.password
+        pool.jdbcUrl = cfg.url
+        ConnectionWrapper.PooledConnection(pool)
     }, true)
     override fun getConnection(): TxConnection<Connection>  =
-        JDBCConnection(connection, close)
+        JDBCConnection(connection.conn(), close)
     override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider =
-        JDBCProvider(newState.getResource())
+        JDBCProvider(ConnectionWrapper.DirectConnection(newState.getResource()))
+}
+
+sealed class ConnectionWrapper {
+
+    abstract  fun conn() : Connection
+
+    data class DirectConnection(private val connection: Connection) : ConnectionWrapper() {
+        override fun conn(): Connection  = connection
+    }
+
+    data class PooledConnection(private val pool : ComboPooledDataSource) : ConnectionWrapper() {
+        override fun conn(): java.sql.Connection  = pool.connection
+    }
 }
 
 data class JDBCConfig(

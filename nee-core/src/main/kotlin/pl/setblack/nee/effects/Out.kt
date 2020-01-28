@@ -5,7 +5,16 @@ import io.vavr.control.Either
 import pl.setblack.nee.merge
 
 
-//was Fe
+/**
+ * Outcome of business function.
+ *
+ * It is ~ Future<Either<E,A>> (in vavr style0
+ * the reason for not using vavr here was:
+ *  - making critical api less depending on vavr
+ *  - some efficiency (when result is in fdact immediate (see InstantOut)
+ *
+ *
+ */
 sealed class Out<E, out A> {
 
     abstract fun <B> map(f: (A) -> B): Out<E, B>
