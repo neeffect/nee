@@ -100,9 +100,9 @@ As for side effects we see `Nop`... meaning not a real one - but it is time to t
 In order to provide effect we need to implement interface as above.
 Where:
 -   **R** as before is some environment object, think this is how to get DB connection from,
- 
+
 -   **P** is a generic parameter that might be used by effect (actually it is only needed for caching)
- 
+
 -   **E** is an error that might happen during application of effect 
             (notice - it does not have to be Exception)
             
