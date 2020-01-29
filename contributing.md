@@ -15,7 +15,7 @@ Do not be a jerk.
 
 We try to follow gitflow standard
 
-https://datasift.github.io/gitflow/IntroducingGitFlow.html
+<https://datasift.github.io/gitflow/IntroducingGitFlow.html>
 
 ## Syncing Cheat sheet
 
