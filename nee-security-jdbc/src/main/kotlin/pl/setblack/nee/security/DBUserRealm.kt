@@ -9,6 +9,9 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.util.UUID
 
+/**
+ * Security realm with classic User and Roles tables.
+ */
 class DBUserRealm(private val dbProvider: JDBCProvider) :
     UserRealm<User, UserRole> {
 
@@ -20,21 +23,30 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
                 statement.setString(1, userLogin)
                 statement.executeQuery().use { resultSet ->
                     if (resultSet.next()) {
-                        val user = resultSet.getBytes(1).toUUID()
-                        val salt = resultSet.getBytes(2)
-                        val passwordHash = resultSet.getBytes(3)
-                        val inputHash = passwordHasher.hashPassword(password, salt)
-                        if (passwordHash.contentEquals(inputHash)) {
-                            Option.some(User(user, userLogin, loadRoles(jdbcConnection, user)))
-                        } else {
-                            Option.none()
-                        }
+                        checkDBRow(resultSet, password, userLogin, jdbcConnection)
                     } else {
                         Option.none()
                     }
                 }
             }
         }
+
+    private fun checkDBRow(
+        resultSet: ResultSet,
+        password: CharArray,
+        userLogin: String,
+        jdbcConnection: Connection
+    ): Option<User> {
+        val user = resultSet.getBytes(1).toUUID()
+        val salt = resultSet.getBytes(2)
+        val passwordHash = resultSet.getBytes(3)
+        val inputHash = passwordHasher.hashPassword(password, salt)
+        return if (passwordHash.contentEquals(inputHash)) {
+            Option.some(User(user, userLogin, loadRoles(jdbcConnection, user)))
+        } else {
+            Option.none()
+        }
+    }
 
     override fun hasRole(user: User, role: UserRole): Boolean =
         user.roles.contains(role)
