@@ -77,5 +77,3 @@ sealed class Out<E, out A> {
             })
     }
 }
-
-
