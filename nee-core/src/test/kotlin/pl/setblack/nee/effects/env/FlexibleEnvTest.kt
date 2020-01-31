@@ -24,7 +24,7 @@ class FlexibleEnvTest : BehaviorSpec({
         And("extended with another env") {
             val another = MyOtherResource("test2")
             val anotherResKey = ResourceId(MyOtherResource::class)
-            val env2 = WrappedEnv(another, anotherResKey, env)
+            val env2 = env.with(anotherResKey, another)
             When("asked for another") {
                 val anotherVal = env2.get(anotherResKey)
                 Then("another value is given") {
