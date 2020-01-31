@@ -22,7 +22,7 @@ class FlexTxEffect<R>() : Effect<FlexibleEnv, TxError> {
                 }
                 val wrapped = internal.wrap(internalF)
                 val result = wrapped(flexProvider)
-                Pair(result.first, env.set(result.second, txProviderResource))
+                Pair(result.first, env.set(txProviderResource, result.second))
             }.getOrElse(Pair({ _: P -> Out.left<TxError, A>(TxErrorType.NoConnection) }, env))
         }
 }
@@ -40,7 +40,7 @@ class FlexTxProvider<R>(private val env: FlexibleEnv) :
         }
 
     override fun setConnectionState(newState: TxConnection<R>): FlexTxProvider<R>
-     =   FlexTxProvider(env.set(newState as TxProvider<*, *>, txProviderResource))
+     =   FlexTxProvider(env.set(txProviderResource, newState as TxProvider<*, *>))
 
 
     companion object {
