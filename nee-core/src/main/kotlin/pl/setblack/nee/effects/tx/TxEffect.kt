@@ -4,31 +4,79 @@ import io.vavr.collection.List
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
-import java.lang.Exception
 
-
+/**
+ *  Transactional resource provider.
+ */
 interface TxProvider<R, G : TxProvider<R, G>> {
     fun getConnection(): TxConnection<R>
     fun setConnectionState(newState: TxConnection<R>): G
 }
 
+/**
+ * Error supplier in transaction effect.
+ */
 interface TxError {
     fun txError(): TxErrorType
 }
 
+/**
+ * Errors.
+ */
 sealed class TxErrorType : TxError {
     override fun txError(): TxErrorType = this
 
+    /**
+     * No connection (provider) available.
+     */
     object NoConnection : TxErrorType()
+
+    /**
+     * Tx cannot be started.
+     */
     object CannotStartTransaction : TxErrorType()
+
+    /**
+     * Cannot run operation in parent transaction,
+     */
     object CannotContinueTransaction : TxErrorType()
+
+    /**
+     * Transaction cannot be committed.
+     */
     object CannotCommitTransaction : TxErrorType()
+    /**
+     * Transaction cannot be rolled back.
+     */
     object CannotRollbackTransaction : TxErrorType()
+
+    /**
+     * Query on connection cannot be processed.
+     */
     data class CannotQuery(val msg: String) : TxErrorType()
+
+    /**
+     * Mulitple errors occured.
+     *
+     * Errors list contains subsequent errors. May be recursive.
+     */
     data class MultipleErrors(val errors: List<TxError>) : TxErrorType()
+
+    /**
+     * Unhandled java exception occured.
+     */
     data class InternalException(val cause: java.lang.Exception) : TxErrorType()
 }
 
+/**
+ * Transaction like effect.
+ *
+ * Use for SQL/JDBC operations, but anything that wors on some "resource - conection"
+ * can be implemented using TxProvider interface.
+ *
+ * @param DB a resource,  a connection
+ * @param R  provider of resource (also must support update of connection state)
+ */
 class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = false) : Effect<R, TxError> {
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<TxError, A>, R> {
         return { res: R ->
