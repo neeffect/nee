@@ -9,7 +9,7 @@ class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
         val eff = TxEffect<DBLike, DBLikeProvider>()
         val simpleAction = Nee.pure(eff, function1)
-        When("runned on db") {
+        When("run on db") {
             val db = DBLike()
             db.appendAnswer("6")
             val provider = DBLikeProvider(db)
