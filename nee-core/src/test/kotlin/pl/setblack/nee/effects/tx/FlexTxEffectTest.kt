@@ -6,7 +6,7 @@ import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.get
 
-class FlexTxEffectTest : BehaviorSpec({
+internal class FlexTxEffectTest : BehaviorSpec({
     Given("FlexTxEffects") {
         val eff = FlexTxEffect<DBLike>()
         val simpleAction = Nee.constP(eff, function1.flex())

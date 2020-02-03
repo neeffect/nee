@@ -33,7 +33,7 @@ class FlexTxEffect<R> : Effect<FlexibleEnv, TxError> {
 }
 
 
-class FlexTxProvider<R>(internal val env: FlexibleEnv) :
+internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
     TxProvider<R, FlexTxProvider<R>> {
     override fun getConnection(): TxConnection<R> =
         env.get(txProviderResource).map {
@@ -45,8 +45,8 @@ class FlexTxProvider<R>(internal val env: FlexibleEnv) :
 
     @Suppress("UNCHECKED_CAST")
     override fun setConnectionState(newState: TxConnection<R>): FlexTxProvider<R> = env.get(txProviderResource)
-        .map {provider->
-            val p  = provider as TxProvider<R,*>
+        .map { provider ->
+            val p = provider as TxProvider<R, *>
             val newProvider = p.setConnectionState(newState) as TxProvider<R, *>
             val newEnv = env.set(txProviderResource, newProvider)
             FlexTxProvider<R>(newEnv)
@@ -59,7 +59,7 @@ class FlexTxProvider<R>(internal val env: FlexibleEnv) :
         val txProviderResource = ResourceId(TxProvider::class)
         //val flexTxProviderResource = ResourceId(FlexTxProvider::class)
         @Suppress("UNCHECKED_CAST")
-        fun <R> connection(env: FlexibleEnv) =
+        fun <R> connection(env: FlexibleEnv): R =
             env.get(txProviderResource).map {
                 it.getConnection() as TxConnection<R>
             }.map {
