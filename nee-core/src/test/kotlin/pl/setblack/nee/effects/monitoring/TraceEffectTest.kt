@@ -8,7 +8,7 @@ import pl.setblack.nee.effects.get
 import pl.setblack.nee.ignoreR
 import java.util.concurrent.atomic.AtomicLong
 
-class TraceEffectTest : BehaviorSpec({
+internal class TraceEffectTest : BehaviorSpec({
     Given("Trace") {
         val eff  = TraceEffect<SimpleTraceProvider>("tracerA")
 
@@ -75,9 +75,7 @@ class TraceEffectTest : BehaviorSpec({
         override fun getTrace(): TraceResource = res
 
         override fun setTrace(newState: TraceResource): SimpleTraceProvider  = SimpleTraceProvider(newState)
-
     }
-
 
 }
 

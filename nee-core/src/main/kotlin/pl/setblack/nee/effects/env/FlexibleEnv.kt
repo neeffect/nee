@@ -32,6 +32,7 @@ interface FlexibleEnv {
             t: T
         ): FlexibleEnv = create(ResourceId(T::class), t)
 
+        fun empty(): FlexibleEnv = EnvLeaf
     }
 }
 
