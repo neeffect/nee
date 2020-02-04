@@ -1,5 +1,8 @@
 package pl.setblack.nee.effects.tx
 
+import io.kotlintest.matchers.beInstanceOf
+import io.kotlintest.matchers.collections.shouldBeOneOf
+import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import pl.setblack.nee.Nee
@@ -17,9 +20,8 @@ class DBEffectTest : BehaviorSpec({
             val provider = DBLikeProvider(db)
             val result = simpleAction.perform(provider)
             Then("correct res") {
-                println(result)
                 result(Unit).get() shouldBe 6
-                println(db.getLog())
+                //println(db.getLog())
             }
         }
         And("nested second action") {
@@ -34,8 +36,6 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    println(result)
-                    println(db.getLog())
                     result(Unit).get() shouldBe (1076)
                 }
             }
@@ -53,21 +53,18 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    println(result)
-                    println(db.getLog())
                     result(Unit).get()  shouldBe(1724)
                 }
             }
         }
-        When("runing query with exception") {
+        When("running query with forced exception") {
             val failingAction = Nee.pure(eff, functionWithFailQuery)
             val db = DBLike()
             db.appendAnswer("6")
             val provider = DBLikeProvider(db)
             val result = failingAction.perform(provider)
-            Then("expected error") {
-                println(result)
-                result(Unit).getLeft() shouldBe 6
+            Then("expect error as result") {
+                result(Unit).getLeft() should beInstanceOf ( TxErrorType::class)
             }
         }
     }
