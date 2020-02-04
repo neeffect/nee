@@ -2,6 +2,7 @@ package pl.setblack.nee.effects.tx
 
 import io.vavr.collection.List
 import io.vavr.control.Option
+import io.vavr.control.Option.some
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 
@@ -94,9 +95,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                                 try {
                                     f(res) (p)
                                 } finally {
-                                    if (continueOldTransaction) {
-                                        Pair(Option.none<TxError>(), connection)
-                                    } else {
+                                    if (!continueOldTransaction) {
                                         startedTransaction.commit().also {
                                             it.second.close() //just added TODO - make it part of commit maybe?
                                         }

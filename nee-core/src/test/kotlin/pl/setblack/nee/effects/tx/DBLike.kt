@@ -3,23 +3,39 @@ package pl.setblack.nee.effects.tx
 import io.vavr.kotlin.toVavrList
 import io.vavr.collection.List
 import io.vavr.control.Option
+import java.lang.RuntimeException
 
-class DBLike {
+internal class DBException(msg: String) : RuntimeException(msg)
 
-    private var failOnNext : Boolean = false
+internal class DBLike {
+
+    private var failOnNext: Boolean = false
+    private var exceptionOnNext: Boolean = false
+
     private var connected = false
     private var txLevel = 0
-    private var log : MutableList<DBOperation> = mutableListOf()
-    private var answers : List<String> = List.empty()
+    private var log: MutableList<DBOperation> = mutableListOf()
+    private var answers: List<String> = List.empty()
 
+    internal fun raiseExceptionOnNext(): Unit {
+        fail()
+        exceptionOnNext = true
+    }
 
-    internal fun fail() : Unit { failOnNext = true }
-    internal fun unFail() : Unit { failOnNext = false }
-    internal fun disconnect() : Unit {
+    internal fun fail(): Unit {
+        failOnNext = true
+    }
+
+    internal fun unFail(): Unit {
+        failOnNext = false
+    }
+
+    internal fun disconnect(): Unit {
         connected = false
         txLevel = 0
     }
-    internal fun getLog () = log.toVavrList()
+
+    internal fun getLog() = log.toVavrList()
 
     internal fun connected() = connected
 
@@ -117,7 +133,7 @@ class DBLike {
         }
     }
 
-    fun query(stmt : String) : Option<String> {
+    fun query(stmt: String): Option<String> {
         return if (!failOnNext) {
             if (connected) {
                 log(DBOperation.Query(stmt))
@@ -128,13 +144,15 @@ class DBLike {
                 log(DBOperation.Fail("DB not connected, cannot query"))
                 Option.none<String>()
             }
+        } else if (exceptionOnNext) {
+            throw DBException("query $stmt failed")
         } else {
             log(DBOperation.Fail("(!) on query"))
             Option.none<String>()
         }
     }
 
-    fun execute(stmt : String) :  Option<String> {
+    fun execute(stmt: String): Option<String> {
         return if (!failOnNext) {
             if (connected) {
                 if (txLevel > 0) {
@@ -156,11 +174,11 @@ class DBLike {
         }
     }
 
-    private fun log(op : DBOperation) {
+    private fun log(op: DBOperation) {
         log.add(op)
     }
 
-    fun transactionLevel(): Int  = this.txLevel
+    fun transactionLevel(): Int = this.txLevel
 
     fun close() {
         if (!connected) {
@@ -173,12 +191,12 @@ class DBLike {
 
 
 sealed class DBOperation(val msg: String) {
-    class Connected( val before : Boolean) : DBOperation("Connected DB - before was ${before}")
-    class TxBegin(val level : Int) : DBOperation("Transaction started - current level = ${level}")
-    class TxCont(val level : Int) : DBOperation("Transaction continued - current level = ${level}")
-    class TxRollback(val level : Int) : DBOperation("Transaction rolled bac - current level = ${level}")
-    class TxCommitted(val level : Int) : DBOperation("Transaction committed - current level = ${level}")
-    class Query(msg : String) : DBOperation("Query: $msg")
-    class Execute(msg : String) : DBOperation("Exec: $msg")
-    class Fail(msg : String) : DBOperation("Fail: ${msg}")
+    class Connected(val before: Boolean) : DBOperation("Connected DB - before was ${before}")
+    class TxBegin(val level: Int) : DBOperation("Transaction started - current level = ${level}")
+    class TxCont(val level: Int) : DBOperation("Transaction continued - current level = ${level}")
+    class TxRollback(val level: Int) : DBOperation("Transaction rolled bac - current level = ${level}")
+    class TxCommitted(val level: Int) : DBOperation("Transaction committed - current level = ${level}")
+    class Query(msg: String) : DBOperation("Query: $msg")
+    class Execute(msg: String) : DBOperation("Exec: $msg")
+    class Fail(msg: String) : DBOperation("Fail: ${msg}")
 }

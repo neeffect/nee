@@ -4,7 +4,7 @@ import io.vavr.control.Either
 import io.vavr.control.Option
 import java.lang.IllegalStateException
 
-class DBLikeProvider(
+internal class DBLikeProvider(
         val db: DBLike,
         val conn: TxConnection<DBLike> = DBConnection(db)
         ) :
