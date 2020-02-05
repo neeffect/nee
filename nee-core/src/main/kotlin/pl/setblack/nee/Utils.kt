@@ -65,4 +65,4 @@ inline fun <reified T : Logging> T.logger(): Logger =
 /**
  * Marks invalid function (expected to not be called).
  */
-fun INVALID(): Nothing = throw NotImplementedError()
+fun invalid(): Nothing = throw NotImplementedError()
