@@ -2,8 +2,8 @@ package pl.setblack.nee.security
 
 import io.vavr.collection.List
 import io.vavr.control.Option
-import io.vavr.kotlin.toVavrList
 import pl.setblack.nee.effects.jdbc.JDBCProvider
+import pl.setblack.nee.security.DBUserRealm.Companion.uuidByteSize
 import java.nio.ByteBuffer
 import java.sql.Connection
 import java.sql.ResultSet
@@ -37,9 +37,9 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
         userLogin: String,
         jdbcConnection: Connection
     ): Option<User> {
-        val user = resultSet.getBytes(1).toUUID()
-        val salt = resultSet.getBytes(2)
-        val passwordHash = resultSet.getBytes(3)
+        val user = resultSet.getBytes(userIdColumn).toUUID()
+        val salt = resultSet.getBytes(saltColumn)
+        val passwordHash = resultSet.getBytes(passHashColumn)
         val inputHash = passwordHasher.hashPassword(password, salt)
         return if (passwordHash.contentEquals(inputHash)) {
             Option.some(User(user, userLogin, loadRoles(jdbcConnection, user)))
@@ -66,6 +66,10 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
 
     companion object {
         val passwordHasher = PBKDF2Hasher()
+        internal val uuidByteSize = 16
+        private val userIdColumn = 1
+        private val saltColumn = 2
+        private val passHashColumn = 3
     }
 }
 
@@ -75,7 +79,7 @@ fun ByteArray.toUUID() =
     }
 
 fun UUID.toBytes(): ByteArray =
-    ByteBuffer.wrap(ByteArray(16)).let {
+    ByteBuffer.wrap(ByteArray(uuidByteSize)).let {
         it.putLong(this.mostSignificantBits)
         it.putLong(this.leastSignificantBits)
         return it.array()
