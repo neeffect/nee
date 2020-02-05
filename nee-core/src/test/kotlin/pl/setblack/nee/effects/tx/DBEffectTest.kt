@@ -1,23 +1,27 @@
 package pl.setblack.nee.effects.tx
 
+import io.kotlintest.matchers.beInstanceOf
+import io.kotlintest.matchers.collections.shouldBeOneOf
+import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.get
+import pl.setblack.nee.effects.getLeft
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
         val eff = TxEffect<DBLike, DBLikeProvider>()
         val simpleAction = Nee.pure(eff, function1)
+
         When("run on db") {
             val db = DBLike()
             db.appendAnswer("6")
             val provider = DBLikeProvider(db)
             val result = simpleAction.perform(provider)
             Then("correct res") {
-                println(result)
                 result(Unit).get() shouldBe 6
-                println(db.getLog())
+                //println(db.getLog())
             }
         }
         And("nested second action") {
@@ -32,8 +36,6 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    println(result)
-                    println(db.getLog())
                     result(Unit).get() shouldBe (1076)
                 }
             }
@@ -51,16 +53,24 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    println(result)
-                    println(db.getLog())
                     result(Unit).get()  shouldBe(1724)
                 }
+            }
+        }
+        When("running query with forced exception") {
+            val failingAction = Nee.pure(eff, functionWithFailQuery)
+            val db = DBLike()
+            db.appendAnswer("6")
+            val provider = DBLikeProvider(db)
+            val result = failingAction.perform(provider)
+            Then("expect error as result") {
+                result(Unit).getLeft() should beInstanceOf ( TxErrorType::class)
             }
         }
     }
 }) {
     companion object {
-        val function1 = { db: DBLikeProvider ->
+        internal val function1 = { db: DBLikeProvider ->
             { _: Unit ->
                 val resource = db.getConnection().getResource()
                 val result = resource.query("SELECT * FROM all1")
@@ -69,7 +79,18 @@ class DBEffectTest : BehaviorSpec({
                 }.get()
             }
         }
-        val function2 = { orig : Int ->
+
+        internal val functionWithFailQuery = { db: DBLikeProvider ->
+            { _: Unit ->
+                val resource = db.getConnection().getResource()
+                resource.raiseExceptionOnNext()
+                val result = resource.query("SELECT * FROM all1")
+                result.map {
+                    Integer.parseInt(it)
+                }.get()
+            }
+        }
+        internal val function2 = { orig : Int ->
             { db: DBLikeProvider ->
                 { _: Unit ->
                     val resource = db.getConnection().getResource()

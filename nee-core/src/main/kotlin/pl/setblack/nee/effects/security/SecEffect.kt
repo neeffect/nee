@@ -97,9 +97,6 @@ class FlexSecurityProvider<USER, ROLE>(private val env: FlexibleEnv) :
     @Suppress("UNCHECKED_CAST")
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> =
         env.get(ResourceId(SecurityProvider::class)).map { it.getSecurityContext() }
-            .getOrElse(Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx)) as Out<SecurityError, SecurityCtx<USER, ROLE>>
-
+            .getOrElse(Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx))
+                    as Out<SecurityError, SecurityCtx<USER, ROLE>>
 }
-
-
-

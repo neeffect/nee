@@ -2,6 +2,7 @@ package pl.setblack.nee.effects.tx
 
 import io.vavr.collection.List
 import io.vavr.control.Option
+import io.vavr.control.Option.some
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 
@@ -90,20 +91,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                     }
                     val z = tx.map { startedTransaction ->
                         try {
-                            val result ={ p:P ->
-                                try {
-                                    f(res) (p)
-                                } finally {
-                                    if (continueOldTransaction) {
-                                        Pair(Option.none<TxError>(), connection)
-                                    } else {
-                                        startedTransaction.commit().also {
-                                            it.second.close() //just added TODO - make it part of commit maybe?
-                                        }
-                                    }
-                                }
-                            }
-                            Pair({ p: P -> Out.right<TxError, A>(result(p)) }, startedTransaction)
+                            doInTransaction(f, res, continueOldTransaction, startedTransaction)
                         } catch (e: Exception) {
                             val txCancelled = if (continueOldTransaction) {
                                 Pair(Option.none<TxError>(), connection)
@@ -144,5 +132,31 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                 }
             }
         }
+    }
+
+    private fun <A, P> doInTransaction(
+        f: (R) -> (P) -> A,
+        res: R,
+        continueOldTransaction: Boolean,
+        startedTransaction: TxStarted<DB>
+    ): Pair<(P) -> Out<TxError, A>, TxStarted<DB>> {
+        val result = { p: P ->
+            try {
+                f(res)(p)
+            } finally {
+                if (!continueOldTransaction) {
+                    startedTransaction.commit().also {
+                        it.second.close() //just added TODO - make it part of commit maybe?
+                    }
+                }
+            }
+        }
+        return Pair({ p: P ->
+            try {
+                Out.right<TxError, A>(result(p))
+            } catch (e: Exception) {
+                Out.left<TxError, A>(TxErrorType.InternalException(e))
+            }
+        }, startedTransaction)
     }
 }
