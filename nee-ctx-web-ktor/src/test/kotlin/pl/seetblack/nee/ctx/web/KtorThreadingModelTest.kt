@@ -2,7 +2,6 @@ package pl.seetblack.nee.ctx.web
 
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.matchers.numerics.shouldBeLessThan
-import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -14,7 +13,6 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
-import pl.setblack.nee.invalid
 import pl.setblack.nee.Nee
 import pl.setblack.nee.ctx.web.WebContext
 import pl.setblack.nee.effects.Out
@@ -26,6 +24,7 @@ import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxProvider
+import pl.setblack.nee.invalid
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRole
 import java.sql.Connection
@@ -82,7 +81,7 @@ internal class KtorThreadingModelTest : BehaviorSpec({
                 countdown.await()
                 val totalTime = System.currentTimeMillis() - initTime
                 println(totalTime)
-                totalTime shouldBeGreaterThan   1000
+                totalTime shouldBeGreaterThan   2000
             }
         }
         When("fast req bombarded with 100 threads") {
@@ -98,7 +97,7 @@ internal class KtorThreadingModelTest : BehaviorSpec({
                 countdown.await()
                 val totalTime = System.currentTimeMillis() - initTime
                 println(totalTime)
-                totalTime shouldBeLessThan  1000
+                totalTime shouldBeLessThan  2000
             }
         }
     }
