@@ -66,10 +66,10 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
 
     companion object {
         val passwordHasher = PBKDF2Hasher()
-        internal val uuidByteSize = 16
-        private val userIdColumn = 1
-        private val saltColumn = 2
-        private val passHashColumn = 3
+        internal const val uuidByteSize = 16
+        private const val userIdColumn = 1
+        private const val saltColumn = 2
+        private const val passHashColumn = 3
     }
 }
 

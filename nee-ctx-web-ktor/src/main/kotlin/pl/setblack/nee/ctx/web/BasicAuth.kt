@@ -21,7 +21,7 @@ import java.util.*
  * Use JWT or other method if possible.
  */
 object BasicAuth {
-    val authorizationHeader = "Authorization"
+    const val authorizationHeader = "Authorization"
 
     /**
      * Context for basic auth check.
@@ -53,7 +53,9 @@ class BasicAuthProvider<USERID, ROLE>(
                     Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
                 }
             } else {
-                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.MalformedCredentials("no colon inside header: $baseAuth"))
+                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(
+                    SecurityErrorType.MalformedCredentials("no colon inside header: $baseAuth")
+                )
             }
         }.getOrElse {
             Out.right(AnonymousSecurityContext())

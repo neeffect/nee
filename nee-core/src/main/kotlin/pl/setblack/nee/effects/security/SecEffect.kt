@@ -24,7 +24,7 @@ interface SecurityError {
  */
 sealed class SecurityErrorType : SecurityError {
     override fun secError() = this
-    class WrongCredentials(val message : String = "") : SecurityErrorType()
+    class WrongCredentials(val message: String = "") : SecurityErrorType()
     /**
      * User not recognized.
      */
@@ -34,10 +34,11 @@ sealed class SecurityErrorType : SecurityError {
      * Security context nott available.
      */
     object NoSecurityCtx : SecurityErrorType()
+
     /**
      * Credential cannot be parsed.
      */
-    data class MalformedCredentials(val message : String = "") : SecurityErrorType()
+    data class MalformedCredentials(val message: String = "") : SecurityErrorType()
 
     /**
      * Expected role is missing.
@@ -75,19 +76,19 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
 class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) : Effect<FlexibleEnv, SecurityError> {
     private val internal = SecuredRunEffect<USER, ROLE, FlexSecurityProvider<USER, ROLE>>(roles)
-    override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> =
-        { env: FlexibleEnv ->
-            val secProviderChance = env.get(ResourceId(SecurityProvider::class))
-            secProviderChance.map { _ ->
-                val flexSecProvider = FlexSecurityProvider<USER, ROLE>(env)
-                val internalF = { _: SecurityProvider<USER, ROLE> ->
-                    f(env)
-                }
-                val wrapped = internal.wrap(internalF)
-                val result = wrapped(flexSecProvider)
-                Pair(result.first, env.set(ResourceId(SecurityProvider::class), result.second ))
-            }.getOrElse(Pair({ _: P -> Out.left<SecurityError, A>(SecurityErrorType.NoSecurityCtx) }, env))
-        }
+    override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A):
+                (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> = { env: FlexibleEnv ->
+        val secProviderChance = env.get(ResourceId(SecurityProvider::class))
+        secProviderChance.map { _ ->
+            val flexSecProvider = FlexSecurityProvider<USER, ROLE>(env)
+            val internalF = { _: SecurityProvider<USER, ROLE> ->
+                f(env)
+            }
+            val wrapped = internal.wrap(internalF)
+            val result = wrapped(flexSecProvider)
+            Pair(result.first, env.set(ResourceId(SecurityProvider::class), result.second))
+        }.getOrElse(Pair({ _: P -> Out.left<SecurityError, A>(SecurityErrorType.NoSecurityCtx) }, env))
+    }
 }
 
 
@@ -98,5 +99,5 @@ class FlexSecurityProvider<USER, ROLE>(private val env: FlexibleEnv) :
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> =
         env.get(ResourceId(SecurityProvider::class)).map { it.getSecurityContext() }
             .getOrElse(Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx))
-                    as Out<SecurityError, SecurityCtx<USER, ROLE>>
+                as Out<SecurityError, SecurityCtx<USER, ROLE>>
 }
