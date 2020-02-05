@@ -43,7 +43,7 @@ internal class DBLike {
         answers = answers.append(ans)
     }
 
-    fun connect(): Boolean {
+    internal fun connect(): Boolean {
         return if (!failOnNext) {
             log(DBOperation.Connected(connected))
             connected = true
@@ -54,7 +54,7 @@ internal class DBLike {
         }
     }
 
-    fun begin(): Boolean {
+    internal fun begin(): Boolean {
         return if (!failOnNext) {
             if (connected) {
                 txLevel = txLevel + 1
@@ -70,7 +70,7 @@ internal class DBLike {
         }
     }
 
-    fun continueTransaction(): Boolean {
+    internal fun continueTransaction(): Boolean {
         return if (!failOnNext) {
             if (connected) {
                 if (txLevel > 0) {
@@ -90,7 +90,7 @@ internal class DBLike {
         }
     }
 
-    fun commit(): Boolean {
+    internal fun commit(): Boolean {
         return if (!failOnNext) {
             if (connected) {
                 if (txLevel > 0) {
@@ -111,8 +111,7 @@ internal class DBLike {
         }
     }
 
-
-    fun rollback(): Boolean {
+    internal fun rollback(): Boolean {
         return if (!failOnNext) {
             if (connected) {
                 if (txLevel > 0) {
@@ -133,7 +132,7 @@ internal class DBLike {
         }
     }
 
-    fun query(stmt: String): Option<String> {
+    internal fun query(stmt: String): Option<String> {
         return if (!failOnNext) {
             if (connected) {
                 log(DBOperation.Query(stmt))
@@ -152,7 +151,7 @@ internal class DBLike {
         }
     }
 
-    fun execute(stmt: String): Option<String> {
+    internal fun execute(stmt: String): Option<String> {
         return if (!failOnNext) {
             if (connected) {
                 if (txLevel > 0) {
@@ -178,9 +177,9 @@ internal class DBLike {
         log.add(op)
     }
 
-    fun transactionLevel(): Int = this.txLevel
+    internal fun transactionLevel(): Int = this.txLevel
 
-    fun close() {
+    internal fun close() {
         if (!connected) {
             log(DBOperation.Fail("not connected"))
         }
