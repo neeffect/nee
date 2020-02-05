@@ -73,7 +73,7 @@ sealed class CombinedError : TxError, SecurityError {
     }
 }
 
-class CombinedProviders(
+internal class CombinedProviders(
     val secProvider: SecurityProvider<String, String>,
     val txProvider: TxProvider<DBLike, DBLikeProvider>
 ) : SecurityProvider<String, String> by secProvider,

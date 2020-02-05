@@ -9,6 +9,7 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
+        jcenter()
     }
 
     dependencies {
@@ -16,10 +17,15 @@ buildscript {
     }
 }
 
+plugins {
+    id("io.gitlab.arturbosch.detekt").version("1.5.1")
+}
+
 allprojects {
     apply plugin: "kotlin"
     apply plugin: "maven-publish"
     apply plugin: "jacoco"
+    apply plugin: "io.gitlab.arturbosch.detekt"
 
     group 'pl.setblack'
     version '0.2.0-SNAPSHOT'
@@ -66,6 +72,20 @@ allprojects {
             }
         }
     }
+
+    detekt {
+        failFast = true // fail build on any finding
+        buildUponDefaultConfig = true // preconfigure defaults
+        config = files("${rootDir}/config/detekt.yml")
+        //baseline = file("$projectDir/config/baseline.xml")
+        reports {
+            html.enabled = true // observe findings in your browser with structure and code snippets
+            xml.enabled = true // checkstyle like format mainly for integrations like Jenkins
+            txt.enabled = true // similar to the console output, contains issue signature to manually edit baseline files
+        }
+    }
+
+
 }
 
 
@@ -81,3 +101,4 @@ task generateMergedReport(type: JacocoReport) {
         html.enabled true
     }
 }
+
