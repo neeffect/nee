@@ -6,6 +6,7 @@ import pl.setblack.nee.effects.jdbc.JDBCProvider
 import pl.setblack.nee.security.DBUserRealm.Companion.uuidByteSize
 import java.nio.ByteBuffer
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.util.UUID
 
@@ -20,16 +21,25 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
             jdbcConnection.prepareStatement(
                 "select  id, salt, password  from users where login = ?"
             ).use { statement ->
-                statement.setString(1, userLogin)
-                statement.executeQuery().use { resultSet ->
-                    if (resultSet.next()) {
-                        checkDBRow(resultSet, password, userLogin, jdbcConnection)
-                    } else {
-                        Option.none()
-                    }
-                }
+                findUserInDB(statement, userLogin, password, jdbcConnection)
             }
         }
+
+    private fun findUserInDB(
+        statement: PreparedStatement,
+        userLogin: String,
+        password: CharArray,
+        jdbcConnection: Connection
+    ): Option<User> {
+        statement.setString(1, userLogin)
+        return statement.executeQuery().use { resultSet ->
+            if (resultSet.next()) {
+                checkDBRow(resultSet, password, userLogin, jdbcConnection)
+            } else {
+                Option.none()
+            }
+        }
+    }
 
     private fun checkDBRow(
         resultSet: ResultSet,
