@@ -1,7 +1,7 @@
 package pl.setblack.nee.effects.security
 
-import io.kotlintest.specs.BehaviorSpec
 import io.kotlintest.shouldBe
+import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
 import pl.setblack.nee.Nee
 
@@ -9,10 +9,10 @@ class SecuredRunEffectTest : BehaviorSpec({
 
     Given("secure provider") {
 
-        val secEffect= SecuredRunEffect<String, String, SimpleSecurityProvider<String, String>>("test")
+        val secEffect = SecuredRunEffect<String, String, SimpleSecurityProvider<String, String>>("test")
         val f = Nee.constP(secEffect, businessFunction)
         When("function called with test user ") {
-            val testSecurityProvider = SimpleSecurityProvider<String,String>("test", List.of("test"))
+            val testSecurityProvider = SimpleSecurityProvider<String, String>("test", List.of("test"))
             val result = f.perform(testSecurityProvider)(Unit)
                 .flatMap { it }
             Then("called with correct user") {
@@ -20,7 +20,7 @@ class SecuredRunEffectTest : BehaviorSpec({
             }
         }
         When("function called without roles test user ") {
-            val testSecurityProvider = SimpleSecurityProvider<String,String>("test", List.empty())
+            val testSecurityProvider = SimpleSecurityProvider<String, String>("test", List.empty())
             val result = f.perform(testSecurityProvider)(Unit)
                 .flatMap { it }
             Then("function is not called") {
@@ -31,11 +31,11 @@ class SecuredRunEffectTest : BehaviorSpec({
 }) {
     companion object {
         val businessFunction = { securityProvider: SecurityProvider<String, String> ->
-            securityProvider.getSecurityContext().flatMap  {  it.getCurrentUser().map {
-                "called by: $it"
-            }}
-
+            securityProvider.getSecurityContext().flatMap {
+                it.getCurrentUser().map {
+                    "called by: $it"
+                }
+            }
         }
     }
-
 }

@@ -2,9 +2,6 @@ package pl.setblack.nee.effects.security
 
 import io.vavr.collection.List
 import pl.setblack.nee.effects.Out
-import pl.setblack.nee.effects.security.SecurityCtx
-import pl.setblack.nee.effects.security.SecurityError
-import pl.setblack.nee.effects.security.SecurityProvider
 
 class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
     private val ctx = SimpleSecurityContext(user, roles)
@@ -16,4 +13,3 @@ class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : Securi
         override fun hasRole(role: ROLE): Boolean = roles.contains(role)
     }
 }
-
