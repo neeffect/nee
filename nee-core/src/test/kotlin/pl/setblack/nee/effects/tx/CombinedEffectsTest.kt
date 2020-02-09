@@ -25,7 +25,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
-            val secProvider = SimpleSecurityProvider("irreg", List.of("admin"))
+            val secProvider = TrivialSecurityProvider("irreg", List.of("admin"))
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be 6") {
@@ -39,7 +39,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
-            val secProvider = SimpleSecurityProvider("marreq", List.empty<String>())
+            val secProvider = TrivialSecurityProvider("marreq", List.empty<String>())
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
