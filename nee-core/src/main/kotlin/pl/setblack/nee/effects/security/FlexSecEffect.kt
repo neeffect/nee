@@ -12,6 +12,7 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) :
         SecuredRunEffect<USER, ROLE, FlexSecurityProvider<USER, ROLE>>(
             roles
         )
+
     override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A):
                 (FlexibleEnv) -> Pair<(P) -> Out<SecurityError, A>, FlexibleEnv> = { env: FlexibleEnv ->
         val secProviderChance = env.get(ResourceId(SecurityProvider::class))
