@@ -71,7 +71,6 @@ internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
 fun <R, G : TxProvider<R, G>> FlexibleEnv.withTxProvider(provider: TxProvider<R, G>) =
     this.with(txProviderResource, provider)
 
-
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : FlexibleEnv, A> ((T) -> A).flex(): (FlexibleEnv) -> A =
     this as (FlexibleEnv) -> A
