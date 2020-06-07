@@ -16,7 +16,9 @@ import java.sql.DriverManager
 import java.sql.Savepoint
 import java.util.concurrent.atomic.AtomicReference
 
-class JDBCConnection(private val connection: Connection, val close: Boolean = false ) : TxConnection<Connection>, Logging {
+class JDBCConnection(
+    private val connection: Connection,
+    private val close: Boolean = false ) : TxConnection<Connection>, Logging {
     override fun begin(): Either<TxError, TxStarted<Connection>> =
         if (hasTransaction()) {
             val savepoint = getResource().setSavepoint()
@@ -72,8 +74,9 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
     }
 }
 
-
-class JDBCProvider(private  val connection: ConnectionWrapper, private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
+class JDBCProvider(
+    private  val connection: ConnectionWrapper,
+    private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
     constructor(connection: Connection) : this(ConnectionWrapper.DirectConnection(connection))
 
     constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {

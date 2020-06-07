@@ -46,7 +46,7 @@ class DBEffectTest : BehaviorSpec({
                 Nee.pure(effReqNew, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
-            When("db connected") {
+            When("internal  action executed") {
                 val db = DBLike()
                 db.appendAnswer("24")
                 db.appendAnswer("700")
@@ -54,6 +54,29 @@ class DBEffectTest : BehaviorSpec({
                 val result = monad.perform(provider)
                 Then("correct res") {
                     result(Unit).get()  shouldBe(1724)
+                }
+            }
+
+        }
+        And(" internal tx is detected") {
+            val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
+            val extractTxLevel = { orig: Int ->
+                Nee.pure(effReqNew) { r ->
+                    {_: Unit ->
+                        val z= r.conn as DBConnection
+                        z.level
+                    }
+                }
+            }
+            val monad = simpleAction.flatMap(extractTxLevel)
+
+            When("internal  action executed") {
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad.perform(provider)(Unit)
+                Then("detected correct level of nested tx ") {
+                    result.get()  shouldBe(2)
                 }
             }
         }
