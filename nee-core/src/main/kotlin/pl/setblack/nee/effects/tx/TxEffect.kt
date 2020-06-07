@@ -72,7 +72,7 @@ sealed class TxErrorType : TxError {
 /**
  * Transaction like effect.
  *
- * Use for SQL/JDBC operations, but anything that wors on some "resource - conection"
+ * Use for SQL/JDBC operations, but anything that works on some "resource - conection"
  * can be implemented using TxProvider interface.
  *
  * @param DB a resource,  a connection
@@ -89,9 +89,11 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                     } else {
                         connection.begin()
                     }
+
                     val z = tx.map { startedTransaction ->
                         try {
-                            doInTransaction(f, res, continueOldTransaction, startedTransaction)
+                            val newRes = res.setConnectionState(startedTransaction)
+                            doInTransaction(f, newRes, continueOldTransaction, startedTransaction)
                         } catch (e: Exception) {
                             val txCancelled = if (continueOldTransaction) {
                                 Pair(Option.none<TxError>(), connection)
