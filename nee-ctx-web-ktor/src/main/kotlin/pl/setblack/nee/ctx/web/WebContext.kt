@@ -130,6 +130,10 @@ class WebContext(
         fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext>(roles)
         val jdbc = TxEffect<Connection, WebContext>().anyError()
         val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
+
+        //TODO think about securing async jdbc -
+        // notify in async that some resources are potentially used - and should not be closed
+
     }
 }
 

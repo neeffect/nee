@@ -1,7 +1,6 @@
 package pl.setblack.nee.effects.tx
 
 import io.kotlintest.matchers.beInstanceOf
-import io.kotlintest.matchers.collections.shouldBeOneOf
 import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
@@ -63,8 +62,8 @@ class DBEffectTest : BehaviorSpec({
             val extractTxLevel = { orig: Int ->
                 Nee.pure(effReqNew) { r ->
                     {_: Unit ->
-                        val z= r.conn as DBConnection
-                        z.level
+                        val connection= r.conn as DBConnection
+                        connection.level
                     }
                 }
             }
