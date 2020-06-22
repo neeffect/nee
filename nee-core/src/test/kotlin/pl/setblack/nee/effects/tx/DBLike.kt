@@ -180,6 +180,7 @@ internal class DBLike {
     internal fun transactionLevel(): Int = this.txLevel
 
     internal fun close() {
+        log(DBOperation.Close)
         if (!connected) {
             log(DBOperation.Fail("not connected"))
         }
@@ -198,4 +199,5 @@ sealed class DBOperation(val msg: String) {
     class Query(msg: String) : DBOperation("Query: $msg")
     class Execute(msg: String) : DBOperation("Exec: $msg")
     class Fail(msg: String) : DBOperation("Fail: ${msg}")
+    object Close : DBOperation("Closed")
 }

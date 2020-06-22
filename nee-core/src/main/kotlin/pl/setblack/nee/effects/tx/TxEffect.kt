@@ -2,7 +2,6 @@ package pl.setblack.nee.effects.tx
 
 import io.vavr.collection.List
 import io.vavr.control.Option
-import io.vavr.control.Option.some
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 
@@ -46,6 +45,7 @@ sealed class TxErrorType : TxError {
      * Transaction cannot be committed.
      */
     object CannotCommitTransaction : TxErrorType()
+
     /**
      * Transaction cannot be rolled back.
      */
@@ -95,33 +95,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                             val newRes = res.setConnectionState(startedTransaction)
                             doInTransaction(f, newRes, continueOldTransaction, startedTransaction)
                         } catch (e: Exception) {
-                            val txCancelled = if (continueOldTransaction) {
-                                Pair(Option.none<TxError>(), connection)
-                            } else {
-                                startedTransaction.rollback()
-                            }
-                            txCancelled.first.map { rollbackError ->
-                                Pair(
-                                    { _: P ->
-                                        Out.left<TxError, A>(
-                                            TxErrorType.MultipleErrors(
-                                                List.of(
-                                                    TxErrorType.InternalException(e),
-                                                    rollbackError
-                                                )
-                                            )
-                                        )
-                                    }, txCancelled.second
-                                )
-                            }.getOrElse {
-                                Pair({ _: P ->
-                                    Out.left<TxError, A>(
-                                        TxErrorType.InternalException(
-                                            e
-                                        )
-                                    )
-                                }, txCancelled.second)
-                            }
+                            handleTxException<A, P>(continueOldTransaction, connection, startedTransaction, e)
                         }
                     }.map {
                         Pair(it.first, res.setConnectionState(it.second))
@@ -135,6 +109,42 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
             }
         }
     }
+
+    private fun <A, P> handleTxException(
+        continueOldTransaction: Boolean,
+        connection: TxConnection<DB>,
+        startedTransaction: TxStarted<DB>,
+        e: Exception
+    ): Pair<(P) -> Out<TxError, A>, TxConnection<DB>> =
+        if (continueOldTransaction) {
+            Pair(Option.none<TxError>(), connection)
+        } else {
+            startedTransaction.rollback()
+        }.let { txCancelled ->
+            txCancelled.first.map { rollbackError ->
+                Pair(
+                    { _: P ->
+                        Out.left<TxError, A>(
+                            TxErrorType.MultipleErrors(
+                                List.of(
+                                    TxErrorType.InternalException(e),
+                                    rollbackError
+                                )
+                            )
+                        )
+                    }, txCancelled.second
+                )
+            }.getOrElse {
+                Pair({ _: P ->
+                    Out.left<TxError, A>(
+                        TxErrorType.InternalException(
+                            e
+                        )
+                    )
+                }, txCancelled.second)
+            }
+        }
+
 
     private fun <A, P> doInTransaction(
         f: (R) -> (P) -> A,

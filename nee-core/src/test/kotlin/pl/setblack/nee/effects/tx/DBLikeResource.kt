@@ -26,7 +26,9 @@ internal class DBLikeProvider(
 
 
 internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnection<DBLike> {
-    override fun hasTransaction(): Boolean  = db.transactionLevel() > 0
+    override fun hasTransaction(): Boolean  = false
+
+
     override fun begin(): Either<TxError, TxStarted<DBLike>> =
         if (db.begin()) {
             Either.right(DBTxConnection(db, level  + 1))
@@ -51,6 +53,9 @@ internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnecti
 }
 
 internal class DBTxConnection(db: DBLike, level:Int) : DBConnection(db, level), TxStarted<DBLike> {
+
+    override fun hasTransaction(): Boolean = true
+
 
     override fun commit(): Pair<Option<TxError>, TxConnection<DBLike>> =
         if (db.commit()) {
