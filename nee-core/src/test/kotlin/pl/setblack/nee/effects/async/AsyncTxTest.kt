@@ -2,9 +2,12 @@ package pl.setblack.nee.effects.async
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.DescribeSpec
+import io.vavr.control.Either
 import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
+import pl.setblack.nee.anyError
 import pl.setblack.nee.effects.get
+import pl.setblack.nee.effects.getAny
 import pl.setblack.nee.effects.tx.DBLike
 import pl.setblack.nee.effects.tx.DBLikeProvider
 import pl.setblack.nee.effects.tx.TxConnection
@@ -48,8 +51,8 @@ class AsyncTxTest : DescribeSpec({
             val result = nestedAction.perform(initialEnv)(Unit)
             controllableExecutionContext.runSingle()
             controllableExecutionContext.runSingle()
-            val r1 = result.get()
-            r1 shouldBe "is trx+is trx"
+            val r1 = result.getAny()
+            r1 shouldBe Either.right<Any, String>("is trx+is trx")
         }
     }
 }) {
@@ -59,13 +62,16 @@ class AsyncTxTest : DescribeSpec({
         val controllableExecutionContext = ControllableExecutionContext()
         val ecProvider = ECProvider(controllableExecutionContext)
         val asyncEffect = AsyncEffect<AsyncEnv>()
-        val combinedEffect = asyncEffect.andThen(dbLikeEffect)
+        val combinedEffect = asyncEffect.andThen(dbLikeEffect).anyError()
 
     }
 }
 
-internal data class AsyncEnv(val db: DBLikeProvider, val ex: ExecutionContextProvider) :
-    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex {
+internal data class AsyncEnv(
+    val db: DBLikeProvider,
+    val ex: ExecutionContextProvider,
+    val async: AsyncWrapper<AsyncEnv>  =AsyncWrapper()):
+    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex, AsyncSupport<AsyncEnv> by async{
 
     override fun getConnection(): TxConnection<DBLike> = this.db.getConnection()
 

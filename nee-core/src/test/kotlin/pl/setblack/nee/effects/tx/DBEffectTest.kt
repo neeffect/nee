@@ -59,7 +59,7 @@ class DBEffectTest : BehaviorSpec({
         }
         And(" internal tx is detected") {
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
-            val extractTxLevel = { orig: Int ->
+            val extractTxLevel = { _: Int ->
                 Nee.pure(effReqNew) { r ->
                     {_: Unit ->
                         val connection= r.conn as DBConnection

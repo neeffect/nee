@@ -16,6 +16,7 @@ limitations under the License.
 package pl.setblack.nee
 
 import pl.setblack.nee.effects.Out
+import pl.setblack.nee.effects.utils.extend
 
 /**
  * Nee on function without param.
@@ -75,13 +76,15 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
 
     companion object {
         fun <R, E, P, A> pure(a: A): Nee<R, E, P, A> =
-            FNEE<R, E, P, A>(NoEffect<R, E>(), extend({ _: R -> { _: P -> a } }))
+            FNEE<R, E, P, A>(NoEffect<R, E>(),
+                extend({ _: R -> { _: P -> a } })
+            )
 
         fun <R, E, P, A> constR(effect: Effect<R, E>, func: (P) -> A): Nee<R, E, P, A> =
-            FNEE(effect, constR(func))
+            FNEE(effect, pl.setblack.nee.effects.utils.constR(func))
 
         fun <R, E, A> constP(effect: Effect<R, E>, func: (R) -> A): Nee<R, E, Unit, A> =
-            FNEE(effect, constP(func))
+            FNEE(effect, pl.setblack.nee.effects.utils.constP(func))
 
         fun <R, E, P, A> pure(effect: Effect<R, E>, func: (R) -> (P) -> A): Nee<R, E, P, A> =
             FNEE(effect, extend(func))

@@ -2,6 +2,7 @@ package pl.setblack.nee.effects.tx
 
 import io.vavr.control.Either
 import io.vavr.control.Option
+import pl.setblack.nee.effects.async.AsyncStack
 import java.lang.IllegalStateException
 
 internal class DBLikeProvider(
@@ -22,6 +23,8 @@ internal class DBLikeProvider(
 
     override fun setConnectionState(newState: TxConnection<DBLike>) =
         DBLikeProvider(db, newState)
+
+
 }
 
 

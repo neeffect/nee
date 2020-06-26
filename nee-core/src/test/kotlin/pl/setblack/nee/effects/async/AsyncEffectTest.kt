@@ -8,7 +8,7 @@ import io.vavr.concurrent.Future
 import io.vavr.concurrent.Promise
 import io.vavr.control.Option
 import pl.setblack.nee.Nee
-import pl.setblack.nee.ignoreR
+import pl.setblack.nee.effects.utils.ignoreR
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -38,7 +38,9 @@ class AsyncEffectTest : DescribeSpec({
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))
             val runned = AtomicBoolean(false)
             val testFunction = { _:Unit -> runned.set(true)}
-            val async =  Nee.Companion.pure(localEff, ignoreR(testFunction))
+            val async =  Nee.Companion.pure(localEff,
+                ignoreR(testFunction)
+            )
             it( "will not run  on global") {
                 async.perform(ecProvider)(Unit)
                 controllableExecutionContext.runSingle()

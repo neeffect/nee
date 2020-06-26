@@ -84,10 +84,16 @@ class AsyncEffect<R : ExecutionContextProvider>(
         { r: R ->
             Pair({ p: P ->
                 val ec = r.findExecutionContext(this.localExecutionContext)
-                val result = ec.execute {
-                    f(r)(p)
-                }
-                Out.FutureOut(result.map { Either.right<Nothing, A>(it) })
+                val async = AsyncSupport.initiateAsync(r)
+
+                    val result = ec.execute {
+                        try {
+                            f(r)(p)
+                        } finally {
+                            async.closeAsync(r)
+                        }
+                    }
+                    Out.FutureOut(result.map { Either.right<Nothing, A>(it) })
             }, r)
         }
 }

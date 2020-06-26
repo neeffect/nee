@@ -24,7 +24,7 @@ import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxProvider
-import pl.setblack.nee.invalid
+import pl.setblack.nee.effects.utils.invalid
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRole
 import java.sql.Connection
@@ -33,13 +33,16 @@ import java.util.concurrent.Executors
 
 fun Application.slowApp() {
     val  myTxProvider  = object :  TxProvider<Connection, JDBCProvider> {
-        override fun getConnection(): TxConnection<Connection> = invalid()
+        override fun getConnection(): TxConnection<Connection> =
+            invalid()
 
-        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider  =invalid()
+        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider  =
+            invalid()
     }
 
     val noSecurity = object : SecurityProvider<User, UserRole> {
-        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>>  = invalid()
+        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>>  =
+            invalid()
     }
 
     val serverExecutor = Executors.newFixedThreadPool(KtorThreadingModelTest.reqs)

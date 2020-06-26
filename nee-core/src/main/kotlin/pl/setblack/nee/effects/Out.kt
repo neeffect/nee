@@ -2,7 +2,7 @@ package pl.setblack.nee.effects
 
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
-import pl.setblack.nee.merge
+import pl.setblack.nee.effects.utils.merge
 
 
 /**
