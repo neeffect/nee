@@ -7,6 +7,9 @@ import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.effects.utils.logger
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * Marks  environment supporting async operations with post cleaning.
+ */
 interface AsyncSupport<R> {
     fun asyncStack(): AsyncStack<R>
 
@@ -16,7 +19,7 @@ interface AsyncSupport<R> {
         val asyncResouce = ResourceId(AsyncStack::class)
 
         @Suppress("UNCHECKED_CAST")
-        fun <R> doOnCleanUp(env: R, action: AsyncClosingAction<R>) = when (env) {
+        internal fun <R> doOnCleanUp(env: R, action: AsyncClosingAction<R>) = when (env) {
             is AsyncSupport<*> -> (env as AsyncSupport<R>).let { async ->
                 val stack = async.asyncStack()
                 val newStack = stack.doOnCleanUp(action)
@@ -45,6 +48,9 @@ interface AsyncSupport<R> {
     }
 }
 
+/**
+ * Used to wrap async code.
+ */
 class ActiveAsyncClose<R>(private val asyncClean: ActiveAsynStack<R>) {
     @Suppress("UNCHECKED_CAST")
     fun closeAsync(env: R) =
@@ -65,7 +71,7 @@ class ActiveAsyncClose<R>(private val asyncClean: ActiveAsynStack<R>) {
         }
 }
 
-class SthToClean<R>(val asyncClean: DirtyAsyncStack<R>) {
+internal class SthToClean<R>(val asyncClean: DirtyAsyncStack<R>) {
     @Suppress("UNCHECKED_CAST")
     fun cleanUp(env: R) =
         when (env) {
@@ -110,6 +116,9 @@ fun <R, T> executeAsyncCleaning(env: R, action: () -> T, cleanAction: (R) -> R):
     return result
 }
 
+/**
+ * Registry of async cleaning operations.
+ */
 sealed class AsyncStack<R>(val actions: Seq<AsyncClosingAction<R>> = List.empty()) {
     fun doOnCleanUp(action: AsyncClosingAction<R>): DirtyAsyncStack<R> = DirtyAsyncStack(this, List.of(action))
 
@@ -122,8 +131,14 @@ sealed class AsyncStack<R>(val actions: Seq<AsyncClosingAction<R>> = List.empty(
     }
 }
 
+/**
+ * Empty registry.
+ */
 class CleanAsyncStack<R> : AsyncStack<R>()
 
+/**
+ * Something is registered.
+ */
 class DirtyAsyncStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAction<R>>) : AsyncStack<R>(actions) {
     fun cleanUp(env: R): Pair<AsyncStack<R>, R> = Pair(parent, performActions(env))
 
@@ -132,6 +147,9 @@ class DirtyAsyncStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAct
     override fun empty(): AsyncStack<R> = DirtyAsyncStack(parent, List.empty())
 }
 
+/**
+ * Ongoing async process.
+ */
 class ActiveAsynStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAction<R>>) : AsyncStack<R>(actions) {
     fun closeAsync(env: R): Pair<AsyncStack<R>, R> =
         Pair(parent, performActions(env))
