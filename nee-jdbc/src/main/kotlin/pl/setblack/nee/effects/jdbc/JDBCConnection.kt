@@ -76,6 +76,9 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
     }
 }
 
+/**
+ * Provider of jdbc connection.
+ */
 class JDBCProvider(
     private  val connection: ConnectionWrapper,
     private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {

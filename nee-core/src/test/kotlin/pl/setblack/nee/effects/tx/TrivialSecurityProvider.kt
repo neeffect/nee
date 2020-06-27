@@ -6,7 +6,7 @@ import pl.setblack.nee.effects.security.SecurityCtx
 import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityProvider
 
-class TrivialSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
+internal class TrivialSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
     private val ctx = SimpleSecurityContext(user, roles)
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> = Out.right(ctx)
 
