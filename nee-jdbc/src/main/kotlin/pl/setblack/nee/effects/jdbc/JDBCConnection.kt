@@ -14,6 +14,9 @@ import pl.setblack.nee.effects.utils.logger
 import java.sql.Connection
 import java.sql.Savepoint
 
+/**
+ * Standard jdbc connection.
+ */
 class JDBCConnection(
     private val connection: Connection,
     private val close: Boolean = false ) : TxConnection<Connection>,

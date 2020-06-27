@@ -86,7 +86,7 @@ class ControllableExecutionContext : ExecutionContext, Executor {
     internal fun assertEmpty() = assert(this.computations.get().computations.isEmpty)
 }
 
-data class Computations(val computations: List<Runnable> = List.empty(), val lastOne: Runnable? = null) {
+internal data class Computations(val computations: List<Runnable> = List.empty(), val lastOne: Runnable? = null) {
     fun addOne(f: Runnable) = copy(
         computations = computations.append(f),
         lastOne = null

@@ -190,7 +190,7 @@ internal class DBLike {
 }
 
 
-sealed class DBOperation(val msg: String) {
+internal sealed class DBOperation(val msg: String) {
     class Connected(val before: Boolean) : DBOperation("Connected DB - before was ${before}")
     class TxBegin(val level: Int) : DBOperation("Transaction started - current level = ${level}")
     class TxCont(val level: Int) : DBOperation("Transaction continued - current level = ${level}")

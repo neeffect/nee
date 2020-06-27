@@ -14,7 +14,7 @@ import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxEffect
 import pl.setblack.nee.effects.tx.TxProvider
 
-class AsyncTxTest : DescribeSpec({
+internal class AsyncTxTest : DescribeSpec({
     describe("combined effect") {
 
         val action = Nee.Companion.constP(combinedEffect) { env ->

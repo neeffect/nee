@@ -85,7 +85,7 @@ class DBEffectTest : BehaviorSpec({
                 db.appendAnswer("24")
                 val provider = DBLikeProvider(db)
                 val result = monad2.perform(provider)(Unit)
-                Then("detected correct level of nested tx ") {
+                Then("detected correct level of nested tx") {
                     result.get()  shouldBe(3)
                 }
             }
@@ -95,7 +95,7 @@ class DBEffectTest : BehaviorSpec({
                 db.appendAnswer("24")
                 val provider = DBLikeProvider(db)
                 val result = monad2.perform(provider)(Unit)
-                Then("detected correct level of nested tx ") {
+                Then("detected same level of nested tx") {
                     result.get()  shouldBe(3)
                 }
             }
