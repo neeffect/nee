@@ -68,7 +68,14 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
     abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
 
-    abstract fun constP(): (P) -> Nee<R, E, Unit, A>
+    fun constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
+        val constFunction = { r: R ->
+            { _: Unit ->
+                this.perform(r)(p)
+            }
+        }
+        FNEE(effect, constFunction)
+    }
 
 
     @Suppress("UNCHECKED_CAST")
@@ -76,7 +83,8 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
 
     companion object {
         fun <R, E, P, A> pure(a: A): Nee<R, E, P, A> =
-            FNEE<R, E, P, A>(NoEffect<R, E>(),
+            FNEE<R, E, P, A>(
+                NoEffect<R, E>(),
                 extend({ _: R -> { _: P -> a } })
             )
 
@@ -104,7 +112,7 @@ internal class FNEE<R, E, P, A>(
     //constructor(effect: Effect<R, E>, f : (R)->(P)->A) : this(effect, {r:R-> {p:P-> Either.right<E,A>(f(r)(p))}} )
 
     private fun action() = effect.wrap(func)
-    override fun perform(env: R): (P) -> Out<E, A> = { p: P -> action()(env).first(p).flatMap { it } }//f(env)
+    override fun perform(env: R): (P) -> Out<E, A> = { p: P -> action()(env).first(p).flatMap { it } }
 
     //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
     override fun <B> map(f: (A) -> B): Nee<R, E, P, B> =
@@ -114,22 +122,38 @@ internal class FNEE<R, E, P, A>(
      *
      *
      */
-    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FNEE(effect) { r: R ->
-        { p: P ->
-            func(r)(p).map(f)
-                .flatMap {
-                    it.perform(r)(p)
-                }
-        }
-    }
+    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FMNEE(effect, func, f)
 
-    override fun constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
-        val constFunction = { r: R ->
-            { _: Unit ->
-                this.perform(r)(p)
-            }
-        }
-        FNEE(effect, constFunction)
-    }
 }
 
+internal class FMNEE<R, E, P, A, A1>(
+    effect: Effect<R, E>,
+    private val func: (R) -> (P) -> Out<E, A1>,
+    private val mapped: (A1) -> Nee<R, E, P, A>
+
+) : Nee<R, E, P, A>(effect) {
+
+
+    override fun perform(env: R): (P) -> Out<E, A> = { p: P ->
+
+        val newF = {r: R->
+            { p1: P ->
+                val res1 = func(r)(p1).map(mapped)
+                    .flatMap {
+                        it.perform(r)(p1)
+                    }
+                res1
+            }
+        }
+        effect.wrap(newF)(env).first(p).flatMap { it }
+    }
+
+    override fun <B> map(f: (A) -> B): Nee<R, E, P, B> = FMNEE(effect, func, { a:A1->
+            mapped(a).map(f)
+    })
+
+    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>  = FMNEE(effect, func, { a:A1->
+        mapped(a).flatMap(f)
+    })
+
+}

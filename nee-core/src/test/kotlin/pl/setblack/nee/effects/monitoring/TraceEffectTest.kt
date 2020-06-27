@@ -20,7 +20,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("monitored function process") {
@@ -31,7 +30,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("simple function in obj process") {
@@ -44,7 +42,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("monitored function in obj process") {
@@ -55,7 +52,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
     }

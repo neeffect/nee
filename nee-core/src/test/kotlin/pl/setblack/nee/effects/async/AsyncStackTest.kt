@@ -19,9 +19,10 @@ class AsyncStackTest : DescribeSpec({
                 env.copy( test = env.test + 7)
             }.onClose { env ->
                 env.copy( test = env.test + 11)
-
             }
-            val cleaned = dirty.cleanUp(env)
+            val afterFirstClean = dirty.cleanUp(env)
+            val halfCleaned = afterFirstClean.first as DirtyAsyncStack<MyEnv>
+            val cleaned = halfCleaned.cleanUp(afterFirstClean.second)
             cleaned.second.test shouldBe  19
         }
     }

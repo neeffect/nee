@@ -69,10 +69,10 @@ sealed class Out<E, out A> {
                 e.map { a: A ->
                     val z: Future<Either<E, B>> = when (val res = f(a)) {
                         is FutureOut -> res.futureVal
-                        is InstantOut -> Future.successful(res.v)
+                        is InstantOut -> Future.successful(futureVal.executor(),res.v)
                     }
                     z
-                }.mapLeft { e1 -> Future.successful(Either.left<E, B>(e1)) }
+                }.mapLeft { e1 -> Future.successful(futureVal.executor(),Either.left<E, B>(e1)) }
                     .merge()
             })
     }

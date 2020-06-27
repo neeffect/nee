@@ -78,6 +78,27 @@ class DBEffectTest : BehaviorSpec({
                     result.get()  shouldBe(2)
                 }
             }
+            //below section documents sometimes not exact execution of flatMap
+            When("double internal  action executed") {
+                val monad2 = simpleAction.flatMap{ extractTxLevel(it).flatMap(extractTxLevel)}
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad2.perform(provider)(Unit)
+                Then("detected correct level of nested tx ") {
+                    result.get()  shouldBe(3)
+                }
+            }
+            When("double internal  action executed - outside") {
+                val monad2 = simpleAction.flatMap(extractTxLevel).flatMap(extractTxLevel)
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad2.perform(provider)(Unit)
+                Then("detected correct level of nested tx ") {
+                    result.get()  shouldBe(3)
+                }
+            }
         }
         When("running query with forced exception") {
             val failingAction = Nee.pure(eff, functionWithFailQuery)

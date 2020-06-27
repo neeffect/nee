@@ -9,6 +9,7 @@ import io.vavr.concurrent.Promise
 import io.vavr.control.Option
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.utils.ignoreR
+import java.lang.Exception
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -64,7 +65,12 @@ class ControllableExecutionContext : ExecutionContext, Executor{
     private fun <T> executef(f: () -> T): Future<T> =
         Promise.make<T>(InPlaceExecutor).let { promise ->
             val computation: Runnable = Runnable {
-                promise.success(f())
+                try {
+                    val result = f()
+                    promise.success(result)
+                } catch (e:Throwable) {
+                    promise.failure(e)
+                }
             }
             computations.updateAndGet { it.addOne(computation) }
             promise.future()
@@ -73,6 +79,8 @@ class ControllableExecutionContext : ExecutionContext, Executor{
     internal fun runSingle() = computations.updateAndGet { list ->
         list.removeOne()
     }.lastOne?.run()
+
+    internal fun assertEmpty() =assert( this.computations.get().computations.isEmpty)
 }
 
 data class Computations(val computations : List<Runnable> = List.empty(), val lastOne : Runnable? = null ) {

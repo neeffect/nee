@@ -33,11 +33,10 @@ class AsyncTxTest : DescribeSpec({
             val r1 = result.get()
             r1 shouldBe "is trx"
         }
-        val nestedAction = action.flatMap { prevResult ->
-            Nee.constP(combinedEffect) { env ->
+        val nestedF = { prevResult: String ->
+            Nee.constP(combinedEffect) { env: AsyncEnv ->
                 val connection = env.getConnection()
                 val res = connection.getResource()
-                println(res)
                 if (connection.hasTransaction()) {
                     "$prevResult+is trx"
                 } else {
@@ -45,7 +44,9 @@ class AsyncTxTest : DescribeSpec({
                 }
             }
         }
-        it ("works in nested tx" ) {
+
+        val nestedAction = action.flatMap(nestedF)
+        it("works in nested tx") {
             val db = DBLike()
             val initialEnv = AsyncEnv(DBLikeProvider(db), ecProvider)
             val result = nestedAction.perform(initialEnv)(Unit)
@@ -53,6 +54,20 @@ class AsyncTxTest : DescribeSpec({
             controllableExecutionContext.runSingle()
             val r1 = result.getAny()
             r1 shouldBe Either.right<Any, String>("is trx+is trx")
+        }
+        it("works in double nested tx") {
+            val dblNested = nestedAction.flatMap(nestedF)
+            val db = DBLike()
+            val initialEnv = AsyncEnv(DBLikeProvider(db), ecProvider)
+            val result = dblNested.perform(initialEnv)(Unit)
+            controllableExecutionContext.runSingle()
+            controllableExecutionContext.runSingle()
+            controllableExecutionContext.runSingle()
+
+            controllableExecutionContext.assertEmpty()
+
+            val r1 = result.getAny()
+            r1 shouldBe Either.right<Any, String>("is trx+is trx+is trx")
         }
     }
 }) {
@@ -70,8 +85,9 @@ class AsyncTxTest : DescribeSpec({
 internal data class AsyncEnv(
     val db: DBLikeProvider,
     val ex: ExecutionContextProvider,
-    val async: AsyncWrapper<AsyncEnv>  =AsyncWrapper()):
-    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex, AsyncSupport<AsyncEnv> by async{
+    val async: AsyncWrapper<AsyncEnv> = AsyncWrapper()
+) :
+    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex, AsyncSupport<AsyncEnv> by async {
 
     override fun getConnection(): TxConnection<DBLike> = this.db.getConnection()
 
