@@ -2,6 +2,7 @@ package pl.setblack.nee.effects.tx
 
 import io.vavr.control.Either
 import io.vavr.control.Option
+import pl.setblack.nee.effects.async.AsyncStack
 import java.lang.IllegalStateException
 
 internal class DBLikeProvider(
@@ -22,14 +23,18 @@ internal class DBLikeProvider(
 
     override fun setConnectionState(newState: TxConnection<DBLike>) =
         DBLikeProvider(db, newState)
+
+
 }
 
 
-internal open class DBConnection(val db: DBLike) : TxConnection<DBLike> {
-    override fun hasTransaction(): Boolean  = db.transactionLevel() > 0
+internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnection<DBLike> {
+    override fun hasTransaction(): Boolean  = false
+
+
     override fun begin(): Either<TxError, TxStarted<DBLike>> =
         if (db.begin()) {
-            Either.right(DBTxConnection(db))
+            Either.right(DBTxConnection(db, level  + 1))
         } else {
             Either.left<TxError, TxStarted<DBLike>>(
                 TxErrorType.CannotStartTransaction)
@@ -37,7 +42,7 @@ internal open class DBConnection(val db: DBLike) : TxConnection<DBLike> {
 
     override fun continueTx(): Either<TxError, TxStarted<DBLike>> =
         if (db.continueTransaction()) {
-            Either.right(DBTxConnection(db))
+            Either.right(DBTxConnection(db, level))
         } else {
             Either.left<TxError, TxStarted<DBLike>>(
                 TxErrorType.CannotContinueTransaction)
@@ -50,18 +55,21 @@ internal open class DBConnection(val db: DBLike) : TxConnection<DBLike> {
     }
 }
 
-internal class DBTxConnection(db: DBLike) : DBConnection(db), TxStarted<DBLike> {
+internal class DBTxConnection(db: DBLike, level:Int) : DBConnection(db, level), TxStarted<DBLike> {
+
+    override fun hasTransaction(): Boolean = true
+
 
     override fun commit(): Pair<Option<TxError>, TxConnection<DBLike>> =
         if (db.commit()) {
-            Pair(Option.none<TxError>(), DBConnection(db))
+            Pair(Option.none<TxError>(), DBConnection(db, level - 1))
         } else {
             Pair(Option.some<TxError>(TxErrorType.CannotCommitTransaction), this)
         }
 
     override fun rollback(): Pair<Option<TxError>, TxConnection<DBLike>> =
         if (db.rollback()) {
-            Pair(Option.none<TxError>(), DBConnection(db))
+            Pair(Option.none<TxError>(), DBConnection(db, level - 1))
         } else {
             Pair(Option.some<TxError>(TxErrorType.CannotRollbackTransaction), this)
         }

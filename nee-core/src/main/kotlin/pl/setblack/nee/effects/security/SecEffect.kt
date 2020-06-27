@@ -22,6 +22,10 @@ interface SecurityError {
  */
 sealed class SecurityErrorType : SecurityError {
     override fun secError() = this
+
+    /**
+     * Credentials were wrong.
+     */
     class WrongCredentials(val message: String = "") : SecurityErrorType()
     /**
      * User not recognized.

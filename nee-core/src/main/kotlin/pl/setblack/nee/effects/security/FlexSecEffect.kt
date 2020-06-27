@@ -6,6 +6,9 @@ import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.env.ResourceId
 
+/**
+ * Security effect - flex version.
+ */
 class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) :
     Effect<FlexibleEnv, SecurityError> {
     private val internal =
@@ -33,6 +36,9 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) :
     }
 }
 
+/**
+ * Provider of flex sec.
+ */
 class FlexSecurityProvider<USER, ROLE>(private val env: FlexibleEnv) :
     FlexibleEnv by env,
     SecurityProvider<USER, ROLE> {

@@ -5,7 +5,7 @@ import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
 import pl.setblack.nee.Nee
 
-class SecuredRunEffectTest : BehaviorSpec({
+internal class SecuredRunEffectTest : BehaviorSpec({
 
     Given("secure provider") {
 

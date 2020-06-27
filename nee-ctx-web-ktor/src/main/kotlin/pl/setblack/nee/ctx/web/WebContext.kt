@@ -15,7 +15,7 @@ import io.vavr.kotlin.option
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import pl.setblack.nee.ANee
-import pl.setblack.nee.Logging
+import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.anyError
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.AsyncEffect
@@ -31,8 +31,8 @@ import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxEffect
 import pl.setblack.nee.effects.tx.TxProvider
-import pl.setblack.nee.logger
-import pl.setblack.nee.merge
+import pl.setblack.nee.effects.utils.logger
+import pl.setblack.nee.effects.utils.merge
 import pl.setblack.nee.security.DBUserRealm
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRole
@@ -130,6 +130,10 @@ class WebContext(
         fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext>(roles)
         val jdbc = TxEffect<Connection, WebContext>().anyError()
         val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
+
+        //TODO think about securing async jdbc -
+        // notify in async that some resources are potentially used - and should not be closed
+
     }
 }
 

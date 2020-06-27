@@ -5,18 +5,22 @@ import io.vavr.control.Either
 import io.vavr.control.Option
 import io.vavr.control.Option.none
 import io.vavr.kotlin.some
-import pl.setblack.nee.Logging
+import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxError
 import pl.setblack.nee.effects.tx.TxProvider
 import pl.setblack.nee.effects.tx.TxStarted
-import pl.setblack.nee.logger
+import pl.setblack.nee.effects.utils.logger
 import java.sql.Connection
-import java.sql.DriverManager
 import java.sql.Savepoint
-import java.util.concurrent.atomic.AtomicReference
 
-class JDBCConnection(private val connection: Connection, val close: Boolean = false ) : TxConnection<Connection>, Logging {
+/**
+ * Standard jdbc connection.
+ */
+class JDBCConnection(
+    private val connection: Connection,
+    private val close: Boolean = false ) : TxConnection<Connection>,
+    Logging {
     override fun begin(): Either<TxError, TxStarted<Connection>> =
         if (hasTransaction()) {
             val savepoint = getResource().setSavepoint()
@@ -72,8 +76,12 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
     }
 }
 
-
-class JDBCProvider(private  val connection: ConnectionWrapper, private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
+/**
+ * Provider of jdbc connection.
+ */
+class JDBCProvider(
+    private  val connection: ConnectionWrapper,
+    private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
     constructor(connection: Connection) : this(ConnectionWrapper.DirectConnection(connection))
 
     constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {
