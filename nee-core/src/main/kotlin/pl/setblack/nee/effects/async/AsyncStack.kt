@@ -110,7 +110,6 @@ fun <R, T> executeAsyncCleaning(env: R, action: () -> T, cleanAction: (R) -> R):
     return result
 }
 
-
 sealed class AsyncStack<R>(val actions: Seq<AsyncClosingAction<R>> = List.empty()) {
     fun doOnCleanUp(action: AsyncClosingAction<R>): DirtyAsyncStack<R> = DirtyAsyncStack(this, List.of(action))
 
@@ -131,7 +130,6 @@ class DirtyAsyncStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAct
     override fun enterAsync(): ActiveAsynStack<R> = ActiveAsynStack(this.parent, actions)
 
     override fun empty(): AsyncStack<R> = DirtyAsyncStack(parent, List.empty())
-
 }
 
 class ActiveAsynStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAction<R>>) : AsyncStack<R>(actions) {
@@ -140,7 +138,6 @@ class ActiveAsynStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAct
 
     override fun empty(): AsyncStack<R> = ActiveAsynStack(parent, List.empty())
 }
-
 
 interface AsyncClosingAction<R> {
     fun onClose(env: R): R
@@ -155,10 +152,8 @@ abstract class AsyncClose<R> : AsyncClosingAction<R> {
 fun <R> AsyncStack<R>.onClose(f: (R) -> R): DirtyAsyncStack<R> = this.doOnCleanUp(
     object : AsyncClose<R>() {
         override fun onClose(env: R): R = f(env)
-
     }
 )
-
 
 class AsyncWrapper<R>(
     private val state: AtomicReference<AsyncStack<R>> = AtomicReference(CleanAsyncStack())

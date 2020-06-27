@@ -94,7 +94,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
                         f(r)(p)
                     } catch (e: Exception) {
                         logger().error("error in async handling", e)
-                        throw  RuntimeException(e)
+                        throw RuntimeException(e)
                     }
                 }
                 Out.FutureOut(result.map {

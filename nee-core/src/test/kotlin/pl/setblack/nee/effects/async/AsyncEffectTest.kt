@@ -1,6 +1,5 @@
 package pl.setblack.nee.effects.async
 
-
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.DescribeSpec
 import io.vavr.collection.List
@@ -9,7 +8,6 @@ import io.vavr.concurrent.Promise
 import io.vavr.control.Option
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.utils.ignoreR
-import java.lang.Exception
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -47,6 +45,7 @@ class AsyncEffectTest : DescribeSpec({
                 controllableExecutionContext.runSingle()
                 runned.get() shouldBe false
             }
+
             it ("will run on local ec") {
                 localEC.runSingle()
                 runned.get() shouldBe true

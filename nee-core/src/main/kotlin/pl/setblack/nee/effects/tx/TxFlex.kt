@@ -3,13 +3,10 @@ package pl.setblack.nee.effects.tx
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
-import pl.setblack.nee.effects.async.AsyncStack
-import pl.setblack.nee.effects.async.AsyncSupport
 import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.env.ResourceId
 import pl.setblack.nee.effects.env.with
 import pl.setblack.nee.effects.tx.FlexTxProvider.Companion.txProviderResource
-import pl.setblack.nee.map
 
 /**
  * Transaction (flexible env version).
@@ -36,7 +33,7 @@ class FlexTxEffect<R> : Effect<FlexibleEnv, TxError> {
 
 
 internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
-    TxProvider<R, FlexTxProvider<R>>{
+    TxProvider<R, FlexTxProvider<R>> {
     override fun getConnection(): TxConnection<R> =
         env.get(txProviderResource).map {
             @Suppress("UNCHECKED_CAST")
@@ -69,8 +66,6 @@ internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
                 it.getResource()
             }.getOrElseThrow { java.lang.IllegalStateException("Connection provider  must be available") }
     }
-
-
 }
 
 fun <R, G : TxProvider<R, G>> FlexibleEnv.withTxProvider(provider: TxProvider<R, G>) =

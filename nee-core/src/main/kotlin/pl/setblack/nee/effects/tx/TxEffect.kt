@@ -146,7 +146,6 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
             }
         }
 
-
     private fun <A, P> doInTransaction(
         f: (R) -> (P) -> A,
         res: R,
@@ -164,7 +163,6 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                 }
                 r
             })
-
         }
         return Pair({ p: P ->
             try {
