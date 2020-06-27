@@ -87,10 +87,10 @@ class Effects<R1, R2, E1, E2>(
         return { r: R2 ->
             val res = outerWrapped(r)
             val finalR = res.second
-            //TODO - ? finalR or r ?
+            //TODO - finalR or r?
             val called = res.first
             val x = { p: P ->
-                val z =called(p).flatMap { it }
+                val z = called(p).flatMap { it }
                 z
             }
             Pair(x, finalR)

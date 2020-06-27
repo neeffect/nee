@@ -136,7 +136,7 @@ internal class FMNEE<R, E, P, A, A1>(
 
     override fun perform(env: R): (P) -> Out<E, A> = { p: P ->
 
-        val newF = {r: R->
+        val newF = { r: R ->
             { p1: P ->
                 val res1 = func(r)(p1).map(mapped)
                     .flatMap {
@@ -148,11 +148,11 @@ internal class FMNEE<R, E, P, A, A1>(
         effect.wrap(newF)(env).first(p).flatMap { it }
     }
 
-    override fun <B> map(f: (A) -> B): Nee<R, E, P, B> = FMNEE(effect, func, { a:A1->
-            mapped(a).map(f)
+    override fun <B> map(f: (A) -> B): Nee<R, E, P, B> = FMNEE(effect, func, { a: A1 ->
+        mapped(a).map(f)
     })
 
-    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>  = FMNEE(effect, func, { a:A1->
+    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FMNEE(effect, func, { a: A1 ->
         mapped(a).flatMap(f)
     })
 
