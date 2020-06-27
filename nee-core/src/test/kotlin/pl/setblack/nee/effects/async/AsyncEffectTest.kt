@@ -14,13 +14,13 @@ import java.util.concurrent.atomic.AtomicReference
 
 class AsyncEffectTest : DescribeSpec({
     describe("async context") {
-        val controllableExecutionContext =  ControllableExecutionContext()
+        val controllableExecutionContext = ControllableExecutionContext()
         val ecProvider = ECProvider(controllableExecutionContext)
         val eff = AsyncEffect<ECProvider>()
-        context( "test function") {
+        context("test function") {
             val runned = AtomicBoolean(false)
-            val testFunction = { _:Unit -> runned.set(true)}
-            val async =  Nee.Companion.pure(eff, ignoreR(testFunction))
+            val testFunction = { _: Unit -> runned.set(true) }
+            val async = Nee.Companion.pure(eff, ignoreR(testFunction))
             async.perform(ecProvider)(Unit)
 
             it("does not run before executor calls") {
@@ -31,22 +31,23 @@ class AsyncEffectTest : DescribeSpec({
                 runned.get() shouldBe true
             }
         }
-        context ("with local ec") {
+        context("with local ec") {
             val localEC = ControllableExecutionContext()
             //val localProvider = ECProvider(controllableExecutionContext)
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))
             val runned = AtomicBoolean(false)
-            val testFunction = { _:Unit -> runned.set(true)}
-            val async =  Nee.Companion.pure(localEff,
+            val testFunction = { _: Unit -> runned.set(true) }
+            val async = Nee.Companion.pure(
+                localEff,
                 ignoreR(testFunction)
             )
-            it( "will not run  on global") {
+            it("will not run  on global") {
                 async.perform(ecProvider)(Unit)
                 controllableExecutionContext.runSingle()
                 runned.get() shouldBe false
             }
 
-            it ("will run on local ec") {
+            it("will run on local ec") {
                 localEC.runSingle()
                 runned.get() shouldBe true
             }
@@ -54,10 +55,13 @@ class AsyncEffectTest : DescribeSpec({
     }
 })
 
-class ControllableExecutionContext : ExecutionContext, Executor{
+/**
+ * Use it to test async code (async is called inThread).
+ */
+class ControllableExecutionContext : ExecutionContext, Executor {
     override fun <T> execute(f: () -> T): Future<T> = executef(f)
 
-    override fun execute(command: Runnable) :Unit  = executef( {  command.run()}).let{Unit}
+    override fun execute(command: Runnable): Unit = executef({ command.run() }).let { Unit }
 
     private val computations = AtomicReference(Computations())
 
@@ -67,7 +71,7 @@ class ControllableExecutionContext : ExecutionContext, Executor{
                 try {
                     val result = f()
                     promise.success(result)
-                } catch (e:Throwable) {
+                } catch (e: Exception) {
                     promise.failure(e)
                 }
             }
@@ -79,14 +83,16 @@ class ControllableExecutionContext : ExecutionContext, Executor{
         list.removeOne()
     }.lastOne?.run()
 
-    internal fun assertEmpty() =assert( this.computations.get().computations.isEmpty)
+    internal fun assertEmpty() = assert(this.computations.get().computations.isEmpty)
 }
 
-data class Computations(val computations : List<Runnable> = List.empty(), val lastOne : Runnable? = null ) {
-        fun addOne( f: Runnable) = copy(computations = computations.append(f),
-            lastOne = null)
+data class Computations(val computations: List<Runnable> = List.empty(), val lastOne: Runnable? = null) {
+    fun addOne(f: Runnable) = copy(
+        computations = computations.append(f),
+        lastOne = null
+    )
 
-        fun removeOne() = computations.headOption().map {runnable ->
-            copy(computations = this.computations.pop(), lastOne =  runnable)
-        }.getOrElse(Computations())
+    fun removeOne() = computations.headOption().map { runnable ->
+        copy(computations = this.computations.pop(), lastOne = runnable)
+    }.getOrElse(Computations())
 }

@@ -157,14 +157,18 @@ class ActiveAsynStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAct
     override fun empty(): AsyncStack<R> = ActiveAsynStack(parent, List.empty())
 }
 
+/**
+ * Action that performs clean
+ */
 interface AsyncClosingAction<R> {
     fun onClose(env: R): R
 
     fun onError(env: R, t: Throwable): R
 }
 
-abstract class AsyncClose<R> : AsyncClosingAction<R> {
-    override fun onError(env: R, t: Throwable): R = env
+
+internal abstract class AsyncClose<R> : AsyncClosingAction<R> {
+    override fun onError(env: R, t: Throwable): R = TODO()
 }
 
 fun <R> AsyncStack<R>.onClose(f: (R) -> R): DirtyAsyncStack<R> = this.doOnCleanUp(
@@ -173,7 +177,10 @@ fun <R> AsyncStack<R>.onClose(f: (R) -> R): DirtyAsyncStack<R> = this.doOnCleanU
     }
 )
 
-class AsyncWrapper<R>(
+/**
+ * Keeps async status as atomic reference.
+ */
+class AsyncEnvWrapper<R>(
     private val state: AtomicReference<AsyncStack<R>> = AtomicReference(CleanAsyncStack())
 ) : AsyncSupport<R>, Logging {
     override fun asyncStack(): AsyncStack<R> = state.get()

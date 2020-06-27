@@ -85,9 +85,9 @@ class AsyncTxTest : DescribeSpec({
 internal data class AsyncEnv(
     val db: DBLikeProvider,
     val ex: ExecutionContextProvider,
-    val async: AsyncWrapper<AsyncEnv> = AsyncWrapper()
+    val asyncEnv: AsyncEnvWrapper<AsyncEnv> = AsyncEnvWrapper()
 ) :
-    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex, AsyncSupport<AsyncEnv> by async {
+    TxProvider<DBLike, AsyncEnv>, ExecutionContextProvider by ex, AsyncSupport<AsyncEnv> by asyncEnv {
 
     override fun getConnection(): TxConnection<DBLike> = this.db.getConnection()
 

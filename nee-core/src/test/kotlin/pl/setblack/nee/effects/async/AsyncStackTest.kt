@@ -3,7 +3,7 @@ package pl.setblack.nee.effects.async
 import io.kotlintest.specs.DescribeSpec
 import io.kotlintest.shouldBe
 
-class AsyncStackTest : DescribeSpec({
+internal class AsyncStackTest : DescribeSpec({
     describe("async stack") {
         val stack = CleanAsyncStack<MyEnv>()
         val env = MyEnv(1)

@@ -6,7 +6,7 @@ import pl.setblack.nee.effects.get
 import pl.setblack.nee.effects.tx.TestEffect
 import pl.setblack.nee.effects.tx.TestResource
 
-class NEETest : BehaviorSpec({
+internal class NEETest : BehaviorSpec({
     Given("test effect and resource") {
         val effectLog = mutableListOf<String>()
         val res = TestResource(1)
@@ -31,9 +31,4 @@ class NEETest : BehaviorSpec({
            }
         }
     }
-}) {
-
-    init {
-    }
-
-}
+})
