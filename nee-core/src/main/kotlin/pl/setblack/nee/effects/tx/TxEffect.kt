@@ -4,8 +4,6 @@ import io.vavr.collection.List
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
-import pl.setblack.nee.effects.async.AsyncStack
-import pl.setblack.nee.effects.async.AsyncSupport
 import pl.setblack.nee.effects.async.executeAsyncCleaning
 
 /**
@@ -156,9 +154,9 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
         startedTransaction: TxStarted<DB>
     ): Pair<(P) -> Out<TxError, A>, TxStarted<DB>> {
         val result = { p: P ->
-            executeAsyncCleaning(res,{
+            executeAsyncCleaning(res, {
                 f(res)(p)
-            },{r->
+            }, { r ->
                 if (!continueOldTransaction) {
                     startedTransaction.commit().also {
                         it.second.close() //just added TODO - make it part of commit maybe?

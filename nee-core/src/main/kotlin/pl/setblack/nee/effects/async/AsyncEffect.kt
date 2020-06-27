@@ -8,6 +8,7 @@ import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.effects.utils.logger
+import java.lang.Exception
 import java.lang.RuntimeException
 import java.util.concurrent.Executor
 
@@ -41,7 +42,7 @@ class SyncExecutionContext : ExecutionContext {
 }
 
 object InPlaceExecutor : Executor {
-    override fun execute(command: Runnable)  = command.run()
+    override fun execute(command: Runnable) = command.run()
 }
 
 /* maybe we do not need this radical one
@@ -88,20 +89,19 @@ class AsyncEffect<R : ExecutionContextProvider>(
             Pair({ p: P ->
                 val ec = r.findExecutionContext(this.localExecutionContext)
                 val async = AsyncSupport.initiateAsync(r)
-
-                    val result = ec.execute {
-                        try {
-                            f(r)(p)
-                        } catch (e: Throwable) {
-                            logger().error("error in async handling",e)
-                            throw  RuntimeException(e)
-                        } finally {
-                           //
-                        }
+                val result = ec.execute {
+                    try {
+                        f(r)(p)
+                    } catch (e: Exception) {
+                        logger().error("error in async handling", e)
+                        throw  RuntimeException(e)
                     }
-                    Out.FutureOut(result.map { Either.right<Nothing, A>(it.also {
+                }
+                Out.FutureOut(result.map {
+                    Either.right<Nothing, A>(it.also {
                         async.closeAsync(r)
-                    }) })
+                    })
+                })
             }, r)
         }
 }

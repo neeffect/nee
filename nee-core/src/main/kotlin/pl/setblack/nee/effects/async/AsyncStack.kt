@@ -1,13 +1,11 @@
 package pl.setblack.nee.effects.async
 
-import io.vavr.collection.Seq
 import io.vavr.collection.List
+import io.vavr.collection.Seq
 import pl.setblack.nee.effects.env.ResourceId
 import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.effects.utils.logger
-import java.lang.IllegalStateException
 import java.util.concurrent.atomic.AtomicReference
-
 
 interface AsyncSupport<R> {
     fun asyncStack(): AsyncStack<R>
@@ -78,10 +76,9 @@ class SthToClean<R>(val asyncClean: DirtyAsyncStack<R>) {
                     //someone messed in the middle
                     when (stack) {
                         is DirtyAsyncStack<R> -> {
-
                             //TODO this is strange
                             val newStack = stack.cleanUp(env)
-                            async.setAsyncStack(newStack.first)//todo - think if possible
+                            async.setAsyncStack(newStack.first)
                             newStack.second
                         }
                         else -> {

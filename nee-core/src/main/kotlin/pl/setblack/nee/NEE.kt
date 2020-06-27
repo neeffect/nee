@@ -155,5 +155,4 @@ internal class FMNEE<R, E, P, A, A1>(
     override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FMNEE(effect, func, { a: A1 ->
         mapped(a).flatMap(f)
     })
-
 }
