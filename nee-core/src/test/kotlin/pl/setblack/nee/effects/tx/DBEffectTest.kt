@@ -1,7 +1,6 @@
 package pl.setblack.nee.effects.tx
 
 import io.kotlintest.matchers.beInstanceOf
-import io.kotlintest.matchers.collections.shouldBeOneOf
 import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.BehaviorSpec
@@ -46,7 +45,7 @@ class DBEffectTest : BehaviorSpec({
                 Nee.pure(effReqNew, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
-            When("db connected") {
+            When("internal  action executed") {
                 val db = DBLike()
                 db.appendAnswer("24")
                 db.appendAnswer("700")
@@ -54,6 +53,50 @@ class DBEffectTest : BehaviorSpec({
                 val result = monad.perform(provider)
                 Then("correct res") {
                     result(Unit).get()  shouldBe(1724)
+                }
+            }
+
+        }
+        And(" internal tx is detected") {
+            val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
+            val extractTxLevel = { _: Int ->
+                Nee.pure(effReqNew) { r ->
+                    {_: Unit ->
+                        val connection= r.conn as DBConnection
+                        connection.level
+                    }
+                }
+            }
+            val monad = simpleAction.flatMap(extractTxLevel)
+
+            When("internal  action executed") {
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad.perform(provider)(Unit)
+                Then("detected correct level of nested tx ") {
+                    result.get()  shouldBe(2)
+                }
+            }
+            //below section documents sometimes not exact execution of flatMap
+            When("double internal  action executed") {
+                val monad2 = simpleAction.flatMap{ extractTxLevel(it).flatMap(extractTxLevel)}
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad2.perform(provider)(Unit)
+                Then("detected correct level of nested tx") {
+                    result.get()  shouldBe(3)
+                }
+            }
+            When("double internal  action executed - outside") {
+                val monad2 = simpleAction.flatMap(extractTxLevel).flatMap(extractTxLevel)
+                val db = DBLike()
+                db.appendAnswer("24")
+                val provider = DBLikeProvider(db)
+                val result = monad2.perform(provider)(Unit)
+                Then("detected same level of nested tx") {
+                    result.get()  shouldBe(3)
                 }
             }
         }

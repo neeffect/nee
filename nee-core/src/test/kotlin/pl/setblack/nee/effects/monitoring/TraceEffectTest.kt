@@ -5,7 +5,7 @@ import io.kotlintest.shouldBe
 import io.vavr.collection.List
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.get
-import pl.setblack.nee.ignoreR
+import pl.setblack.nee.effects.utils.ignoreR
 import java.util.concurrent.atomic.AtomicLong
 
 internal class TraceEffectTest : BehaviorSpec({
@@ -20,7 +20,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("monitored function process") {
@@ -31,18 +30,18 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("simple function in obj process") {
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ignoreR(SomeObject::plainFunction))
+            val f = Nee.Companion.pure(eff,
+                ignoreR(SomeObject::plainFunction)
+            )
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
         When("monitored function in obj process") {
@@ -53,7 +52,6 @@ internal class TraceEffectTest : BehaviorSpec({
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
-                println(logger.entries)
             }
         }
     }

@@ -7,7 +7,6 @@ import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.env.ResourceId
 import pl.setblack.nee.effects.env.with
 import pl.setblack.nee.effects.tx.FlexTxProvider.Companion.txProviderResource
-import pl.setblack.nee.map
 
 /**
  * Transaction (flexible env version).
@@ -57,6 +56,7 @@ internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
 
     companion object {
         val txProviderResource = ResourceId(TxProvider::class)
+
         //val flexTxProviderResource = ResourceId(FlexTxProvider::class)
         @Suppress("UNCHECKED_CAST")
         fun <R> connection(env: FlexibleEnv): R =
@@ -70,7 +70,6 @@ internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
 
 fun <R, G : TxProvider<R, G>> FlexibleEnv.withTxProvider(provider: TxProvider<R, G>) =
     this.with(txProviderResource, provider)
-
 
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : FlexibleEnv, A> ((T) -> A).flex(): (FlexibleEnv) -> A =

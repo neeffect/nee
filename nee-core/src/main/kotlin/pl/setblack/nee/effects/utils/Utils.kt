@@ -1,10 +1,8 @@
-package pl.setblack.nee
+package pl.setblack.nee.effects.utils
 
 import io.vavr.Tuple2
 import io.vavr.Tuple3
 import io.vavr.control.Either
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory.getLogger
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.monitoring.TraceProvider
 
@@ -57,12 +55,7 @@ fun <ENV, A, B, C, R> tupled3(f: (ENV) -> (A, B, C) -> R) =
     }
 
 
-interface Logging
-
-inline fun <reified T : Logging> T.logger(): Logger =
-    getLogger(T::class.java)
-
 /**
  * Marks invalid function (expected to not be called).
  */
-fun INVALID(): Nothing = throw NotImplementedError()
+fun invalid(): Nothing = throw NotImplementedError()

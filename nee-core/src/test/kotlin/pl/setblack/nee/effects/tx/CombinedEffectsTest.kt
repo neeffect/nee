@@ -5,13 +5,15 @@ import io.kotlintest.specs.BehaviorSpec
 import io.vavr.collection.List
 import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
+import pl.setblack.nee.effects.async.AsyncStack
+import pl.setblack.nee.effects.async.CleanAsyncStack
 import pl.setblack.nee.effects.get
 import pl.setblack.nee.effects.getLeft
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityError
 import pl.setblack.nee.effects.security.SecurityErrorType
 import pl.setblack.nee.effects.security.SecurityProvider
-import pl.setblack.nee.merge
+import pl.setblack.nee.effects.utils.merge
 
 internal class CombinedEffectsTest : BehaviorSpec({
     Given("Combined effects for admin") {
@@ -25,7 +27,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
-            val secProvider = SimpleSecurityProvider("irreg", List.of("admin"))
+            val secProvider = TrivialSecurityProvider("irreg", List.of("admin"))
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be 6") {
@@ -39,7 +41,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
-            val secProvider = SimpleSecurityProvider("marreq", List.empty<String>())
+            val secProvider = TrivialSecurityProvider("marreq", List.empty<String>())
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
@@ -75,11 +77,12 @@ sealed class CombinedError : TxError, SecurityError {
 
 internal class CombinedProviders(
     val secProvider: SecurityProvider<String, String>,
-    val txProvider: TxProvider<DBLike, DBLikeProvider>
+    val txProvider: TxProvider<DBLike, DBLikeProvider>,
+    val asyncStack: AsyncStack<CombinedProviders> = CleanAsyncStack()
 ) : SecurityProvider<String, String> by secProvider,
     TxProvider<DBLike, CombinedProviders> {
     override fun getConnection(): TxConnection<DBLike> = txProvider.getConnection()
 
     override fun setConnectionState(newState: TxConnection<DBLike>): CombinedProviders =
-        CombinedProviders(secProvider, txProvider.setConnectionState(newState))
+        CombinedProviders(secProvider, txProvider.setConnectionState(newState), asyncStack)
 }

@@ -6,6 +6,10 @@ import io.vavr.control.Either
 import io.vavr.control.Option
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
+import pl.setblack.nee.effects.utils.Logging
+import pl.setblack.nee.effects.utils.logger
+import java.lang.Exception
+import java.lang.RuntimeException
 import java.util.concurrent.Executor
 
 /**
@@ -38,7 +42,7 @@ class SyncExecutionContext : ExecutionContext {
 }
 
 object InPlaceExecutor : Executor {
-    override fun execute(command: Runnable)  = command.run()
+    override fun execute(command: Runnable) = command.run()
 }
 
 /* maybe we do not need this radical one
@@ -79,15 +83,25 @@ class ECProvider(private val ectx: ExecutionContext, private val localWins: Bool
  */
 class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
-) : Effect<R, Nothing> {
+) : Effect<R, Nothing>, Logging {
     override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<Nothing, A>, R> =
         { r: R ->
             Pair({ p: P ->
                 val ec = r.findExecutionContext(this.localExecutionContext)
+                val async = AsyncSupport.initiateAsync(r)
                 val result = ec.execute {
-                    f(r)(p)
+                    try {
+                        f(r)(p)
+                    } catch (e: Exception) {
+                        logger().error("error in async handling", e)
+                        throw RuntimeException(e)
+                    }
                 }
-                Out.FutureOut(result.map { Either.right<Nothing, A>(it) })
+                Out.FutureOut(result.map {
+                    Either.right<Nothing, A>(it.also {
+                        async.closeAsync(r)
+                    })
+                })
             }, r)
         }
 }
