@@ -1,6 +1,6 @@
 package pl.seetblack.nee.ctx.web
 
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.http.HttpMethod

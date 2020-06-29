@@ -1,8 +1,8 @@
 package pl.setblack.nee.effects.jdbc
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.DescribeSpec
-import io.kotlintest.shouldNotBe
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldNotBe
 import java.sql.Connection
 import java.sql.ResultSet
 import io.vavr.collection.List
@@ -13,7 +13,7 @@ class JDBCConnectionTest : DescribeSpec({
         val cfg = JDBCConfig("org.h2.Driver", "jdbc:h2:mem:test_mem", "sa")
         val provider = { JDBCProvider(cfg) }
 
-        context("connection") {
+        describe("connection") {
             val conn = provider().getConnection()
             it("is created") {
                 conn shouldNotBe null
@@ -32,7 +32,7 @@ class JDBCConnectionTest : DescribeSpec({
                 conn.close()
             }
         }
-        context("creation of data") {
+        describe("creation of data") {
             val conn = provider().getConnection()
             it("should create table") {
                 val res = simpleUpdate(
@@ -60,44 +60,46 @@ class JDBCConnectionTest : DescribeSpec({
             }
 
         }
-        context("transactions") {
+        describe("transactions") {
             val conn = provider().getConnection()
-            context("simple trx") {
+            describe("simple trx") {
                 val trx = conn.continueTx()
                 it("should start  trx") {
                     trx.isRight shouldBe (true)
                 }
-                context("for rollback") {
+                describe("for rollback") {
                     val trConnection = trx.get()
                     it("should insert row") {
                         val res = trConnection.getResource().x(" INSERT INTO PLANETS VALUES (2,'VENUS')")
                         res shouldBe 1
                     }
-                    it ("should read this row") {
+                    it("should read this row") {
                         val res = trConnection.getResource().q(
-                            "SELECT NAME FROM PLANETS WHERE ID = 2;")
+                            "SELECT NAME FROM PLANETS WHERE ID = 2;"
+                        )
                         res[0] shouldBe ("VENUS")
                     }
                     it("after rollback") {
                         trConnection.rollback()
                         val res = conn.getResource().q(
-                            "SELECT COUNT(ID) FROM PLANETS")
+                            "SELECT COUNT(ID) FROM PLANETS"
+                        )
                         res[0] shouldBe ("1")
                     }
                 }
             }
-            context("nested transaction") {
+            describe("nested transaction") {
                 val trx = conn.continueTx()
                 it("should start  trx") {
                     trx.isRight shouldBe (true)
                 }
-                context("level 1 trx") {
+                describe("level 1 trx") {
                     val trConnection = trx.get()
                     it("should insert row") {
                         val res = trConnection.getResource().x(" INSERT INTO PLANETS VALUES (2,'VENUS')")
                         res shouldBe 1
                     }
-                    context("level 2 trx") {
+                    describe("level 2 trx") {
                         val trx2 = trConnection.begin()
                         it("trx2 object ") {
                             trx2.isRight shouldBe (true)
@@ -109,23 +111,27 @@ class JDBCConnectionTest : DescribeSpec({
                         }
                         it("read inserted planets") {
                             val res = conn.getResource().q(
-                                "SELECT COUNT(ID) FROM PLANETS")
+                                "SELECT COUNT(ID) FROM PLANETS"
+                            )
                             res[0] shouldBe ("3")
                         }
                         it("rollback nested") {
                             trConnection2.rollback()
                             val res = conn.getResource().q(
-                                "SELECT COUNT(ID) FROM PLANETS")
+                                "SELECT COUNT(ID) FROM PLANETS"
+                            )
                             res[0] shouldBe ("2")
                         }
-                        it ("commit  upper") {
+                        it("commit  upper") {
                             val committed = trConnection.commit()
                             committed.first shouldBe Option.none()
                         }
-                        it ("outer connection")
-                        val res = conn.getResource().q(
-                            "SELECT COUNT(ID) FROM PLANETS")
-                        res[0] shouldBe ("2")
+                        it("outer connection") {
+                            val res = conn.getResource().q(
+                                "SELECT COUNT(ID) FROM PLANETS"
+                            )
+                            res[0] shouldBe ("2")
+                        }
                     }
                 }
             }

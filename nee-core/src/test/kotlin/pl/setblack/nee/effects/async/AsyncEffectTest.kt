@@ -1,7 +1,7 @@
 package pl.setblack.nee.effects.async
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.DescribeSpec
 import io.vavr.collection.List
 import io.vavr.concurrent.Future
 import io.vavr.concurrent.Promise
@@ -17,7 +17,7 @@ class AsyncEffectTest : DescribeSpec({
         val controllableExecutionContext = ControllableExecutionContext()
         val ecProvider = ECProvider(controllableExecutionContext)
         val eff = AsyncEffect<ECProvider>()
-        context("test function") {
+        describe("test function") {
             val runned = AtomicBoolean(false)
             val testFunction = { _: Unit -> runned.set(true) }
             val async = Nee.Companion.pure(eff, ignoreR(testFunction))
@@ -31,7 +31,7 @@ class AsyncEffectTest : DescribeSpec({
                 runned.get() shouldBe true
             }
         }
-        context("with local ec") {
+        describe("with local ec") {
             val localEC = ControllableExecutionContext()
             //val localProvider = ECProvider(controllableExecutionContext)
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))

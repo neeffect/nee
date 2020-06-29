@@ -1,8 +1,8 @@
 package pl.setblack.nee.effects.tx
 
-import io.kotlintest.be
-import io.kotlintest.should
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.matchers.be
+import io.kotest.matchers.should
+import io.kotest.core.spec.style.BehaviorSpec
 import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
 import pl.setblack.nee.effects.get

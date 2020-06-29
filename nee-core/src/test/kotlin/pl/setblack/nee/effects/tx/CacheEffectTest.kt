@@ -1,8 +1,8 @@
 package pl.setblack.nee.effects.tx
 
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.BehaviorSpec
 import io.vavr.collection.Stream
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.cache.CacheEffect
