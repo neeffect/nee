@@ -1,10 +1,10 @@
 buildscript {
     ext {
-        kotlin_version = '1.3.50'
+        kotlin_version = '1.3.71'
         liquibase_version='3.6.1'
-        kotlintest_version='3.3.2'
         vavr_version='0.10.2'
         h2_version='1.4.193'
+        kotest_version = '4.1.1'
     }
     repositories {
         mavenLocal()

@@ -1,8 +1,8 @@
 package pl.setblack.nee.security
 
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.DescribeSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.DescribeSpec
 import java.sql.Connection
 import java.util.*
 import io.vavr.collection.List
@@ -13,7 +13,7 @@ class DBUserRealmTest : DescribeSpec({
         val testDb = pl.setblack.nee.security.test.TestDB()
         val jdbcProvider = JDBCProvider(testDb.initializeDb())
         val userRealm = DBUserRealm(jdbcProvider)
-        context("db with a single user") {
+        describe("db with a single user") {
             testDb.addUser("test1","testPass", List.of("test", "user", "admin"))
             it("test login succeeds") {
                 val logged = userRealm.loginUser("test1", "testPass".toCharArray())

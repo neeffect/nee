@@ -1,9 +1,9 @@
 package pl.setblack.nee.effects.tx
 
-import io.kotlintest.matchers.beInstanceOf
-import io.kotlintest.should
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.beInstanceOf
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.get
 import pl.setblack.nee.effects.getLeft

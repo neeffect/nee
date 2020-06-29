@@ -1,13 +1,13 @@
 package pl.setblack.nee.security
 
-import io.kotlintest.specs.DescribeSpec
-import io.kotlintest.shouldBe
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
 import java.math.BigInteger
 
 class PBKDF2HasherTest : DescribeSpec({
     describe("pbk2hasher") {
         val hasher = PBKDF2Hasher()
-        context("password with some salt") {
+        describe("password with some salt") {
             val salt = ByteArray(16) { 0xCA.toByte() }
             val password = "very secret"
             val hash  = hasher.hashPassword(password.toCharArray(), salt)

@@ -1,7 +1,7 @@
 package pl.setblack.nee.effects.async
 
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.core.spec.style.DescribeSpec
 import io.vavr.control.Either
 import pl.setblack.nee.Nee
 import pl.setblack.nee.andThen
