@@ -11,9 +11,7 @@ dependencies {
     testImplementation "io.kotest:kotest-assertions-core-jvm:${kotest_version}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
-repositories {
-    mavenCentral()
-}
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"

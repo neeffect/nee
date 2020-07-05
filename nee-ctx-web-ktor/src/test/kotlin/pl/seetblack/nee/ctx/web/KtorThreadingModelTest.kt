@@ -13,6 +13,7 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
+import kotlinx.coroutines.newFixedThreadPoolContext
 import pl.setblack.nee.Nee
 import pl.setblack.nee.ctx.web.WebContext
 import pl.setblack.nee.effects.Out
@@ -32,16 +33,16 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 
 fun Application.slowApp() {
-    val  myTxProvider  = object :  TxProvider<Connection, JDBCProvider> {
+    val myTxProvider = object : TxProvider<Connection, JDBCProvider> {
         override fun getConnection(): TxConnection<Connection> =
             invalid()
 
-        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider  =
+        override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider =
             invalid()
     }
 
     val noSecurity = object : SecurityProvider<User, UserRole> {
-        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>>  =
+        override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>> =
             invalid()
     }
 
@@ -55,7 +56,7 @@ fun Application.slowApp() {
             call.respondText { "ok" }
         }
         get("/fast") {
-            val wc = WebContext(myTxProvider, noSecurity, ECProvider(ec),call)
+            val wc = WebContext(myTxProvider, noSecurity, ECProvider(ec), call)
             val result = Nee.constP(WebContext.Effects.async) {
                 Thread.sleep(100)
                 "ok"
@@ -66,11 +67,12 @@ fun Application.slowApp() {
 }
 
 class KtorThreadingModelTest : BehaviorSpec({
-    System.setProperty(IO_PARALLELISM_PROPERTY_NAME, "2")
 
     Given("ktor app") {
 
-        val engine = TestApplicationEngine(createTestEnvironment())
+        val engine = TestApplicationEngine(createTestEnvironment()) {
+            this.dispatcher = newFixedThreadPoolContext(2, "test ktor dispatcher")
+        }
         engine.start(wait = false)
         engine.application.slowApp()
         When("slow req bombarded with 100 threads") {
@@ -83,11 +85,11 @@ class KtorThreadingModelTest : BehaviorSpec({
                     countdown.countDown()
                 }
             }
-            xthen("slow is slow") {
+            then("slow is slow") {
                 countdown.await()
                 val totalTime = System.currentTimeMillis() - initTime
                 println(totalTime)
-                totalTime shouldBeGreaterThan   2000
+                totalTime shouldBeGreaterThan 2000
             }
         }
         When("fast req bombarded with 100 threads") {
@@ -99,11 +101,11 @@ class KtorThreadingModelTest : BehaviorSpec({
                     countdown.countDown()
                 }
             }
-            xthen("fast is faster") {
+            then("fast is faster") {
                 countdown.await()
                 val totalTime = System.currentTimeMillis() - initTime
                 println(totalTime)
-                totalTime shouldBeLessThan  2000
+                totalTime shouldBeLessThan 2000
             }
         }
     }
@@ -112,5 +114,8 @@ class KtorThreadingModelTest : BehaviorSpec({
         val reqs = 100
         val reqExecutor = Executors.newFixedThreadPool(reqs)
 
+        init {
+            println("ok")
+        }
     }
 }
