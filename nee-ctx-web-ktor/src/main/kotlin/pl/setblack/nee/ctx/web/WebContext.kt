@@ -7,37 +7,30 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.TextContent
-import io.ktor.request.header
 import io.ktor.response.respond
 import io.vavr.collection.List
 import io.vavr.jackson.datatype.VavrModule
-import io.vavr.kotlin.option
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import pl.setblack.nee.ANee
-import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.anyError
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.AsyncEffect
-import pl.setblack.nee.effects.async.ECProvider
 import pl.setblack.nee.effects.async.ExecutionContextProvider
-import pl.setblack.nee.effects.async.ExecutorExecutionContext
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
-import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.effects.jdbc.JDBCProvider
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
 import pl.setblack.nee.effects.tx.TxEffect
 import pl.setblack.nee.effects.tx.TxProvider
+import pl.setblack.nee.effects.utils.Logging
 import pl.setblack.nee.effects.utils.logger
 import pl.setblack.nee.effects.utils.merge
-import pl.setblack.nee.security.DBUserRealm
 import pl.setblack.nee.security.User
 import pl.setblack.nee.security.UserRole
 import java.sql.Connection
-import java.util.concurrent.Executors
 
 
 class WebContext(
@@ -100,25 +93,7 @@ class WebContext(
         )
 
     companion object {
-        private val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
 
-        private val jdbcExecutionContextProvider =
-            ECProvider(ExecutorExecutionContext(jdbcTasksScheduler))
-
-        fun create(jdbc: JDBCConfig, call: ApplicationCall): WebContext =
-            JDBCProvider(jdbc).let { jdbcProvider ->
-                val dbUserRealm = DBUserRealm(jdbcProvider)
-                val authProvider = BasicAuthProvider<User, UserRole>(
-                    call.request.header("Authorization").option(),
-                    dbUserRealm
-                )
-                WebContext(
-                    jdbcProvider,
-                    authProvider,
-                    jdbcExecutionContextProvider,
-                    call
-                )
-            }
 
         internal val jacksonMapper = ObjectMapper()
             .registerModule(VavrModule())

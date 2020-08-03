@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        ktor_version = '1.2.4'
+
     }
 }
 plugins {

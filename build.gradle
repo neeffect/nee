@@ -5,6 +5,7 @@ buildscript {
         vavr_version='0.10.2'
         h2_version='1.4.193'
         kotest_version = '4.1.1'
+        ktor_version = '1.2.4'
     }
     repositories {
         mavenLocal()

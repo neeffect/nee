@@ -8,4 +8,5 @@ include 'nee-core',
         'nee-ctx-web-ktor',
         'nee-test',
         'nee-test:nee-security-jdbc-test',
+        'nee-test:nee-ctx-web-test',
         'scratchpad'

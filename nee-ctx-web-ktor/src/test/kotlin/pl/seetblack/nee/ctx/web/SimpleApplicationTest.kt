@@ -12,13 +12,16 @@ import io.ktor.server.testing.handleRequest
 import io.vavr.collection.List
 import pl.setblack.nee.Nee
 import pl.setblack.nee.ctx.web.BasicAuth
+import pl.setblack.nee.ctx.web.JDBCBasedWebContext
 import pl.setblack.nee.ctx.web.WebContext
+import pl.setblack.nee.ctx.web.WebContextProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.security.UserRole
 import pl.setblack.nee.security.test.TestDB
 import kotlin.test.assertEquals
 
-fun Application.main(jdbcConfig: JDBCConfig) {
+fun Application.main(wctxProvider: WebContextProvider) {
+
     routing {
         get("/") {
             val function = Nee.constP(WebContext.Effects.jdbc) { webCtx ->
@@ -34,13 +37,13 @@ fun Application.main(jdbcConfig: JDBCConfig) {
                         }
                     }
             }.anyError()
-            WebContext.create(jdbcConfig, call).serveText(function, Unit)
+            wctxProvider.create(call).serveText(function, Unit)
         }
         get("/secured") {
             val function = Nee.constP(WebContext.Effects.secured(List.of(UserRole("badmin")))) { _ ->
                 "Secret message"
             }.anyError()
-            WebContext.create(jdbcConfig, call).serveText(function, Unit)
+            wctxProvider.create(call).serveText(function, Unit)
         }
     }
 }
@@ -48,28 +51,34 @@ fun Application.main(jdbcConfig: JDBCConfig) {
 class SimpleApplicationTest : BehaviorSpec({
     Given("Test ktor app") {
         val engine = TestApplicationEngine(createTestEnvironment())
-        val testDb = TestDB()
-        testDb.addUser("test", "test",List.of("badmin"))
-        engine.start(wait = false)
-        engine.application.main(testDb.jdbcConfig)
 
-        When("requested") {
-            Then("db connection works") {
-                engine.handleRequest(HttpMethod.Get, "/").let { call ->
-                    assertEquals("Hello! Result is 41", call.response.content)
-                }
+        TestDB().initializeDb().use { testDb ->
+
+            testDb.addUser("test", "test", List.of("badmin"))
+            val ctxProvider = object : JDBCBasedWebContext() {
+                override val jdbcConfig: JDBCConfig = testDb.jdbcConfig
             }
+            engine.start(wait = false)
+            engine.application.main(ctxProvider)
 
-        }
-        When("request with authentication") {
-            Then("db connection works") {
-                engine.handleRequest(HttpMethod.Get, "/secured") {
-                    addHeader(BasicAuth.authorizationHeader, "dGVzdDp0ZXN0")
-                }.let { call ->
-                    assertEquals("Secret message", call.response.content)
+            When("requested") {
+                Then("db connection works") {
+                    engine.handleRequest(HttpMethod.Get, "/").let { call ->
+                        assertEquals("Hello! Result is 41", call.response.content)
+                    }
                 }
-            }
 
+            }
+            When("request with authentication") {
+                Then("db connection works") {
+                    engine.handleRequest(HttpMethod.Get, "/secured") {
+                        addHeader(BasicAuth.authorizationHeader, "Basic dGVzdDp0ZXN0")
+                    }.let { call ->
+                        assertEquals("Secret message", call.response.content)
+                    }
+                }
+
+            }
         }
     }
 })

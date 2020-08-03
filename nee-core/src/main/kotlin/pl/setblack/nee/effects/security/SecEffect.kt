@@ -46,6 +46,7 @@ sealed class SecurityErrorType : SecurityError {
      * Expected role is missing.
      */
     data class MissingRole<ROLE>(val roles: List<ROLE>) : SecurityErrorType()
+
 }
 
 class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
