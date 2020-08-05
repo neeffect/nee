@@ -98,20 +98,22 @@ class TestDBConnection(val connection: Connection, val jdbcConfig: JDBCConfig) :
 
 val h2InMemDatabase = JDBCConfig(
     driverClassName = "org.h2.Driver",
-    url = "jdbc:h2:mem:test_mem;DB_CLOSE_DELAY=-1",
+    url = "jdbc:h2:mem:test_mem",
     user = "sa",
     password = ""
 )
 
 
 fun <R> inTransaction(connection: Connection, f: (Connection) -> R) {
+    val initialACState = connection.autoCommit
     connection.autoCommit = false
     try {
         f(connection)
         connection.commit()
     } catch (e: Exception) {
         connection.rollback()
+        throw  e
     } finally {
-
+        connection.autoCommit = initialACState
     }
 }
