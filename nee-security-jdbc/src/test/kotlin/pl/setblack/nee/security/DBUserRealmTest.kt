@@ -23,6 +23,7 @@ class DBUserRealmTest : DescribeSpec({
                     val logged = userRealm.loginUser("test1", "testPas1s".toCharArray())
                     logged.isDefined shouldBe false
                 }
+
             }
         }
     }

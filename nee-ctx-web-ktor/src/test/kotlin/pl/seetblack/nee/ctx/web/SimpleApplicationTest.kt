@@ -16,6 +16,7 @@ import pl.setblack.nee.ctx.web.JDBCBasedWebContext
 import pl.setblack.nee.ctx.web.WebContext
 import pl.setblack.nee.ctx.web.WebContextProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
+import pl.setblack.nee.effects.jdbc.JDBCProvider
 import pl.setblack.nee.security.UserRole
 import pl.setblack.nee.security.test.TestDB
 import kotlin.test.assertEquals
@@ -56,7 +57,10 @@ class SimpleApplicationTest : BehaviorSpec({
 
             testDb.addUser("test", "test", List.of("badmin"))
             val ctxProvider = object : JDBCBasedWebContext() {
-                override val jdbcConfig: JDBCConfig = testDb.jdbcConfig
+                override val jdbcProvider: JDBCProvider by lazy {
+                    JDBCProvider(testDb.connection)
+                }
+
             }
             engine.start(wait = false)
             engine.application.main(ctxProvider)

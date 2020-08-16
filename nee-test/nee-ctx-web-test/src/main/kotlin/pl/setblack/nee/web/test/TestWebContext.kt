@@ -7,6 +7,7 @@ import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.createTestEnvironment
 import pl.setblack.nee.ctx.web.JDBCBasedWebContext
 import pl.setblack.nee.effects.jdbc.JDBCConfig
+import pl.setblack.nee.effects.jdbc.JDBCProvider
 import kotlin.coroutines.EmptyCoroutineContext
 
 open class TestWebContext : JDBCBasedWebContext(){
@@ -16,13 +17,16 @@ open class TestWebContext : JDBCBasedWebContext(){
     open val testCallConstrucor
             by lazy { {TestApplicationCall(testApplication, false, EmptyCoroutineContext)}}
 
-    override val jdbcConfig : JDBCConfig by lazy {
+    val jdbcConfig : JDBCConfig by lazy {
         JDBCConfig(
             driverClassName = "org.h2.Driver",
             url = "jdbc:h2:mem:test",
             user = "sa",
             password = ""
         )
+    }
+    override val jdbcProvider: JDBCProvider by lazy {
+        JDBCProvider(jdbcConfig)
     }
 
     fun testCtx(reqConfig: (TestApplicationRequest)->Unit = {})

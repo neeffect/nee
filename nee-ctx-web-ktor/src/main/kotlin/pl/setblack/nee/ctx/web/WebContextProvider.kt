@@ -24,11 +24,7 @@ abstract class JDBCBasedWebContext : WebContextProvider{
     private val jdbcExecutionContextProvider =
         ECProvider(ExecutorExecutionContext(jdbcTasksScheduler))
 
-    abstract val jdbcConfig: JDBCConfig
-
-    open val jdbcProvider: JDBCProvider by lazy {
-        JDBCProvider(jdbcConfig)
-    }
+    abstract val jdbcProvider: JDBCProvider
 
     open val userRealm: UserRealm<User, UserRole> by lazy {
         DBUserRealm(jdbcProvider)
