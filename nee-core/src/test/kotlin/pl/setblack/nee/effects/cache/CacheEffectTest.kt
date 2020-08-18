@@ -9,10 +9,10 @@ import pl.setblack.nee.effects.get
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class CacheEffectTest : BehaviorSpec({
-    Given("Cache effect and naive implementation") {
+    Given("cache effect and naive implementation") {
         val cacheProvider = NaiveCacheProvider()
         val cache = CacheEffect<Env, Nothing>(cacheProvider)
-        When("Called twice using same param and different env") {
+        When("function called twice using same param and different env") {
             val businessFunction =
                 Nee.pure(
                     cache, ::returnEnvIgnoringParam)
@@ -26,7 +26,7 @@ internal class CacheEffectTest : BehaviorSpec({
                 x2.get() shouldBe Env.SomeValue
             }
         }
-        When("Called twice using different params and env") {
+        When("function called twice using different params and env") {
             val businessFunction =
                 Nee.pure(
                     cache, ::returnEnvIgnoringParam)
