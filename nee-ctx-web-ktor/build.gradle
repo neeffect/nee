@@ -22,5 +22,6 @@ dependencies {
     testImplementation project (':nee-test:nee-security-jdbc-test')
     testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
     testImplementation "io.kotest:kotest-runner-junit5-jvm:$kotest_version"
-    testImplementation "io.kotest:kotest-runner-console-jvm:$kotest_version"
+    //testImplementation "io.kotest:kotest-runner-console-jvm:$kotest_version"
+    testImplementation "io.kotest:kotest-runner-console-jvm:4.1.3.2"
 }

@@ -67,13 +67,13 @@ class WebContext(
 
     suspend fun <E,A> serveMessage(msg : Out<E, A>) : Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
-            val message = outcome.bimap({ serveError(it as Any) as OutgoingContent }, { regularResult ->
+            val message = outcome.bimap<OutgoingContent,OutgoingContent>({ serveError(it as Any) }, { regularResult ->
                 val bytes = jacksonMapper.writeValueAsBytes(regularResult)
                 ByteArrayContent(
                     bytes = bytes,
                     contentType = ContentType.Application.Json,
                     status = HttpStatusCode.OK
-                ) as OutgoingContent
+                )
             }).merge()
             try {
                 applicationCall.respond(message)

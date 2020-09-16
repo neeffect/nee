@@ -15,7 +15,7 @@ open class TestWebContext : JDBCBasedWebContext(){
     open val testEnv: ApplicationEngineEnvironment by  lazy { createTestEnvironment() }
     open val testApplication by lazy {Application(testEnv)}
     open val testCallConstrucor
-            by lazy { {TestApplicationCall(testApplication, false, EmptyCoroutineContext)}}
+            by lazy { {TestApplicationCall(testApplication, false, true, EmptyCoroutineContext)}}
 
     val jdbcConfig : JDBCConfig by lazy {
         JDBCConfig(
