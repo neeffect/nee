@@ -1,16 +1,16 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id "org.jetbrains.kotlin.jvm"
 }
 
-group 'pl.setblack'
-version '0.2.0-SNAPSHOT'
+group "pl.setblack"
+version "0.2.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api project(':nee-ctx-web-ktor')
+    api project(":nee-ctx-web-ktor")
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-server-test-host:$ktor_version"

@@ -1,12 +1,12 @@
-rootProject.name = 'nee'
+rootProject.name = "nee"
 
-include 'nee-core',
-        'nee-jdbc',
-        'nee-security',
-        'nee-security-jdbc',
-        'nee-cache-caffeine',
-        'nee-ctx-web-ktor',
-        'nee-test',
-        'nee-test:nee-security-jdbc-test',
-        'nee-test:nee-ctx-web-test',
-        'scratchpad'
+include "nee-core",
+        "nee-jdbc",
+        "nee-security",
+        "nee-security-jdbc",
+        "nee-cache-caffeine",
+        "nee-ctx-web-ktor",
+        "nee-test",
+        "nee-test:nee-security-jdbc-test",
+        "nee-test:nee-ctx-web-test",
+        "scratchpad"

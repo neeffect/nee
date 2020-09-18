@@ -4,22 +4,22 @@ buildscript {
     }
 }
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id "org.jetbrains.kotlin.jvm"
 }
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    api project(':nee-core')
-    api project(':nee-jdbc')
-    implementation project(':nee-security')
-    implementation project(':nee-security-jdbc')
-    implementation project(':nee-cache-caffeine')
+    api project(":nee-core")
+    api project(":nee-jdbc")
+    implementation project(":nee-security")
+    implementation project(":nee-security-jdbc")
+    implementation project(":nee-cache-caffeine")
 
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.vavr:vavr-jackson:$vavr_version"
 
-    testImplementation project (':nee-test:nee-security-jdbc-test')
+    testImplementation project (":nee-test:nee-security-jdbc-test")
     testImplementation "io.ktor:ktor-server-test-host:$ktor_version"
     testImplementation "io.kotest:kotest-runner-junit5-jvm:$kotest_version"
     //testImplementation "io.kotest:kotest-runner-console-jvm:$kotest_version"

@@ -1,12 +1,12 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id "org.jetbrains.kotlin.jvm"
 }
 
 dependencies {
     api ("io.vavr:vavr-kotlin:$vavr_version") {
-        exclude group: 'org.jetbrains.kotlin'
+        exclude group: "org.jetbrains.kotlin"
     }
-    implementation group: 'io.github.krasnoludkolo', name: 'haste', version: '0.2.1'
+    implementation group: "io.github.krasnoludkolo", name: "haste", version: "0.2.1"
     testImplementation "io.kotest:kotest-runner-junit5-jvm:${kotest_version}"
     testImplementation "io.kotest:kotest-assertions-core-jvm:${kotest_version}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
