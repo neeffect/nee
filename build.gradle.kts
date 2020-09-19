@@ -99,16 +99,21 @@ allprojects {
 
 
 tasks.register<JacocoReport>("generateMergedReport") {
-//    dependsOn(subprojects.test)
-//    additionalSourceDirs.setFrom(files(subprojects.sourceSets.main.allSource.srcDirs))
+    //dependsOn(subprojects.test)
+    dependsOn(subprojects.map {it.getTasksByName("test", false)})
+    additionalSourceDirs.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
+    sourceDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
+    classDirectories.setFrom(files(subprojects.map {it.sourceSets.asMap["main"]?.output}))
+    //line below if fishy
+    executionData.setFrom(project.fileTree(Pair("dir","."), Pair("include","**/build/jacoco/test.exec")))
 //    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
 //    classDirectories.setFrom files(subprojects.sourceSets.main.output)
 //    executionData.setFrom project.fileTree(dir = ".", include = "**/build/jacoco/test.exec")
-//    reports {
-//        xml.enabled true
-//        csv.enabled false
-//        html.enabled true
-//    }
+    reports {
+        xml.isEnabled =  true
+        csv.isEnabled  = false
+        html.isEnabled = true
+    }
 }
 
 allprojects {
