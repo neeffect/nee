@@ -17,6 +17,8 @@ plugins {
     `kotlin-dsl` //TODO - read about it
     id("jacoco")
     id("maven-publish")
+    signing
+    id("org.jetbrains.dokka") version "0.10.1"
 }
 
 repositories {
@@ -31,7 +33,7 @@ allprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     group = "pl.setblack"
-    version = "0.2.0-SNAPSHOT"
+    version = "0.3.0-SNAPSHOT"
 
     dependencies {
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
@@ -91,27 +93,27 @@ allprojects {
         }
     }
 
-    java {
-        withSourcesJar()
-        withJavadocJar()
-    }
+//    java {
+//        withSourcesJar()
+//        withJavadocJar()
+//    }
 }
 
 
 tasks.register<JacocoReport>("generateMergedReport") {
     //dependsOn(subprojects.test)
-    dependsOn(subprojects.map {it.getTasksByName("test", false)})
+    dependsOn(subprojects.map { it.getTasksByName("test", false) })
     additionalSourceDirs.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
     sourceDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
-    classDirectories.setFrom(files(subprojects.map {it.sourceSets.asMap["main"]?.output}))
+    classDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.output }))
     //line below if fishy
-    executionData.setFrom(project.fileTree(Pair("dir","."), Pair("include","**/build/jacoco/test.exec")))
+    executionData.setFrom(project.fileTree(Pair("dir", "."), Pair("include", "**/build/jacoco/test.exec")))
 //    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
 //    classDirectories.setFrom files(subprojects.sourceSets.main.output)
 //    executionData.setFrom project.fileTree(dir = ".", include = "**/build/jacoco/test.exec")
     reports {
-        xml.isEnabled =  true
-        csv.isEnabled  = false
+        xml.isEnabled = true
+        csv.isEnabled = false
         html.isEnabled = true
     }
 }
@@ -124,4 +126,10 @@ allprojects {
 }
 
 
+val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
 
+signing {
+    useGpgCmd()
+
+    sign(publications)
+}
