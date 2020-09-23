@@ -64,7 +64,6 @@ publishing {
          credentials {
             username = System.getenv("OSSRH_USERNAME") ?: ossrhUsername
             password = System.getenv("OSSRH_PASSWORD") ?: ossrhPassword
-             println("ossrhUsername:${ossrhUsername}")
          }
       }
    }
