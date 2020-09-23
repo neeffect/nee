@@ -13,5 +13,5 @@ dependencies {
     testImplementation (Libs.Kotest.runnerJunit5Jvm)
 }
 
-
+apply(from = "../publish-mpp.gradle.kts")
 

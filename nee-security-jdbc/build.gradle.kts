@@ -20,9 +20,8 @@ dependencies {
     testRuntimeOnly(Libs.H2.h2)
     testImplementation(Libs.Liquibase.core)
 
-
-
 }
 
 
 
+apply(from = "../publish-mpp.gradle.kts")

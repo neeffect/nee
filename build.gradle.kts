@@ -13,6 +13,7 @@ buildscript {
 }
 
 plugins {
+    java
     id("io.gitlab.arturbosch.detekt").version("1.5.0")
     `kotlin-dsl` //TODO - read about it
     id("jacoco")
@@ -33,7 +34,7 @@ allprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
 
     group = "pl.setblack"
-    version = "0.3.0-SNAPSHOT"
+    version = Ci.publishVersion
 
     dependencies {
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api

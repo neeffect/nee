@@ -21,6 +21,7 @@ fun Project.signing(configure: SigningExtension.() -> Unit): Unit =
 
 //val dokka = tasks.named("dokka")
 val javadoc = tasks.named("javadoc")
+val sources = tasks.named("kotlinSourcesJar")
 
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
 
@@ -43,6 +44,16 @@ val javadocJar by tasks.creating(Jar::class) {
    from(javadoc)
 }
 
+val sourcesJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles sources"
+    archiveClassifier.set("sources")
+    from(sources)
+}
+
+
+
+
 publishing {
    repositories {
       maven {
@@ -60,16 +71,18 @@ publishing {
 
    publications.withType<MavenPublication>().forEach {
       it.apply {
-         //if (Ci.isRelease)
-            artifact(javadocJar)
+         if (Ci.isRelease) {
+             artifact(javadocJar)
+             artifact(sourcesJar)
+         }
          pom {
-            name.set("Kotest")
-            description.set("Kotlin Test Framework")
-            url.set("http://www.github.com/kotest/kotest")
+            name.set("Neefect")
+            description.set("Nee")
+            url.set("http://www.github.com/neefect/nee/")
 
             scm {
                connection.set("scm:git:http://www.github.com/neefect/nee/")
-               developerConnection.set("scm:git:http://github.com/jratajski/")
+               developerConnection.set("scm:git:http://github.com/jarekratajski/")
                url.set("http://www.github.com/neefect/nee/")
             }
 
@@ -81,7 +94,11 @@ publishing {
             }
 
             developers {
-
+                developer {
+                    id.set("jarekratajski")
+                    name.set("Jarek Ratajski")
+                    email.set("jratajski@gmail.com")
+                }
             }
          }
       }
