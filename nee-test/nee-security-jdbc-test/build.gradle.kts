@@ -15,3 +15,5 @@ dependencies {
     implementation(Libs.Liquibase.core)
     runtime (Libs.H2.h2)
 }
+
+apply(from = "../../publish-mpp.gradle.kts")

@@ -5,14 +5,10 @@ plugins {
 }
 
 
-
 dependencies {
-    api(project(":nee-ctx-web-ktor"))
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
-    implementation(Libs.Ktor.serverCore)
-    implementation(Libs.Ktor.serverTestHost)
-
+    implementation(project(":nee-core"))
+    api("com.github.ben-manes.caffeine:caffeine:2.5.5")
 }
 
-
-apply(from = "../../publish-mpp.gradle.kts")
+apply(from = "../publish-mpp.gradle.kts")
