@@ -18,8 +18,10 @@ plugins {
     `kotlin-dsl` //TODO - read about it
     id("jacoco")
     id("maven-publish")
+    id("java-library")
     signing
     id("org.jetbrains.dokka") version "0.10.1"
+    id("com.bmuschko.nexus") version "2.3.1"
 }
 
 repositories {
@@ -72,7 +74,7 @@ allprojects {
             csv.isEnabled = false
         }
     }
-
+    //co za wój?
     publishing {
         publications {
             create<MavenPublication>("maven") {
