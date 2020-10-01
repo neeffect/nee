@@ -26,12 +26,16 @@ fun Project.signing(configure: SigningExtension.() -> Unit): Unit =
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
 
 signing {
-    useGpgCmd()
+    setRequired({
+        (Ci.isRelease) && gradle.taskGraph.hasTask("publish")
+    })
+
     if (signingKey != null && signingPassword != null) {
         @Suppress("UnstableApiUsage")
         useInMemoryPgpKeys(signingKey, signingPassword)
     }
     if (Ci.isRelease) {
+        useGpgCmd()
         sign(publications)
     }
 }
