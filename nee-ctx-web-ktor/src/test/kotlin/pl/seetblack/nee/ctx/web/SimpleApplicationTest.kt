@@ -3,7 +3,7 @@ package pl.seetblack.nee.ctx.web
 import io.kotest.core.spec.style.BehaviorSpec
 import io.ktor.application.Application
 import io.ktor.application.call
-import io.ktor.http.HttpMethod
+import io.ktor.http.*
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
@@ -79,6 +79,16 @@ class SimpleApplicationTest : BehaviorSpec({
                         addHeader(BasicAuth.authorizationHeader, "Basic dGVzdDp0ZXN0")
                     }.let { call ->
                         assertEquals("Secret message", call.response.content)
+                    }
+                }
+
+            }
+            When("request with invalid authentication") {
+                Then("db connection works") {
+                    engine.handleRequest(HttpMethod.Get, "/secured") {
+                        addHeader(BasicAuth.authorizationHeader, "Basic blablador")
+                    }.let { call ->
+                        assertEquals(HttpStatusCode.Unauthorized, call.response.status())
                     }
                 }
 

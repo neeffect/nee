@@ -15,6 +15,7 @@ import io.ktor.server.testing.handleRequest
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
 import kotlinx.coroutines.newFixedThreadPoolContext
 import pl.setblack.nee.Nee
+import pl.setblack.nee.ctx.web.DefaultErrorHandler
 import pl.setblack.nee.ctx.web.WebContext
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.ECProvider
@@ -56,7 +57,7 @@ fun Application.slowApp() {
             call.respondText { "ok" }
         }
         get("/fast") {
-            val wc = WebContext(myTxProvider, noSecurity, ECProvider(ec), call)
+            val wc = WebContext(myTxProvider, noSecurity, ECProvider(ec), DefaultErrorHandler, call)
             val result = Nee.constP(WebContext.Effects.async) {
                 Thread.sleep(100)
                 "ok"

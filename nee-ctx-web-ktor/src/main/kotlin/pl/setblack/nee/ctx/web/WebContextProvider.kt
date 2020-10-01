@@ -18,7 +18,7 @@ interface WebContextProvider {
     fun create(call: ApplicationCall): WebContext
 }
 
-abstract class JDBCBasedWebContext : WebContextProvider{
+abstract class JDBCBasedWebContext : WebContextProvider {
     private val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
 
     private val jdbcExecutionContextProvider =
@@ -36,10 +36,13 @@ abstract class JDBCBasedWebContext : WebContextProvider{
             userRealm
         )
 
+    open val errorHandler: ErrorHandler by lazy { DefaultErrorHandler }
+
     override fun create(call: ApplicationCall): WebContext = WebContext(
         jdbcProvider,
         authProvider(call),
         jdbcExecutionContextProvider,
+        errorHandler,
         call
     )
 

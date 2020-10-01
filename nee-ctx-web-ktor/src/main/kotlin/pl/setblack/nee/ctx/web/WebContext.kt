@@ -37,6 +37,7 @@ class WebContext(
     private val jdbcProvider: TxProvider<Connection, JDBCProvider>,
     private val securityProvider: SecurityProvider<User, UserRole>,
     private val executionContextProvider: ExecutionContextProvider,
+    private val errorHandler: ErrorHandler = DefaultErrorHandler,
     private val applicationCall: ApplicationCall
 ) : TxProvider<Connection, WebContext>,
     SecurityProvider<User, UserRole> by securityProvider,
@@ -49,13 +50,14 @@ class WebContext(
             jdbcProvider.setConnectionState(newState),
             securityProvider,
             executionContextProvider,
+            errorHandler,
             applicationCall
         )
 
     fun <P> serveText(businessFunction: ANee<WebContext, P, String>, param: P) =
         businessFunction.perform(this)(param)
             .onComplete { outcome ->
-                val message = outcome.bimap(::serveError, { regularResult ->
+                val message = outcome.bimap<OutgoingContent,OutgoingContent>(::serveError, { regularResult ->
                     TextContent(
                         text = regularResult,
                         contentType = ContentType.Text.Plain,
@@ -85,12 +87,8 @@ class WebContext(
     suspend fun <P> serveMessage(businessFunction: ANee<WebContext, P, Any>, param: P) =
         serveMessage(businessFunction.perform(this)(param))
 
-    private fun serveError(errorResult: Any): TextContent =
-        TextContent(
-            text = "error:" + errorResult.toString(),
-            contentType = ContentType.Text.Plain,
-            status = HttpStatusCode.InternalServerError
-        )
+    private fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)
+
 
     companion object {
 

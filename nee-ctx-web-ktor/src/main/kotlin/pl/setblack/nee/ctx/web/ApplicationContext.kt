@@ -1,15 +1,12 @@
 package pl.setblack.nee.ctx.web
 
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
 import pl.setblack.nee.UANee
-import pl.setblack.nee.effects.jdbc.JDBCConfig
 
 /**
  * Generic app context.
  */
 interface ApplicationContextProvider<CTX, LOCAL> {
-    suspend fun serve( businessFunction: UANee<CTX, Any>, localParam : LOCAL)
+    suspend fun serve(businessFunction: UANee<CTX, Any>, localParam: LOCAL)
 }
 
 /**

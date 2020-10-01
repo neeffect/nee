@@ -21,6 +21,6 @@ dependencies {
     testImplementation(Libs.Ktor.serverTestHost)
     testImplementation(Libs.Kotest.runnerJunit5Jvm)
     //testImplementation("io.kotest:kotest-runner-console-jvm:$kotest_version")
-    testImplementation(Libs.Kotest.runnerConsoleJvm)
+
 }
 apply(from = "../publish-mpp.gradle.kts")
