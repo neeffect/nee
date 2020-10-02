@@ -19,8 +19,8 @@ fun Project.publishing(action: PublishingExtension.() -> Unit) =
 fun Project.signing(configure: SigningExtension.() -> Unit): Unit =
     configure(configure)
 
-//val dokka = tasks.named("dokka")
-//val javadoc = tasks.named("javadoc")
+val dokka = tasks.named("dokka")
+val javadoc = tasks.named("javadoc")
 //val sources = tasks.named("kotlinSourcesJar")
 
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
@@ -40,14 +40,18 @@ signing {
     }
 }
 
-
-//val javadocJar by tasks.creating(Jar::class) {
-//   group = JavaBasePlugin.DOCUMENTATION_GROUP
-//   description = "Assembles java doc to jar"
-//   archiveClassifier.set("javadoc")
-//   from(javadoc)
-//}
-
+val javadocJar2 by tasks.creating(Jar::class) {
+   group = JavaBasePlugin.DOCUMENTATION_GROUP
+   description = "Assembles java doc to jar"
+   archiveClassifier.set("javadoc")
+   from(javadoc)
+}
+val dokkaJar by tasks.creating(Jar::class) {
+   group = JavaBasePlugin.DOCUMENTATION_GROUP
+   description = "Assembles Kotlin docs with Dokka"
+   archiveClassifier.set("javadoc")
+   from(dokka)
+}
 //val sourcesJar by tasks.creating(Jar::class) {
 //    group = JavaBasePlugin.DOCUMENTATION_GROUP
 //    description = "Assembles sources"
@@ -74,8 +78,7 @@ publishing {
     publications.withType<MavenPublication>().forEach {
         it.apply {
             if (Ci.isRelease) {
-                //artifact(javadocJar)
-
+                artifact(tasks["javadocJar"])
             }
             artifact(tasks["kotlinSourcesJar"])
 

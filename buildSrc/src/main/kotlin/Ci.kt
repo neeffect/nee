@@ -2,7 +2,7 @@ object Ci {
 
     // this is the version used for building snapshots
     // .buildnumber-snapshot will be appended
-    private const val snapshotBase = "0.3.2"
+    private const val snapshotBase = "0.4.1"
 
     private val githubBuildNumber = System.getenv("GITHUB_RUN_NUMBER")
 
@@ -15,6 +15,7 @@ object Ci {
 
     val isRelease = releaseVersion != null
     val publishVersion = (releaseVersion ?: snapshotVersion).also {
+        println("release is ${releaseVersion}")
         println("publishVersion is ${it}")
     }
 }
