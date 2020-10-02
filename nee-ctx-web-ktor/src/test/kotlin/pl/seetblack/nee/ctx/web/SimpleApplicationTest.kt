@@ -21,11 +21,11 @@ import pl.setblack.nee.security.UserRole
 import pl.setblack.nee.security.test.TestDB
 import kotlin.test.assertEquals
 
-fun Application.main(wctxProvider: WebContextProvider) {
+fun Application.main(wctxProvider: JDBCBasedWebContext) {
 
     routing {
         get("/") {
-            val function = Nee.constP(WebContext.Effects.jdbc) { webCtx ->
+            val function = Nee.constP(wctxProvider.effects().jdbc) { webCtx ->
                 webCtx.getConnection().getResource()
                     .prepareStatement("select 41 from dual").use { preparedStatement ->
                         preparedStatement.executeQuery().use { resultSet ->
@@ -41,7 +41,7 @@ fun Application.main(wctxProvider: WebContextProvider) {
             wctxProvider.create(call).serveText(function, Unit)
         }
         get("/secured") {
-            val function = Nee.constP(WebContext.Effects.secured(List.of(UserRole("badmin")))) { _ ->
+            val function = Nee.constP(wctxProvider.effects().secured(List.of(UserRole("badmin")))) { _ ->
                 "Secret message"
             }.anyError()
             wctxProvider.create(call).serveText(function, Unit)
@@ -60,7 +60,6 @@ class SimpleApplicationTest : BehaviorSpec({
                 override val jdbcProvider: JDBCProvider by lazy {
                     JDBCProvider(testDb.connection)
                 }
-
             }
             engine.start(wait = false)
             engine.application.main(ctxProvider)

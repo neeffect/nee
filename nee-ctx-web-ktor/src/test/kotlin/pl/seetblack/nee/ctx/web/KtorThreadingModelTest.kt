@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.longs.shouldBeGreaterThan
 import io.kotest.matchers.longs.shouldBeLessThan
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.HttpMethod
 import io.ktor.response.respondText
@@ -15,10 +16,14 @@ import io.ktor.server.testing.handleRequest
 import kotlinx.coroutines.IO_PARALLELISM_PROPERTY_NAME
 import kotlinx.coroutines.newFixedThreadPoolContext
 import pl.setblack.nee.Nee
+import pl.setblack.nee.ctx.web.BaseWebContext
 import pl.setblack.nee.ctx.web.DefaultErrorHandler
+import pl.setblack.nee.ctx.web.JDBCBasedWebContext
 import pl.setblack.nee.ctx.web.WebContext
+import pl.setblack.nee.ctx.web.WebContextProvider
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.ECProvider
+import pl.setblack.nee.effects.async.ExecutionContextProvider
 import pl.setblack.nee.effects.async.ExecutorExecutionContext
 import pl.setblack.nee.effects.jdbc.JDBCProvider
 import pl.setblack.nee.effects.security.SecurityCtx
@@ -50,6 +55,14 @@ fun Application.slowApp() {
     val serverExecutor = Executors.newFixedThreadPool(KtorThreadingModelTest.reqs)
     val ec = ExecutorExecutionContext(serverExecutor)
 
+    val provider  = object : BaseWebContext<Connection, JDBCProvider>() {
+        override val txProvider = myTxProvider
+        override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> =
+            noSecurity
+
+        override val executionContextProvider = ECProvider(ec)
+    }
+
     routing {
         get("/slow") {
             Thread.sleep(100)
@@ -57,8 +70,8 @@ fun Application.slowApp() {
             call.respondText { "ok" }
         }
         get("/fast") {
-            val wc = WebContext(myTxProvider, noSecurity, ECProvider(ec), DefaultErrorHandler, call)
-            val result = Nee.constP(WebContext.Effects.async) {
+            val wc = provider.create(call)
+            val result = Nee.constP(provider.effects().async) {
                 Thread.sleep(100)
                 "ok"
             }.perform(wc)(Unit)

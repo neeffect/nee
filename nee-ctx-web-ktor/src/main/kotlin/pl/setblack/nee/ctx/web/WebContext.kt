@@ -33,19 +33,19 @@ import pl.setblack.nee.security.UserRole
 import java.sql.Connection
 
 
-class WebContext(
-    private val jdbcProvider: TxProvider<Connection, JDBCProvider>,
+class WebContext<R, G : TxProvider<R, G>>(
+    private val jdbcProvider: TxProvider<R, G>,
     private val securityProvider: SecurityProvider<User, UserRole>,
     private val executionContextProvider: ExecutionContextProvider,
     private val errorHandler: ErrorHandler = DefaultErrorHandler,
     private val applicationCall: ApplicationCall
-) : TxProvider<Connection, WebContext>,
+) : TxProvider<R, WebContext<R,G>>,
     SecurityProvider<User, UserRole> by securityProvider,
     ExecutionContextProvider by executionContextProvider,
     Logging {
-    override fun getConnection(): TxConnection<Connection> = jdbcProvider.getConnection()
+    override fun getConnection(): TxConnection<R> = jdbcProvider.getConnection()
 
-    override fun setConnectionState(newState: TxConnection<Connection>): WebContext =
+    override fun setConnectionState(newState: TxConnection<R>) =
         WebContext(
             jdbcProvider.setConnectionState(newState),
             securityProvider,
@@ -54,7 +54,7 @@ class WebContext(
             applicationCall
         )
 
-    fun <P> serveText(businessFunction: ANee<WebContext, P, String>, param: P) =
+    fun <P> serveText(businessFunction: ANee<WebContext<R,G>, P, String>, param: P) =
         businessFunction.perform(this)(param)
             .onComplete { outcome ->
                 val message = outcome.bimap<OutgoingContent,OutgoingContent>(::serveError, { regularResult ->
@@ -84,7 +84,7 @@ class WebContext(
             }
         }
 
-    suspend fun <P> serveMessage(businessFunction: ANee<WebContext, P, Any>, param: P) =
+    suspend fun <P> serveMessage(businessFunction: ANee<WebContext<R,G>, P, Any>, param: P) =
         serveMessage(businessFunction.perform(this)(param))
 
     private fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)
@@ -98,16 +98,6 @@ class WebContext(
 
     }
 
-    object Effects {
-        val async = AsyncEffect<WebContext>()
-        fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext>(roles)
-        val jdbc = TxEffect<Connection, WebContext>().anyError()
-        val cache = CacheEffect<WebContext, Nothing>(CaffeineProvider()).anyError()
-
-        //TODO think about securing async jdbc -
-        // notify in async that some resources are potentially used - and should not be closed
-
-    }
 }
 
 
