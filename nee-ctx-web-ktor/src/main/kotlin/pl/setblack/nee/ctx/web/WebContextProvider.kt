@@ -7,9 +7,13 @@ import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import io.ktor.routing.route
 import io.vavr.collection.List
 import io.vavr.kotlin.option
+import io.vavr.kotlin.toVavrList
+import pl.setblack.nee.Nee
 import pl.setblack.nee.anyError
+import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.AsyncEffect
 import pl.setblack.nee.effects.async.ECProvider
 import pl.setblack.nee.effects.async.ExecutionContextProvider
@@ -29,41 +33,66 @@ import pl.setblack.nee.security.UserRole
 import java.sql.Connection
 import java.util.concurrent.Executors
 
-class EffectsInstance<R,G : TxProvider<R,G>> {
-    val async = AsyncEffect<WebContext<R,G>>()
-    fun secured(roles: List<UserRole>)
-            = SecuredRunEffect<User, UserRole, WebContext<R,G>>(roles)
-    val jdbc = TxEffect<Connection, WebContext<R,G>>().anyError()
-    val cache = CacheEffect<WebContext<R,G>, Nothing>(CaffeineProvider()).anyError()
+class EffectsInstance<R, G : TxProvider<R, G>> {
+    val async = AsyncEffect<WebContext<R, G>>()
+    fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)
+    val jdbc = TxEffect<Connection, WebContext<R, G>>().anyError()
+    val cache = CacheEffect<WebContext<R, G>, Nothing>(CaffeineProvider()).anyError()
 }
 
 interface WebContextProvider<R, G : TxProvider<R, G>> {
-    fun create(call: ApplicationCall): WebContext<R,G>
+    fun create(call: ApplicationCall): WebContext<R, G>
 
-     fun effects() : EffectsInstance<R,G>
+    fun effects(): EffectsInstance<R, G>
+
+    fun sysApi() : Route.() -> Unit = {
+        route("/sys") {
+            healthCheck()()
+            userSecurityApi()()
+        }
+    }
 
     fun healthCheck(): Route.() -> Unit = {
         get("healthCheck") {
             call.respond(HttpStatusCode.OK, "ok")
         }
     }
+
+    fun userSecurityApi(): Route.() -> Unit = {
+        get("isLoggedIn") {
+            val f = Nee.constP(effects().secured(List.empty())){
+                "ok"
+            }.anyError()
+            create(call).serveMessage(f, Unit)
+        }
+        get("hasRoles") {
+            val roles = (call.request.queryParameters["roles"] ?:"").split(",")
+                .toVavrList().map { UserRole(it)}
+
+            val f =
+                Nee.constP(effects().secured(roles)){
+                "ok"
+            }.anyError()
+            create(call).serveMessage(f, Unit)
+        }
+    }
 }
 
-abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R,G> {
+abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G> {
 
-    private val effectsInstance = EffectsInstance<R,G>()
+    private val effectsInstance = EffectsInstance<R, G>()
 
-    override fun effects(): EffectsInstance<R, G>  = effectsInstance
+    override fun effects(): EffectsInstance<R, G> = effectsInstance
 
-    abstract val txProvider: TxProvider<R,G>
+    abstract val txProvider: TxProvider<R, G>
 
     abstract fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole>
 
     open val errorHandler: ErrorHandler by lazy { DefaultErrorHandler }
 
-    abstract val executionContextProvider : ExecutionContextProvider
+    abstract val executionContextProvider: ExecutionContextProvider
 
-    override fun create(call: ApplicationCall)= WebContext(
+    override fun create(call: ApplicationCall) = WebContext(
         txProvider,
         authProvider(call),
         executionContextProvider,
