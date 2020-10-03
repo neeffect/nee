@@ -3,6 +3,7 @@ package pl.setblack.nee.ctx.web
 import io.ktor.request.ApplicationRequest
 import io.ktor.request.header
 import io.vavr.control.Option
+import io.vavr.control.Try
 import io.vavr.kotlin.option
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.Out.Companion.left
@@ -29,7 +30,8 @@ object BasicAuth {
     class BasicAuthCtx<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
         fun createSecurityProviderFromRequest(request: ApplicationRequest)
                 : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
-            request.header(authorizationHeader).option(), userRealm)
+            request.header(authorizationHeader).option(), userRealm
+        )
     }
 }
 
@@ -37,29 +39,43 @@ class BasicAuthProvider<USERID, ROLE>(
     private val headerVal: Option<String>,
     private val userRealm: UserRealm<USERID, ROLE>
 ) : SecurityProvider<USERID, ROLE> {
+
+
     private val base64Decoder = Base64.getDecoder()
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USERID, ROLE>> =
         headerVal.map { baseAuth: String ->
-            val decodedAut = base64Decoder.decode(baseAuth)
-            val colonIndex = decodedAut.indexOf(':'.toByte())
-            if (colonIndex > 0) {
-                val login = decodedAut.sliceArray(0 until colonIndex).toString(Charset.forName("UTF-8"))
-                val pass = decodedAut.sliceArray(colonIndex+1 until decodedAut.size)
-                    .toCharArray()
-                userRealm.loginUser(login, pass).map {user ->
-                    pass.fill(0.toChar()) //I know that cleaning password in such insecure protocol is useless
-                    Out.right<SecurityError, SecurityCtx<USERID, ROLE>>(UserSecurityContext(user, userRealm))
-                }.getOrElse {
-                    Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
-                }
-            } else {
-                Out.left<SecurityError, SecurityCtx<USERID, ROLE>>(
-                    SecurityErrorType.MalformedCredentials("no colon inside header: $baseAuth")
-                )
-            }
+            Try.of {
+                parseHeader(baseAuth)
+            }.getOrElseGet { e -> left(SecurityErrorType.MalformedCredentials(e.localizedMessage)) }
         }.getOrElse {
             Out.right(AnonymousSecurityContext())
         }
+
+    private fun parseHeader(baseAuth: String): Out<SecurityError, SecurityCtx<USERID, ROLE>> =
+        if (baseAuth.startsWith(basicAuthHeaderPrefix)) {
+            val decodedAut = base64Decoder.decode(baseAuth.substring(basicAuthHeaderPrefix.length))
+            val colonIndex = decodedAut.indexOf(':'.toByte())
+            if (colonIndex > 0) {
+                val login = decodedAut.sliceArray(0 until colonIndex).toString(Charset.forName("UTF-8"))
+                val pass = decodedAut.sliceArray(colonIndex + 1 until decodedAut.size)
+                    .toCharArray()
+                userRealm.loginUser(login, pass).map { user ->
+                    pass.fill(0.toChar()) //I know that cleaning password in such insecure protocol is useless
+                    Out.right<SecurityError, SecurityCtx<USERID, ROLE>>(UserSecurityContext(user, userRealm))
+                }.getOrElse {
+                    left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
+                }
+            } else {
+                left<SecurityError, SecurityCtx<USERID, ROLE>>(
+                    SecurityErrorType.MalformedCredentials("no colon inside header: $baseAuth")
+                )
+            }
+        } else {
+            left<SecurityError, SecurityCtx<USERID, ROLE>>(
+                SecurityErrorType.MalformedCredentials("no basic auth header: $baseAuth")
+            )
+        }
+
 
     class AnonymousSecurityContext<USERID, ROLE> : SecurityCtx<USERID, ROLE> {
         override fun getCurrentUser(): Out<SecurityError, USERID> =
@@ -69,18 +85,22 @@ class BasicAuthProvider<USERID, ROLE>(
     }
 
     class UserSecurityContext<USERID, ROLE>(
-        private val user : USERID,
-        private val userRealm: UserRealm<USERID, ROLE>) : SecurityCtx<USERID, ROLE> {
+        private val user: USERID,
+        private val userRealm: UserRealm<USERID, ROLE>
+    ) : SecurityCtx<USERID, ROLE> {
         override fun getCurrentUser(): Out<SecurityError, USERID> = Out.right(user)
 
-        override fun hasRole(role: ROLE): Boolean  =
+        override fun hasRole(role: ROLE): Boolean =
             userRealm.hasRole(user, role)
+    }
+
+    companion object {
+        const val basicAuthHeaderPrefix = "Basic "
     }
 }
 
 
-internal fun ByteArray.toCharArray() = CharArray(this.size).also {
-    chars ->
+internal fun ByteArray.toCharArray() = CharArray(this.size).also { chars ->
     for (index in this.indices) {
         chars[index] = this[index].toChar()
     }
