@@ -1,7 +1,12 @@
 package pl.setblack.nee.ctx.web
 
 import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.header
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.vavr.collection.List
 import io.vavr.kotlin.option
 import pl.setblack.nee.anyError
@@ -36,6 +41,12 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
     fun create(call: ApplicationCall): WebContext<R,G>
 
      fun effects() : EffectsInstance<R,G>
+
+    fun healthCheck(): Route.() -> Unit = {
+        get("healthCheck") {
+            call.respond(HttpStatusCode.OK, "ok")
+        }
+    }
 }
 
 abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R,G> {

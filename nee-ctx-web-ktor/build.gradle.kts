@@ -20,7 +20,6 @@ dependencies {
     testImplementation(project (":nee-test:nee-security-jdbc-test"))
     testImplementation(Libs.Ktor.serverTestHost)
     testImplementation(Libs.Kotest.runnerJunit5Jvm)
-    //testImplementation("io.kotest:kotest-runner-console-jvm:$kotest_version")
 
 }
 apply(from = "../publish-mpp.gradle.kts")

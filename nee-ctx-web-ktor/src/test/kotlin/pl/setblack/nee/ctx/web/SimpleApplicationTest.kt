@@ -1,4 +1,4 @@
-package pl.seetblack.nee.ctx.web
+package pl.setblack.nee.ctx.web
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.ktor.application.Application
