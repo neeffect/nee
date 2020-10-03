@@ -1,7 +1,7 @@
 package pl.setblack.nee.effects.tx
 
-import io.kotlintest.specs.BehaviorSpec
-import io.kotlintest.shouldBe
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 import pl.setblack.nee.Nee
 import pl.setblack.nee.effects.env.FlexibleEnv
 import pl.setblack.nee.effects.get

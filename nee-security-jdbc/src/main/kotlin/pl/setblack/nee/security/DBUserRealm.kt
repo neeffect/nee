@@ -30,16 +30,21 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
         userLogin: String,
         password: CharArray,
         jdbcConnection: Connection
-    ): Option<User> {
-        statement.setString(1, userLogin)
-        return statement.executeQuery().use { resultSet ->
-            if (resultSet.next()) {
-                checkDBRow(resultSet, password, userLogin, jdbcConnection)
-            } else {
-                Option.none()
+    ): Option<User>  =
+        statement.run {
+            setString(1, userLogin)
+            val r = executeQuery().use { resultSet ->
+                if (resultSet.next()) {
+                    checkDBRow(resultSet, password, userLogin, jdbcConnection)
+                } else {
+                    Option.none()
+                }
+
             }
+            r
         }
-    }
+
+
 
     private fun checkDBRow(
         resultSet: ResultSet,
