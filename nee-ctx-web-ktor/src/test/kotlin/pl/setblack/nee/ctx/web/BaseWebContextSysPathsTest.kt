@@ -33,25 +33,26 @@ internal class BaseWebContextSysPathsTest : DescribeSpec({
             status shouldBe (HttpStatusCode.OK)
         }
         it("returns login OK check") {
-            val status = engine.handleRequest(HttpMethod.Get, "/sys/isLoggedIn") {
+            val content = engine.handleRequest(HttpMethod.Get, "/sys/currentUser") {
                 this.addHeader(HttpHeaders.Authorization, "testUser ygrek")
-            }.response.status()
-            status shouldBe (HttpStatusCode.OK)
+            }.response.content
+            val user = TestSysContext.contexProvider.jacksonMapper.readValue(content, User::class.java)
+            user.login shouldBe ("ygrek")
         }
         it("returns login failed login check") {
-            val status = engine.handleRequest(HttpMethod.Get, "/sys/isLoggedIn")
+            val status = engine.handleRequest(HttpMethod.Get, "/sys/currentUser")
                 .response.status()
             status shouldBe (HttpStatusCode.Unauthorized)
         }
         it("returns role check ok") {
-            val status = engine.handleRequest(io.ktor.http.HttpMethod.Get,
+            val status = engine.handleRequest(HttpMethod.Get,
                 "/sys/hasRoles?roles=admin") {
                 this.addHeader(HttpHeaders.Authorization, "testUser admin")
             }.response.status()
             status shouldBe (HttpStatusCode.OK)
         }
         it("returns role check failed") {
-            val status = engine.handleRequest(io.ktor.http.HttpMethod.Get,
+            val status = engine.handleRequest(HttpMethod.Get,
                 "/sys/hasRoles?roles=admin") {
                 this.addHeader(HttpHeaders.Authorization, "testUser ygrek")
             }.response.status()

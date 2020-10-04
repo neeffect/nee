@@ -1,5 +1,7 @@
 package pl.setblack.nee.ctx.web
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
@@ -9,6 +11,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.vavr.collection.List
+import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.option
 import io.vavr.kotlin.toVavrList
 import pl.setblack.nee.Nee
@@ -59,11 +62,12 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
     }
 
     fun userSecurityApi(): Route.() -> Unit = {
-        get("isLoggedIn") {
-            val f = Nee.constP(effects().secured(List.empty())){
-                "ok"
+        get("currentUser") {
+            val f = Nee.constP(effects().secured(List.empty())){ctx->
+                ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
             }.anyError()
-            create(call).serveMessage(f, Unit)
+
+            create(call).serveMessage(Nee.flatOut(f), Unit)
         }
         get("hasRoles") {
             val roles = (call.request.queryParameters["roles"] ?:"").split(",")
@@ -76,6 +80,8 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
             create(call).serveMessage(f, Unit)
         }
     }
+    abstract fun jacksonMapper() : ObjectMapper
+
 }
 
 abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G> {
@@ -92,13 +98,24 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
 
     abstract val executionContextProvider: ExecutionContextProvider
 
-    override fun create(call: ApplicationCall) = WebContext(
-        txProvider,
-        authProvider(call),
-        executionContextProvider,
-        errorHandler,
-        call
-    )
+
+
+        override fun create(call: ApplicationCall) = WebContext(
+            txProvider,
+            authProvider(call),
+            executionContextProvider,
+            errorHandler,
+            this,
+            call
+        )
+
+    override fun jacksonMapper(): ObjectMapper = jacksonMapper
+
+    open val jacksonMapper by lazy {
+        ObjectMapper()
+            .registerModule(VavrModule())
+            .registerModule(KotlinModule())
+    }
 }
 
 abstract class JDBCBasedWebContext : BaseWebContext<Connection, JDBCProvider>() {

@@ -38,6 +38,7 @@ class WebContext<R, G : TxProvider<R, G>>(
     private val securityProvider: SecurityProvider<User, UserRole>,
     private val executionContextProvider: ExecutionContextProvider,
     private val errorHandler: ErrorHandler = DefaultErrorHandler,
+    private val contextProvider: WebContextProvider<R,G>,
     private val applicationCall: ApplicationCall
 ) : TxProvider<R, WebContext<R,G>>,
     SecurityProvider<User, UserRole> by securityProvider,
@@ -51,6 +52,7 @@ class WebContext<R, G : TxProvider<R, G>>(
             securityProvider,
             executionContextProvider,
             errorHandler,
+            contextProvider,
             applicationCall
         )
 
@@ -70,7 +72,7 @@ class WebContext<R, G : TxProvider<R, G>>(
     suspend fun <E,A> serveMessage(msg : Out<E, A>) : Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
             val message = outcome.bimap<OutgoingContent,OutgoingContent>({ serveError(it as Any) }, { regularResult ->
-                val bytes = jacksonMapper.writeValueAsBytes(regularResult)
+                val bytes = contextProvider.jacksonMapper().writeValueAsBytes(regularResult)
                 ByteArrayContent(
                     bytes = bytes,
                     contentType = ContentType.Application.Json,
@@ -88,15 +90,6 @@ class WebContext<R, G : TxProvider<R, G>>(
         serveMessage(businessFunction.perform(this)(param))
 
     private fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)
-
-
-    companion object {
-
-
-        internal val jacksonMapper = ObjectMapper()
-            .registerModule(VavrModule())
-
-    }
 
 }
 
