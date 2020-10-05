@@ -25,6 +25,12 @@ import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.effects.jdbc.JDBCProvider
+import pl.setblack.nee.effects.monitoring.Logger
+import pl.setblack.nee.effects.monitoring.SimpleBufferedLogger
+import pl.setblack.nee.effects.monitoring.SimpleTraceProvider
+import pl.setblack.nee.effects.monitoring.TraceEffect
+import pl.setblack.nee.effects.monitoring.TraceProvider
+import pl.setblack.nee.effects.monitoring.TraceResource
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxEffect
@@ -99,17 +105,30 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
     abstract val executionContextProvider: ExecutionContextProvider
 
 
-
         override fun create(call: ApplicationCall) = WebContext(
             txProvider,
             authProvider(call),
             executionContextProvider,
             errorHandler,
             this,
+            traceProvider,
             call
         )
 
     override fun jacksonMapper(): ObjectMapper = jacksonMapper
+
+    open val logger: Logger<*> by lazy {
+        SimpleBufferedLogger()
+    }
+
+    open val traceResource : TraceResource by lazy {
+        TraceResource("web",
+            logger)
+    }
+
+    open  val traceProvider: TraceProvider<*> by lazy {
+        SimpleTraceProvider(traceResource)
+    }
 
     open val jacksonMapper by lazy {
         ObjectMapper()
@@ -118,7 +137,8 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
     }
 }
 
-abstract class JDBCBasedWebContext : BaseWebContext<Connection, JDBCProvider>() {
+abstract class JDBCBasedWebContext :
+    BaseWebContext<Connection, JDBCProvider>() {
 
     open val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
 
@@ -130,6 +150,9 @@ abstract class JDBCBasedWebContext : BaseWebContext<Connection, JDBCProvider>() 
     open val userRealm: UserRealm<User, UserRole> by lazy {
         DBUserRealm(jdbcProvider)
     }
+
+
+
 
     override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> =
         BasicAuthProvider<User, UserRole>(

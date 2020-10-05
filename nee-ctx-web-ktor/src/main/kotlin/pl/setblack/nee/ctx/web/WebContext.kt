@@ -20,6 +20,8 @@ import pl.setblack.nee.effects.async.ExecutionContextProvider
 import pl.setblack.nee.effects.cache.CacheEffect
 import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
 import pl.setblack.nee.effects.jdbc.JDBCProvider
+import pl.setblack.nee.effects.monitoring.TraceProvider
+import pl.setblack.nee.effects.monitoring.TraceResource
 import pl.setblack.nee.effects.security.SecuredRunEffect
 import pl.setblack.nee.effects.security.SecurityProvider
 import pl.setblack.nee.effects.tx.TxConnection
@@ -33,28 +35,31 @@ import pl.setblack.nee.security.UserRole
 import java.sql.Connection
 
 
-class WebContext<R, G : TxProvider<R, G>>(
+data class WebContext<R, G : TxProvider<R, G>>(
     private val jdbcProvider: TxProvider<R, G>,
     private val securityProvider: SecurityProvider<User, UserRole>,
     private val executionContextProvider: ExecutionContextProvider,
     private val errorHandler: ErrorHandler = DefaultErrorHandler,
     private val contextProvider: WebContextProvider<R,G>,
+    private val traceProvider: TraceProvider<*>,
     private val applicationCall: ApplicationCall
 ) : TxProvider<R, WebContext<R,G>>,
     SecurityProvider<User, UserRole> by securityProvider,
     ExecutionContextProvider by executionContextProvider,
+    TraceProvider<WebContext<R,G>>,
     Logging {
+    override fun getTrace(): TraceResource = traceProvider.getTrace()
+
+
+    override fun setTrace(newState: TraceResource): WebContext<R, G> =
+       this.copy(traceProvider = traceProvider.setTrace(newState))
+
+
     override fun getConnection(): TxConnection<R> = jdbcProvider.getConnection()
 
     override fun setConnectionState(newState: TxConnection<R>) =
-        WebContext(
-            jdbcProvider.setConnectionState(newState),
-            securityProvider,
-            executionContextProvider,
-            errorHandler,
-            contextProvider,
-            applicationCall
-        )
+        this.copy( jdbcProvider = jdbcProvider.setConnectionState(newState))
+
 
     fun <P> serveText(businessFunction: ANee<WebContext<R,G>, P, String>, param: P) =
         businessFunction.perform(this)(param)

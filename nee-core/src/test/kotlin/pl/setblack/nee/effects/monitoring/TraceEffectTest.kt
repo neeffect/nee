@@ -62,19 +62,12 @@ internal class TraceEffectTest : BehaviorSpec({
 
     data class LogEntry(val trace : TraceEntry, val msg : String)
 
-    class StoringLogger(internal var entries:List<LogEntry> = List.empty()) : Logger {
-        override fun log(entry: TraceEntry, msg: String): Logger  {
+    class StoringLogger(internal var entries:List<LogEntry> = List.empty()) : Logger<StoringLogger> {
+        override fun log(entry: TraceEntry, msg: String): StoringLogger  {
             entries = entries.append(LogEntry(entry, msg))
             return this
         }
     }
-
-    class SimpleTraceProvider(val res  : TraceResource) : TraceProvider<SimpleTraceProvider> {
-        override fun getTrace(): TraceResource = res
-
-        override fun setTrace(newState: TraceResource): SimpleTraceProvider  = SimpleTraceProvider(newState)
-    }
-
 }
 
 

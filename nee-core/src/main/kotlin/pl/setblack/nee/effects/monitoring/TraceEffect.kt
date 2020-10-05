@@ -29,7 +29,7 @@ interface TraceProvider<G : TraceProvider<G>> {
 
 class TraceResource(
     val resName: String,
-    val logger: Logger,
+    val logger: Logger<*>,
     val nanoTime: NanoTime = { System.nanoTime() },
     val traces: List<TraceEntry> = List.empty<TraceEntry>()
 ) {
@@ -98,8 +98,8 @@ inline fun placeName(idx: Int = 1): String {
     }
 }
 
-interface Logger {
-    fun log(entry: TraceEntry, msg: String): Logger
+interface Logger<T : Logger<T>> {
+    fun log(entry: TraceEntry, msg: String): T
 }
 
 data class TraceEntry(
