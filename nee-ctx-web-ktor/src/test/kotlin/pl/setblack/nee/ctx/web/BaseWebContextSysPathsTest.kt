@@ -40,9 +40,9 @@ internal class BaseWebContextSysPathsTest : DescribeSpec({
             user.login shouldBe ("ygrek")
         }
         it("returns login failed login check") {
-            val status = engine.handleRequest(HttpMethod.Get, "/sys/currentUser")
-                .response.status()
-            status shouldBe (HttpStatusCode.Unauthorized)
+            val resp = engine.handleRequest(HttpMethod.Get, "/sys/currentUser")
+                .response
+            resp.status() shouldBe (HttpStatusCode.Unauthorized)
         }
         it("returns role check ok") {
             val status = engine.handleRequest(HttpMethod.Get,

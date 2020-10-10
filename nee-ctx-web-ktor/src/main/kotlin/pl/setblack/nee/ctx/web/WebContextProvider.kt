@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.ByteArrayContent
 import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -15,6 +17,7 @@ import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.option
 import io.vavr.kotlin.toVavrList
 import pl.setblack.nee.Nee
+import pl.setblack.nee.andThen
 import pl.setblack.nee.anyError
 import pl.setblack.nee.effects.Out
 import pl.setblack.nee.effects.async.AsyncEffect
@@ -26,6 +29,7 @@ import pl.setblack.nee.effects.cache.caffeine.CaffeineProvider
 import pl.setblack.nee.effects.jdbc.JDBCConfig
 import pl.setblack.nee.effects.jdbc.JDBCProvider
 import pl.setblack.nee.effects.monitoring.Logger
+import pl.setblack.nee.effects.monitoring.MutableInMemLogger
 import pl.setblack.nee.effects.monitoring.SimpleBufferedLogger
 import pl.setblack.nee.effects.monitoring.SimpleTraceProvider
 import pl.setblack.nee.effects.monitoring.TraceEffect
@@ -43,10 +47,16 @@ import java.sql.Connection
 import java.util.concurrent.Executors
 
 class EffectsInstance<R, G : TxProvider<R, G>> {
-    val async = AsyncEffect<WebContext<R, G>>()
-    fun secured(roles: List<UserRole>) = SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)
-    val jdbc = TxEffect<Connection, WebContext<R, G>>().anyError()
+    val trace = TraceEffect<WebContext<R,G>>("web")
+
+    val async = trace.andThen(AsyncEffect<WebContext<R, G>>())
+        .anyError()
+    fun secured(roles: List<UserRole>) =
+        trace.andThen(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)).anyError()
+    val jdbc =
+        trace.andThen(TxEffect<Connection, WebContext<R, G>>()).anyError()
     val cache = CacheEffect<WebContext<R, G>, Nothing>(CaffeineProvider()).anyError()
+
 }
 
 interface WebContextProvider<R, G : TxProvider<R, G>> {
@@ -58,6 +68,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
         route("/sys") {
             healthCheck()()
             userSecurityApi()()
+            monitoringApi()()
         }
     }
 
@@ -72,8 +83,8 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
             val f = Nee.constP(effects().secured(List.empty())){ctx->
                 ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
             }.anyError()
-
-            create(call).serveMessage(Nee.flatOut(f), Unit)
+            val z  = Nee.flatOut(f)
+            create(call).serveMessage(z, Unit)
         }
         get("hasRoles") {
             val roles = (call.request.queryParameters["roles"] ?:"").split(",")
@@ -86,6 +97,11 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
             create(call).serveMessage(f, Unit)
         }
     }
+
+    open fun monitoringApi(): Route.() -> Unit = {
+
+    }
+
     abstract fun jacksonMapper() : ObjectMapper
 
 }
@@ -117,8 +133,8 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
 
     override fun jacksonMapper(): ObjectMapper = jacksonMapper
 
-    open val logger: Logger<*> by lazy {
-        SimpleBufferedLogger()
+    open val logger by lazy {
+        MutableInMemLogger()
     }
 
     open val traceResource : TraceResource by lazy {
@@ -134,6 +150,19 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
         ObjectMapper()
             .registerModule(VavrModule())
             .registerModule(KotlinModule())
+    }
+
+    override fun monitoringApi(): Route.() -> Unit = {
+        get("logs") {
+
+            val bytes = jacksonMapper().writeValueAsBytes(logger.getLogs())
+            ByteArrayContent(
+                bytes = bytes,
+                contentType = ContentType.Application.Json,
+                status = HttpStatusCode.OK
+            )
+            call.respond(bytes)
+        }
     }
 }
 
@@ -151,9 +180,6 @@ abstract class JDBCBasedWebContext :
         DBUserRealm(jdbcProvider)
     }
 
-
-
-
     override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> =
         BasicAuthProvider<User, UserRole>(
             call.request.header("Authorization").option(),
@@ -163,6 +189,4 @@ abstract class JDBCBasedWebContext :
     override val txProvider: TxProvider<Connection, JDBCProvider> by lazy {
         jdbcProvider
     }
-
-
 }

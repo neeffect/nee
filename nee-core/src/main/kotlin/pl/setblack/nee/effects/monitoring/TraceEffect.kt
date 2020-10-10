@@ -3,6 +3,7 @@ package pl.setblack.nee.effects.monitoring
 import io.vavr.collection.List
 import pl.setblack.nee.Effect
 import pl.setblack.nee.effects.Out
+import pl.setblack.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
@@ -13,8 +14,8 @@ class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect
         Pair({ p: P ->
             val r1 = f(traced)
             val result = r1(p)
-            entry.second.name.updateAndGet { name ->
-                name ?: r1.javaClass.name
+            entry.second.codeLocation.updateAndGet { location ->
+                location ?: CodeLocation(functionName = r1.javaClass.name)
             }
             traced.getTrace().end(tracerName)
             Out.right<Nothing, A>(result)
@@ -38,14 +39,14 @@ class TraceResource(
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun begin(tracerName: String): Pair<TraceResource, TraceEntry> =
         TraceEntry(tracerName, generateUUID(), nanoTime()).let { traceEntry ->
+
             Pair(
                 TraceResource(
                     this.resName,
-                    logger.log(traceEntry, "started"),
+                    logger.log(traceEntry.toLogEntry(traceEntry.time,EntryType.Begin)),
                     this.nanoTime,
                     traces.prepend(traceEntry)
-                )
-                , traceEntry
+                ), traceEntry
             )
         }
 
@@ -55,15 +56,16 @@ class TraceResource(
     private fun lastTrace() = this.traces.headOption()
 
     @Suppress("NOTHING_TO_INLINE")
-    internal inline fun monitor() =
+    inline fun putNamedPlace(name: CodeLocation = guessCodePlaceName()) =
         this.traces.headOption().forEach {
-            it.name.compareAndSet(null, placeName())
+            it.codeLocation.compareAndSet(null, name)
         }
 
     @Suppress("NOTHING_TO_INLINE")
-    internal inline fun guessPlace(f: Any) =
+    internal inline fun putGuessedPlace(placeName: CodeLocation, f: Any) =
         this.traces.headOption().forEach {
-            it.name.compareAndSet(null, f.toString() )
+            it.codeLocation.compareAndSet(null,
+                placeName.copy(customInfo = f.toString()))
         }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -74,12 +76,19 @@ class TraceResource(
 
             TraceResource(
                 this.resName,
-                logger.log(traceEntry, "ended after $diff ns"),
+                logger.log(traceEntry.toLogEntry(totalTime, EntryType.End(diff))),
                 this.nanoTime,
                 traces.pop()
             )
         }.getOrElse {
-            logger.log(TraceEntry(tracerName, UUID(0, 0), nanoTime()), "unpaired end at: ${placeName(2)}")
+            logger.log(
+                LogEntry(
+                    tracerName,
+                    UUID(0, 0), nanoTime(),
+                    guessCodePlaceName(2),
+                    EntryType.InternalError("unpaired trace")
+                )
+            )
             this
         }
     }
@@ -87,27 +96,87 @@ class TraceResource(
 
 }
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun placeName(idx: Int = 1): String {
-    val stackTrace = Thread.currentThread().stackTrace
-    return if (stackTrace.size > idx) {
-        val st = stackTrace[idx]
-        "${st.fileName} ${st.lineNumber} ${st.methodName}"
-    } else {
-        "<unknown place>"
+object CodeNameFinder {
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun guessCodePlaceName(suggestedStackPosition: Int = 3): CodeLocation {
+        val stackTrace = Thread.currentThread().stackTrace
+        return findBestStackMatchingCodePlaceName(suggestedStackPosition, stackTrace)
     }
+
+    fun findBestStackMatchingCodePlaceName(
+        suggestedStackPosition: Int,
+        stackTraces: Array<StackTraceElement>
+    ): CodeLocation =
+        stackTraces.drop(1).take(maxStackSearch).mapIndexed { ind, el ->
+            Pair(calcCost(ind, suggestedStackPosition, el), el)
+        }.minByOrNull { it.first }?.let {
+            codePointName(it.second)
+        } ?: CodeLocation()
+
+    private fun codePointName(st: StackTraceElement) =
+        CodeLocation(className = st.className,
+            functionName = st.methodName,
+            fileName = st.fileName,
+            lineNumber =  st.lineNumber)
+
+
+
+    private fun calcCost(index: Int, suggestedStackPosition: Int, element: StackTraceElement) =
+        (index - suggestedStackPosition) * (index - suggestedStackPosition) + nameCost(element)
+
+    private fun nameCost(element: StackTraceElement) =
+        (if (element.className.contains(".nee.")) neeProjectClassesCost else 0) +
+                (if (element.className.contains(".nee.effects.")) neeProjectClassesCost else 0) +
+                (if (element.className.contains(".Nee")) neeProjectClassesCost else 0)
+
+    private const val neeProjectClassesCost = 15
+    private const val maxStackSearch = 10
+
+
 }
 
+
 interface Logger<T : Logger<T>> {
-    fun log(entry: TraceEntry, msg: String): T
+    fun log(entry: LogEntry): T
 }
 
 data class TraceEntry(
     val tracerName: String,
     val uuid: UUID,
     val time: Long,
-    val name: AtomicReference<String?> = AtomicReference()
+    val codeLocation: AtomicReference<CodeLocation?> = AtomicReference()
+) {
+    fun getCodeLocation() = codeLocation.get() ?: CodeLocation()
+
+    internal fun toLogEntry(newTime : Long = time, message: EntryType) =
+        LogEntry(tracerName, uuid, newTime, getCodeLocation(), message)
+}
+
+data class LogEntry(
+    val tracerName: String,
+    val uuid: UUID,
+    val time: Long,
+    val codeLocation: CodeLocation,
+    val message: EntryType
 )
+
+
+
+data class CodeLocation(
+    val functionName: String? = null,
+    val className: String?= null,
+    val fileName: String?= null,
+    val lineNumber: Int?= null,
+    val customInfo: String?= null) {
+    override fun toString()  =
+        "${className()}->${functionName()}#${location()}#${customInfo()}"
+
+    private fun className() = className?:"?"
+    private fun functionName() = functionName?:"?"
+    private fun customInfo() : String = customInfo ?: ""
+    private fun location() = (fileName ?: "?") + "@" + (lineNumber?.toString()?: "?")
+}
+
 
 typealias NanoTime = () -> Long
 
