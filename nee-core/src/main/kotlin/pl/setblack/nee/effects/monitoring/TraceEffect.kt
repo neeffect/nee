@@ -15,7 +15,7 @@ class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect
             val r1 = f(traced)
             val result = r1(p)
             entry.second.codeLocation.updateAndGet { location ->
-                location ?: CodeLocation(functionName = r1.javaClass.name)
+                location ?: CodeLocation(functionName = f::class.toString())
             }
             traced.getTrace().end(tracerName)
             Out.right<Nothing, A>(result)
