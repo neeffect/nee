@@ -4,36 +4,57 @@ import io.vavr.Tuple2
 import io.vavr.Tuple3
 import io.vavr.control.Either
 import pl.setblack.nee.effects.Out
+import pl.setblack.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import pl.setblack.nee.effects.monitoring.TraceProvider
 
-internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = { r: R ->
-    val pfunc = f(r)
-    if (r is TraceProvider<*>) {
-        r.getTrace().guessPlace(pfunc)
+internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = guessCodePlaceName(2).let { placeName ->
+    { r: R ->
+        { p: P ->
+            Out.right<E, A>(f(r)(p)).also {
+                if (r is TraceProvider<*>) {
+                    r.getTrace().putGuessedPlace(placeName, f)
+                }
+            }
+        }
     }
-    { p: P -> Out.right<E, A>(pfunc(p)) }
 }
 
 //was extendP
-internal fun <R, E, A> constP(f: (R) -> A) = { r: R ->
-    if (r is TraceProvider<*>) {
-        r.getTrace().guessPlace(f)
+internal fun <R, E, A> constP(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
+    { r: R ->
+        { _: Unit ->
+            Out.right<E, A>(f(r)).also {
+                if (r is TraceProvider<*>) {
+                    r.getTrace().putGuessedPlace(placeName, f)
+                }
+            }
+        }
+
     }
-    { _: Unit -> Out.right<E, A>(f(r)) }
 }
 
-internal fun <R, E, P, A> constR(f: (P) -> A) = { r: R ->
-    if (r is TraceProvider<*>) {
-        r.getTrace().guessPlace(f)
+internal fun <R, E, P, A> constR(f: (P) -> A) = guessCodePlaceName(2).let { placeName ->
+    { r: R ->
+        { p: P ->
+            Out.right<E, A>(f(p)).also {
+                if (r is TraceProvider<*>) {
+                    r.getTrace().putGuessedPlace(placeName, f)
+                }
+            }
+        }
     }
-    { p: P -> Out.right<E, A>(f(p)) }
 }
 
-internal fun <P, A> ignoreR(f: (P) -> A) = { r: Any ->
-    if (r is TraceProvider<*>) {
-        r.getTrace().guessPlace(f)
+internal fun <P, A> ignoreR(f: (P) -> A) = guessCodePlaceName(2).let { placeName ->
+    { r: Any ->
+        { p: P ->
+            f(p).also {
+                if (r is TraceProvider<*>) {
+                    r.getTrace().putGuessedPlace(placeName, f)
+                }
+            }
+        }
     }
-    { p: P -> f(p) }
 }
 
 fun <T> Either<T, T>.merge() = getOrElseGet { it }

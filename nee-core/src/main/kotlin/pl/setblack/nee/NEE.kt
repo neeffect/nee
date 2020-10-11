@@ -97,6 +97,9 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
         fun <R, E, P, A> pure(effect: Effect<R, E>, func: (R) -> (P) -> A): Nee<R, E, P, A> =
             FNEE(effect, extend(func))
 
+        fun <R,E, P, A, E1 : E> flatOut( f: Nee<R,E,P, Out<E1,A>>) =  f.flatMap {value ->
+            FNEE(NoEffect()){ {value.mapLeft { e->e }}}
+        }
     }
 }
 

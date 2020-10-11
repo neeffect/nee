@@ -16,6 +16,7 @@ dependencies {
 
     implementation(Libs.Ktor.serverCore)
     implementation(Libs.Vavr.jackson)
+    implementation(Libs.Jackson.jacksonModuleKotlin)
 
     testImplementation(project (":nee-test:nee-security-jdbc-test"))
     testImplementation(Libs.Ktor.serverTestHost)

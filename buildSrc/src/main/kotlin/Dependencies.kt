@@ -11,6 +11,7 @@ object Libs {
 
     object Kotlin {
         const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
     }
 
     object Ktor {
@@ -29,6 +30,12 @@ object Libs {
     object Haste {
         private const val version = "0.2.1"
         const val haste = "io.github.krasnoludkolo:haste:$version"
+    }
+
+    object Jackson {
+        private const val version = "2.11.+"
+        const val jacksonModuleKotlin = "com.fasterxml.jackson.module:jackson-module-kotlin:$version"
+        const val jacksonAnnotations = "com.fasterxml.jackson.core:jackson-annotations:$version"
     }
 
     object Kotest {
