@@ -78,7 +78,7 @@ publishing {
     publications.withType<MavenPublication>().forEach {
         it.apply {
             if (Ci.isRelease) {
-                artifact(tasks["javadocJar"])
+                artifact(tasks["dokkaJar"])
             }
             artifact(tasks["kotlinSourcesJar"])
 
