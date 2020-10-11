@@ -2,8 +2,12 @@ package pl.setblack.nee.effects.monitoring
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import io.vavr.collection.List
+import pl.outside.code.ExternalObject
 import pl.setblack.nee.Nee
+import pl.setblack.nee.NoEffect
 import pl.setblack.nee.effects.get
 import pl.setblack.nee.effects.utils.ignoreR
 import java.util.concurrent.atomic.AtomicLong
@@ -32,26 +36,64 @@ internal class TraceEffectTest : BehaviorSpec({
                 result.get() shouldBe 6
             }
         }
-        When("simple function in obj process") {
+        When ("function is processed 100ms") {
+            val logger = StoringLogger()
+            var time = AtomicLong(100)
+            val res = TraceResource("z1", logger, {  time.get()})
+            val f =
+                Nee.Companion.pure(eff) { r ->
+                    { p: Unit ->
+                        time.updateAndGet { it + 100 * 1000 }
+                    }
+                }
+            val result = f.perform(SimpleTraceProvider(res))(Unit)
+            Then("time is measured"){
+                logger.entries[1].time shouldBe ( 100L + 100000L)
+            }
+        }
+        When("simple function in external code obj process") {
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
             val f = Nee.Companion.pure(eff,
-                ignoreR(SomeObject::plainFunction)
+                ignoreR(ExternalObject::plainFunction)
             )
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
             }
+            Then("logs contain correctly guessed name") {
+                logger.entries[1].codeLocation.className shouldContain  "addWhen"
+            }
+
         }
         When("monitored function in obj process") {
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, SomeObject::traceableFunction)
+            val f = Nee.Companion.pure(eff, ExternalObject::traceableFunction)
             val result = f.perform(SimpleTraceProvider(res))(5)
             Then("result is ok"){
                 result.get() shouldBe 6
+            }
+            Then("logs contain correctly guessed name") {
+                logger.entries[1].codeLocation.toString() shouldStartWith "pl.outside.code.ExternalObject->traceableFunction#ExternalObject.kt"
+            }
+        }
+    }
+    Given("guessing code name function") {
+        When("called simple function in Nee") {
+            val noEffect  = NoEffect<Unit, Unit>()
+            val result = Nee.constR(noEffect, ExternalObject::checkWhereCodeIsSimple).perform(Unit)(Unit)
+            Then("name of function recognized"){
+                result.get().toString() shouldStartWith  "pl.outside.code.ExternalObject->checkWhereCodeIsSimple#ExternalObject.kt@"
+            }
+        }
+
+        When("called wrapped function in Nee") {
+            val result = ExternalObject.checkWhereCodeIsNee().perform(Unit)(Unit)
+            Then("name of wrapped function recognized"){
+                result.get().toString() shouldStartWith "pl.outside.code.ExternalObject\$checkWhereCodeIsNee\$"
             }
         }
     }
@@ -60,30 +102,19 @@ internal class TraceEffectTest : BehaviorSpec({
 
     }
 
-    data class LogEntry(val trace : TraceEntry, val msg : String)
 
-    class StoringLogger(internal var entries:List<LogEntry> = List.empty()) : Logger {
-        override fun log(entry: TraceEntry, msg: String): Logger  {
-            entries = entries.append(LogEntry(entry, msg))
+
+    class StoringLogger(internal var entries:List<LogEntry> = List.empty()) : Logger<StoringLogger> {
+        override fun log(entry: LogEntry): StoringLogger  {
+            entries = entries.append(entry)
             return this
         }
     }
-
-    class SimpleTraceProvider(val res  : TraceResource) : TraceProvider<SimpleTraceProvider> {
-        override fun getTrace(): TraceResource = res
-
-        override fun setTrace(newState: TraceResource): SimpleTraceProvider  = SimpleTraceProvider(newState)
-    }
-
 }
 
 
 fun plainFunction(i : Int) = i+1
 
-fun <R :TraceProvider<R>> traceableFunction(mon: R) = mon.getTrace().monitor().let { _ -> ::plainFunction}
+fun <R :TraceProvider<R>> traceableFunction(mon: R) = mon.getTrace().putNamedPlace().let { _ -> ::plainFunction}
 
-object SomeObject {
-    fun plainFunction(i : Int) = i+1
 
-    fun <R :TraceProvider<R>> traceableFunction(mon: R) = mon.getTrace().monitor().let { _ -> ::plainFunction}
-}

@@ -35,6 +35,7 @@ object Libs {
     object Jackson {
         private const val version = "2.11.3"
         const val jacksonModuleKotlin = "com.fasterxml.jackson.module:jackson-module-kotlin:$version"
+        const val jacksonAnnotations = "com.fasterxml.jackson.core:jackson-annotations:$version"
     }
 
     object Kotest {
