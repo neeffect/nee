@@ -19,7 +19,7 @@ import java.sql.Connection
 import java.util.concurrent.Executors
 
 internal open class EmptyTestContextProvider {
-    val myTxProvider = object : TxProvider<Connection, JDBCProvider> {
+    open val myTxProvider = object : TxProvider<Connection, JDBCProvider> {
         override fun getConnection(): TxConnection<Connection> =
             invalid()
 
@@ -27,7 +27,7 @@ internal open class EmptyTestContextProvider {
             invalid()
     }
 
-    val noSecurity = object : SecurityProvider<User, UserRole> {
+    open fun security(call: ApplicationCall) = object : SecurityProvider<User, UserRole> {
         override fun getSecurityContext(): Out<SecurityError, SecurityCtx<User, UserRole>> =
             invalid()
     }
@@ -38,7 +38,7 @@ internal open class EmptyTestContextProvider {
     val contexProvider  = object : BaseWebContext<Connection, JDBCProvider>() {
         override val txProvider = myTxProvider
         override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> =
-            noSecurity
+            security(call)
 
         override val executionContextProvider = ECProvider(ec)
     }

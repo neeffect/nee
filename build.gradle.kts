@@ -130,9 +130,3 @@ allprojects {
 
 
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
-
-//signing {
-//    useGpgCmd()
-//
-//    sign(publications)
-//}
