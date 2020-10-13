@@ -68,13 +68,14 @@ sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
     abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
 
+
     fun constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
         val constFunction = { r: R ->
             { _: Unit ->
                 this.perform(r)(p)
             }
         }
-        FNEE(effect, constFunction)
+        FNEE(NoEffect(), constFunction)
     }
 
 
