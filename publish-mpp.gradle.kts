@@ -78,19 +78,19 @@ publishing {
     publications.withType<MavenPublication>().forEach {
         it.apply {
             if (Ci.isRelease) {
-                artifact(tasks["javadocJar"])
+                artifact(tasks["dokkaJar"])
             }
             artifact(tasks["kotlinSourcesJar"])
 
             pom {
                 name.set("Neefect")
                 description.set("Nee")
-                url.set("http://www.github.com/neefect/nee/")
+                url.set("http://www.github.com/neeffect/nee/")
 
                 scm {
-                    connection.set("scm:git:http://www.github.com/neefect/nee/")
+                    connection.set("scm:git:http://www.github.com/neeffect/nee/")
                     developerConnection.set("scm:git:http://github.com/jarekratajski/")
-                    url.set("http://www.github.com/neefect/nee/")
+                    url.set("http://www.github.com/neeffect/nee/")
                 }
 
                 licenses {

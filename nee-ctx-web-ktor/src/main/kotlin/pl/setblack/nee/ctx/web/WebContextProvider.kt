@@ -155,21 +155,19 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
     override fun monitoringApi(): Route.() -> Unit = {
         get("logs") {
             val bytes = jacksonMapper().writeValueAsBytes(logger.getLogs())
-            ByteArrayContent(
+            call.respond(ByteArrayContent(
                 bytes = bytes,
                 contentType = ContentType.Application.Json,
                 status = HttpStatusCode.OK
-            )
-            call.respond(bytes)
+            ))
         }
         get("report") {
             val bytes = jacksonMapper().writeValueAsBytes(logger.getReport())
-            ByteArrayContent(
+            call.respond(ByteArrayContent(
                 bytes = bytes,
                 contentType = ContentType.Application.Json,
                 status = HttpStatusCode.OK
-            )
-            call.respond(bytes)
+            ))
         }
     }
 }

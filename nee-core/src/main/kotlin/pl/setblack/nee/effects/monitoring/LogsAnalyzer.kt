@@ -76,7 +76,7 @@ data class InvocationAccumulator(
     fun group(): LogsReport = this.reports.values().groupBy {
         it.codeLocation.className
     }.iterator().fold(LogsReport()) { rep, b ->
-        rep.copy(classes =  rep.classes.append(ClassReport(b._1!!, b._2 )))
+        rep.copy(classes =  rep.classes.append(ClassReport(b._1?:"???", b._2 )))
     }
 
 
