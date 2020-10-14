@@ -19,18 +19,15 @@ import io.vavr.kotlin.toVavrList
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.anyError
-import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.async.AsyncEffect
 import dev.neeffect.nee.effects.async.ECProvider
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
 import dev.neeffect.nee.effects.async.ExecutorExecutionContext
 import dev.neeffect.nee.effects.cache.CacheEffect
 import dev.neeffect.nee.effects.cache.caffeine.CaffeineProvider
-import dev.neeffect.nee.effects.jdbc.JDBCConfig
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
-import dev.neeffect.nee.effects.monitoring.Logger
+import dev.neeffect.nee.effects.monitoring.CodeNameFinder
 import dev.neeffect.nee.effects.monitoring.MutableInMemLogger
-import dev.neeffect.nee.effects.monitoring.SimpleBufferedLogger
 import dev.neeffect.nee.effects.monitoring.SimpleTraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceEffect
 import dev.neeffect.nee.effects.monitoring.TraceProvider
@@ -53,7 +50,7 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
         .anyError()
     fun secured(roles: List<UserRole>) =
         trace.andThen(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)).anyError()
-    val jdbc =
+    val tx =
         trace.andThen(TxEffect<Connection, WebContext<R, G>>()).anyError()
     val cache = CacheEffect<WebContext<R, G>, Nothing>(CaffeineProvider()).anyError()
 
@@ -62,7 +59,7 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
 interface WebContextProvider<R, G : TxProvider<R, G>> {
     fun create(call: ApplicationCall): WebContext<R, G>
 
-    fun effects(): EffectsInstance<R, G>
+    fun fx(): EffectsInstance<R, G>
 
     fun sysApi() : Route.() -> Unit = {
         route("/sys") {
@@ -80,7 +77,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     fun userSecurityApi(): Route.() -> Unit = {
         get("currentUser") {
-            val f = Nee.constP(effects().secured(List.empty())){ctx->
+            val f = Nee.constP(fx().secured(List.empty())){ ctx->
                 ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
             }.anyError()
             val z  = Nee.flatOut(f)
@@ -91,7 +88,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
                 .toVavrList().map { UserRole(it)}
 
             val f =
-                Nee.constP(effects().secured(roles)){
+                Nee.constP(fx().secured(roles)){
                 "ok"
             }.anyError()
             create(call).serveMessage(f, Unit)
@@ -104,13 +101,24 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     abstract fun jacksonMapper() : ObjectMapper
 
+
+    fun <E, P, A> async(func: () -> Nee<WebContext<R,G>, E, P, A>) : Nee<WebContext<R,G>, Any, P, A> =
+        CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
+            Nee.pure(this.fx().async) { r ->
+                { _: P ->
+                    r.getTrace().putNamedPlace(whereItIsDefined)
+                    func()
+                }
+            }
+                .flatMap { it.anyError() }
+        }
 }
 
-abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G> {
+abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvider<R, G> {
 
     private val effectsInstance = EffectsInstance<R, G>()
 
-    override fun effects(): EffectsInstance<R, G> = effectsInstance
+    override fun fx(): EffectsInstance<R, G> = effectsInstance
 
     abstract val txProvider: TxProvider<R, G>
 
@@ -172,8 +180,8 @@ abstract class BaseWebContext<R, G : TxProvider<R, G>> : WebContextProvider<R, G
     }
 }
 
-abstract class JDBCBasedWebContext :
-    BaseWebContext<Connection, JDBCProvider>() {
+abstract class JDBCBasedWebContextProvider :
+    BaseWebContextProvider<Connection, JDBCProvider>() {
 
     open val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
 

@@ -11,21 +11,16 @@ import io.ktor.server.testing.createTestEnvironment
 import io.ktor.server.testing.handleRequest
 import io.vavr.collection.List
 import dev.neeffect.nee.Nee
-import dev.neeffect.nee.ctx.web.BasicAuth
-import dev.neeffect.nee.ctx.web.JDBCBasedWebContext
-import dev.neeffect.nee.ctx.web.WebContext
-import dev.neeffect.nee.ctx.web.WebContextProvider
-import dev.neeffect.nee.effects.jdbc.JDBCConfig
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
 import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.security.test.TestDB
 import kotlin.test.assertEquals
 
-fun Application.main(wctxProvider: JDBCBasedWebContext) {
+fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
 
     routing {
         get("/") {
-            val function = Nee.constP(wctxProvider.effects().jdbc) { webCtx ->
+            val function = Nee.constP(wctxProvider.fx().tx) { webCtx ->
                 webCtx.getConnection().getResource()
                     .prepareStatement("select 41 from dual").use { preparedStatement ->
                         preparedStatement.executeQuery().use { resultSet ->
@@ -41,7 +36,7 @@ fun Application.main(wctxProvider: JDBCBasedWebContext) {
             wctxProvider.create(call).serveText(function, Unit)
         }
         get("/secured") {
-            val function = Nee.constP(wctxProvider.effects().secured(List.of(UserRole("badmin")))) { _ ->
+            val function = Nee.constP(wctxProvider.fx().secured(List.of(UserRole("badmin")))) { _ ->
                 "Secret message"
             }.anyError()
             wctxProvider.create(call).serveText(function, Unit)
@@ -56,7 +51,7 @@ class SimpleApplicationTest : BehaviorSpec({
         TestDB().initializeDb().use { testDb ->
 
             testDb.addUser("test", "test", List.of("badmin"))
-            val ctxProvider = object : JDBCBasedWebContext() {
+            val ctxProvider = object : JDBCBasedWebContextProvider() {
                 override val jdbcProvider: JDBCProvider by lazy {
                     JDBCProvider(testDb.connection)
                 }

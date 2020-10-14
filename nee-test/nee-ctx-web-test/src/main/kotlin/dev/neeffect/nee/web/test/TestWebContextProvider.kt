@@ -5,12 +5,12 @@ import io.ktor.server.engine.ApplicationEngineEnvironment
 import io.ktor.server.testing.TestApplicationCall
 import io.ktor.server.testing.TestApplicationRequest
 import io.ktor.server.testing.createTestEnvironment
-import dev.neeffect.nee.ctx.web.JDBCBasedWebContext
+import dev.neeffect.nee.ctx.web.JDBCBasedWebContextProvider
 import dev.neeffect.nee.effects.jdbc.JDBCConfig
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
 import kotlin.coroutines.EmptyCoroutineContext
 
-open class TestWebContext : JDBCBasedWebContext(){
+open class TestWebContextProvider : JDBCBasedWebContextProvider(){
 
     open val testEnv: ApplicationEngineEnvironment by  lazy { createTestEnvironment() }
     open val testApplication by lazy {Application(testEnv)}

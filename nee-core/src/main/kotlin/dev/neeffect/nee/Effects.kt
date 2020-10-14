@@ -36,6 +36,7 @@ interface Effect<R, E> {
  */
 fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.andThen(otherEffect: Effect<R1, E1>) = Effects.combine(otherEffect, this)
 
+infix fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.then(otherEffect: Effect<R1, E1>) = Effects.combine(otherEffect, this)
 
 class Effects<R1, R2, E1, E2>(
     private val inner: Effect<R1, E1>,
