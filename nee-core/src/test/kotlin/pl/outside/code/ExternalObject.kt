@@ -1,9 +1,9 @@
 package pl.outside.code
 
-import pl.setblack.nee.Nee
-import pl.setblack.nee.NoEffect
-import pl.setblack.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
-import pl.setblack.nee.effects.monitoring.TraceProvider
+import dev.neeffect.nee.Nee
+import dev.neeffect.nee.NoEffect
+import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
+import dev.neeffect.nee.effects.monitoring.TraceProvider
 
 object ExternalObject {
     fun plainFunction(i : Int) = i+1
