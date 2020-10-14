@@ -7,22 +7,19 @@ all can help.
 
 Feel free to crete issue or do pull request.
 
-# Rule no 1
+## Rule no 1
 
 Do not be a jerk.
 
-
-# Branching
+## Branching
 
 We try to follow gitflow standard
 
-https://datasift.github.io/gitflow/IntroducingGitFlow.html
+<https://datasift.github.io/gitflow/IntroducingGitFlow.html>
 
+## Syncing Cheat sheet
 
-# Cheat sheet
-
-- Fork this repo and check it out.
-
+- Fork this repo and do clone (of the fork)
 
 - add this repository as an upstream to your repository:
 
@@ -39,8 +36,6 @@ https://datasift.github.io/gitflow/IntroducingGitFlow.html
 - merge new develop changes to your fork:
 
 `git merge upstream/develop`
-
-- Push your changes to your GitHub fork:
 
 `git push origin develop
 
