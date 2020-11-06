@@ -34,6 +34,8 @@ import dev.neeffect.nee.effects.monitoring.TraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceResource
 import dev.neeffect.nee.effects.security.SecuredRunEffect
 import dev.neeffect.nee.effects.security.SecurityProvider
+import dev.neeffect.nee.effects.time.HasteTimeProvider
+import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.effects.tx.TxEffect
 import dev.neeffect.nee.effects.tx.TxProvider
 import dev.neeffect.nee.security.DBUserRealm
@@ -99,7 +101,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     }
 
-    abstract fun jacksonMapper() : ObjectMapper
+    fun jacksonMapper() : ObjectMapper
 
 
     fun <E, P, A> async(func: () -> Nee<WebContext<R,G>, E, P, A>) : Nee<WebContext<R,G>, Any, P, A> =
@@ -136,6 +138,7 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
             errorHandler,
             this,
             traceProvider,
+            timeProvider,
             call
         )
 
@@ -143,6 +146,10 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
 
     open val logger by lazy {
         MutableInMemLogger()
+    }
+
+    open val timeProvider:TimeProvider by lazy {
+        HasteTimeProvider()
     }
 
     open val traceResource : TraceResource by lazy {

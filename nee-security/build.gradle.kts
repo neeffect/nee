@@ -10,6 +10,9 @@ dependencies {
     implementation(Libs.Vavr.kotlin) {
             exclude("org.jetbrains.kotlin")
     }
+    implementation("io.fusionauth:fusionauth-jwt:3.5.4")
+    // this is breaking xml parsers
+    // implementation("com.uchuhimo:konf:0.23.0")
     testImplementation (Libs.Kotest.runnerJunit5Jvm)
 }
 

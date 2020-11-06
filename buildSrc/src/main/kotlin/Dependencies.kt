@@ -28,7 +28,7 @@ object Libs {
     }
 
     object Haste {
-        private const val version = "0.2.1"
+        private const val version = "0.3.0"
         const val haste = "io.github.krasnoludkolo:haste:$version"
     }
 
