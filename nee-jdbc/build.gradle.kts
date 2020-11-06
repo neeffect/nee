@@ -10,7 +10,6 @@ dependencies {
     testRuntimeOnly(Libs.H2.h2)
 
     testImplementation(Libs.Kotest.runnerJunit5Jvm)
-    testImplementation(Libs.Kotest.runnerConsoleJvm)
 }
 
 apply(from = "../publish-mpp.gradle.kts")

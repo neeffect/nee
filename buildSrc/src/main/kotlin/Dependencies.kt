@@ -11,13 +11,20 @@ object Libs {
 
     object Kotlin {
         const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlin_version"
 
     }
 
     object Ktor {
-        private const val version = "1.4.0"
+        private const val version = "1.4.2"
         const val serverCore = "io.ktor:ktor-server-core:$version"
-        const val  serverTestHost ="io.ktor:ktor-server-test-host:$version"
+        const val clientCore =  "io.ktor:ktor-client-core:$version"
+        const val clientMockJvm =  "io.ktor:ktor-client-mock-jvm:$version"
+        const val clientJsonJvm =  "io.ktor:ktor-client-json-jvm:$version"
+        const val clientJson =  "io.ktor:ktor-client-json:$version"
+        const val clientJackson =  "io.ktor:ktor-client-jackson:$version"
+        const val jackson =  "io.ktor:ktor-jackson:$version"
+        const val serverTestHost ="io.ktor:ktor-server-test-host:$version"
 
     }
 
@@ -28,7 +35,7 @@ object Libs {
     }
 
     object Haste {
-        private const val version = "0.2.1"
+        private const val version = "0.3.1"
         const val haste = "io.github.krasnoludkolo:haste:$version"
     }
 
@@ -39,11 +46,10 @@ object Libs {
     }
 
     object Kotest {
-        private const val version = "4.2.5"
-        private const val consoleVersion = "4.1.3.2"
+        private const val version = "4.3.1"
         const val runnerJunit5Jvm ="io.kotest:kotest-runner-junit5-jvm:$version"
         const val assertionsCoreJvm = "io.kotest:kotest-assertions-core-jvm:$version"
-        const val runnerConsoleJvm = "io.kotest:kotest-runner-console-jvm:${consoleVersion}"
+        //const val runnerConsoleJvm = "io.kotest:kotest-runner-console-jvm:${consoleVersion}"
     }
 
     object Slf4J {

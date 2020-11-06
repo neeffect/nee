@@ -7,6 +7,7 @@ include "nee-core",
         "nee-cache-caffeine",
         "nee-ctx-web-ktor",
         "nee-test",
+        "nee-test:nee-core-test",
         "nee-test:nee-security-jdbc-test",
         "nee-test:nee-ctx-web-test",
         "scratchpad"
