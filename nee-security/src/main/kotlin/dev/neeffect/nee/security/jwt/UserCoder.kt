@@ -1,12 +1,9 @@
 package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.security.User
-import dev.neeffect.nee.security.UserRole
 import io.fusionauth.jwt.domain.JWT
-import io.vavr.collection.HashMap
 import io.vavr.collection.Map
 import io.vavr.control.Option
-import io.vavr.kotlin.hashMap
 import io.vavr.kotlin.toVavrMap
 
 interface UserCoder<USER, ROLE> {
@@ -20,7 +17,6 @@ class JwtUsersCoder<USER, ROLE>(val config: JwtConfigurationModule, val coder: U
             (id,mapClaims) ->
         config.jwtCoder.createJwt(id, mapClaims)
     }
-
 
     fun decodeUser(jwt: JWT) = coder.mapToUser(jwt.subject, jwt.allClaims.toVavrMap().mapValues { it.toString() })
 }
