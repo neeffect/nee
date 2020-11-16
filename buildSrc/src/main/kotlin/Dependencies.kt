@@ -11,13 +11,19 @@ object Libs {
 
     object Kotlin {
         const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlin_version"
 
     }
 
     object Ktor {
-        private const val version = "1.4.0"
+        private const val version = "1.4.2"
         const val serverCore = "io.ktor:ktor-server-core:$version"
-        const val  serverTestHost ="io.ktor:ktor-server-test-host:$version"
+        const val clientCore =  "io.ktor:ktor-client-core:$version"
+        const val clientMockJvm =  "io.ktor:ktor-client-mock-jvm:$version"
+        const val clientJsonJvm =  "io.ktor:ktor-client-json-jvm:$version"
+        const val clientJson =  "io.ktor:ktor-client-json:$version"
+        const val clientJackson =  "io.ktor:ktor-client-jackson:$version"
+        const val serverTestHost ="io.ktor:ktor-server-test-host:$version"
 
     }
 

@@ -5,8 +5,8 @@ import io.kotest.matchers.beInstanceOf
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import dev.neeffect.nee.Nee
-import dev.neeffect.nee.effects.get
-import dev.neeffect.nee.effects.getLeft
+import dev.neeffect.nee.effects.test.get
+import dev.neeffect.nee.effects.test.getLeft
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {

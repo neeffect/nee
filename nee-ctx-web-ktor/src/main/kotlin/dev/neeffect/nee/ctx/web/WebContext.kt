@@ -20,6 +20,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.TextContent
+import io.ktor.request.receiveParameters
 import io.ktor.response.respond
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
@@ -63,7 +64,7 @@ data class WebContext<R, G : TxProvider<R, G>>(
                         status = HttpStatusCode.OK
                     )
                 }).merge()
-                runBlocking { applicationCall.respond(message) }
+                runBlocking { applicationCall.respond(message)}
             }
 
     suspend fun <E,A> serveMessage(msg : Out<E, A>) : Unit =

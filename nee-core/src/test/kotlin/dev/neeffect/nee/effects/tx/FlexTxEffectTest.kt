@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.effects.env.FlexibleEnv
-import dev.neeffect.nee.effects.get
+import dev.neeffect.nee.effects.test.get
 
 internal class FlexTxEffectTest : BehaviorSpec({
     Given("FlexTxEffects") {
