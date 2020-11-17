@@ -1,12 +1,17 @@
 package dev.neeffect.nee.security.oauth
 
+import dev.neeffect.nee.security.jwt.JwtCoder
+import dev.neeffect.nee.security.jwt.JwtConfig
+import dev.neeffect.nee.security.jwt.JwtConfigurationModule
 import dev.neeffect.nee.security.state.ServerVerifier
 import io.ktor.client.HttpClient
 import java.security.KeyPair
 import java.security.SecureRandom
 import java.util.*
 
-open class OauthConfigModule(val config: OauthConfig) {
+open class OauthConfigModule(
+    val config: OauthConfig,
+    val jwtConfig: JwtConfig) {
 
     open val rng: Random by lazy {
         SecureRandom()
@@ -21,5 +26,13 @@ open class OauthConfigModule(val config: OauthConfig) {
     }
     open val httpClient by lazy {
         HttpClient()
+    }
+
+    open val jwtConfigModule : JwtConfigurationModule by lazy {
+        JwtConfigurationModule(jwtConfig)
+    }
+
+    open val jwtCoder: JwtCoder by lazy {
+        jwtConfigModule.jwtCoder
     }
 }

@@ -47,8 +47,7 @@ class GoogleOpenId(
     }
 
     //TODO - what is this stupid GlobalScope here? - clean it or test it
-    private fun fut (code: String) : CompletableFuture<OauthTokens> = GlobalScope.future(block = {
-
+    private fun fut (code: String) : CompletableFuture<OauthTokens> = GlobalScope.future{
             val result: OauthTokens = oauthConfigModule.httpClient.submitForm<OauthTokens>(
                 url = "https://oauth2.googleapis.com/token",
                 formParameters = Parameters.build {
@@ -59,12 +58,9 @@ class GoogleOpenId(
                     append("grant_type", "authorization_code")
                 },
                 encodeInQuery = false,
-
                 )
             result
-
-
-    })
+    }
 
     companion object {
         fun apiUrlTemplate(clientId: String, redirect: String, state: String, nonce: String) =

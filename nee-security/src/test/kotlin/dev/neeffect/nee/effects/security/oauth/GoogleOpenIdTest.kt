@@ -2,10 +2,15 @@ package dev.neeffect.nee.effects.security.oauth
 
 import dev.neeffect.nee.effects.test.get
 import dev.neeffect.nee.effects.test.getAny
+import dev.neeffect.nee.effects.time.HasteTimeProvider
+import dev.neeffect.nee.effects.time.TimeProvider
+import dev.neeffect.nee.security.jwt.JwtConfig
+import dev.neeffect.nee.security.jwt.JwtConfigurationModule
 import dev.neeffect.nee.security.oauth.GoogleOpenId
 import dev.neeffect.nee.security.oauth.OauthConfig
 import dev.neeffect.nee.security.oauth.OauthConfigModule
 import dev.neeffect.nee.security.state.ServerVerifier
+import io.haste.Haste
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
@@ -20,12 +25,15 @@ import io.ktor.http.ParametersImpl
 import io.ktor.http.headersOf
 import io.ktor.http.parseUrlEncodedParameters
 import java.security.KeyPair
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import java.util.*
 
 internal class GoogleOpenIdTest : DescribeSpec({
     describe("gooogle open id") {
         val googleOpenId = GoogleOpenId(testModule)
-        it( "generates api call url") {
+        it("generates api call url") {
             val url = googleOpenId.generateApiCall("lokal-post")
             url shouldBe expectedUrl
         }
@@ -44,12 +52,14 @@ internal class GoogleOpenIdTest : DescribeSpec({
         val testRandom = Random(42L)
 
         val testOauthConfig = OauthConfig("testId", "testSecret")
+        val jwtConfig = JwtConfig(issuer = "test", signerSecret = "marny")
         val keyPath = GoogleOpenIdTest::class.java.getResourceAsStream("/keys/testServerKey.bin")
         val serveKeyPair = ServerVerifier.loadKeyPair(keyPath).get()
 
-        val preservedState = "NZ1BuveK/g3hu+euKMBFDA==@BTyAoSqsaxQUq11+TWc+cRxvrkK3qcFnNivhjzu5luuoycBhyWoGaz0Z1e7bG4PO1x+onlyNAvDhKzzXpmVm2onC0tHVzRy/0pNBDXCgaeAx/mXmoIxtcMBRPObzjF1ENnu/zZ+jocni8comvOkYf1iqJAhiZNwKaixsirLaF00="
+        val preservedState =
+            "NZ1BuveK/g3hu+euKMBFDA==@BTyAoSqsaxQUq11+TWc+cRxvrkK3qcFnNivhjzu5luuoycBhyWoGaz0Z1e7bG4PO1x+onlyNAvDhKzzXpmVm2onC0tHVzRy/0pNBDXCgaeAx/mXmoIxtcMBRPObzjF1ENnu/zZ+jocni8comvOkYf1iqJAhiZNwKaixsirLaF00="
 
-        val expectedUrl="""
+        val expectedUrl = """
         https://accounts.google.com/o/oauth2/v2/auth?
         response_type=code&
         client_id=testId&
@@ -72,8 +82,9 @@ internal class GoogleOpenIdTest : DescribeSpec({
                             val content = request.body.toByteArray().decodeToString()
                             val params = content.parseUrlEncodedParameters()
                             val code = params["code"]
-                            if (code == "acode" ) {
-                                val responseHeaders = headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
+                            if (code == "acode") {
+                                val responseHeaders =
+                                    headersOf("Content-Type" to listOf(ContentType.Application.Json.toString()))
                                 respond(simulatedGoogleTokenResponse, headers = responseHeaders)
                             } else {
                                 respond("I hate you", HttpStatusCode.Forbidden)
@@ -94,14 +105,25 @@ internal class GoogleOpenIdTest : DescribeSpec({
                 }
             """.trimIndent()
 
-        val testModule = object : OauthConfigModule(testOauthConfig) {
+        val haste = Haste.TimeSource.withFixedClock(
+            Clock.fixed(Instant.parse("2020-10-24T22:22:03.00Z"), ZoneId.of("Europe/Berlin"))
+        )
+
+        val testModule = object : OauthConfigModule(testOauthConfig, jwtConfig) {
             override val rng: Random
                 get() = testRandom
             override val keyPair: KeyPair
                 get() = serveKeyPair
             override val httpClient: HttpClient
                 get() = testHttpClient
-        }
+            override val jwtConfigModule: JwtConfigurationModule by lazy {
+                object : JwtConfigurationModule(this.jwtConfig) {
+                    override val timeProvider: TimeProvider
+                        get() = HasteTimeProvider(haste)
+                }
 
+            }
+
+        }
     }
 }

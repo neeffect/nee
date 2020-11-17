@@ -16,7 +16,12 @@ class OauthService(private val oauthConfig: OauthConfigModule)  {
             findOauthProvider(oauthProvider).map {
                 provider ->
                     println("$code + $state + $provider")
-                Nee.constWithError(NoEffect<Any,SecurityErrorType>() ) { _ -> Out.left<SecurityErrorType, LoginResult>(SecurityErrorType.NoSecurityCtx)}
+                provider.verifyOauthToken(code).map { providerTokens->
+                    println("validate idToken ${providerTokens.idToken}")
+                    val jwt = oauthConfig.jwtCoder.createJwt("todo")
+                    val signedJwt = oauthConfig.jwtCoder.signJwt(jwt)
+                    LoginResult(signedJwt)
+                }
             }.getOrElse {
                 Nee.constWithError(NoEffect<Any,SecurityErrorType>() ) { _ -> Out.left<SecurityErrorType, LoginResult>(SecurityErrorType.NoSecurityCtx)}
             }

@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
  * (does not work unless haste is fixed)
  */
 internal class HasteTimeProviderTest:DescribeSpec( {
-    xdescribe("haste timeSource" ) {
+    describe("haste timeSource" ) {
         val haste = Haste.TimeSource.withFixedClock(
             Clock.fixed(Instant.parse("2020-10-24T22:22:03.00Z"), ZoneId.of("Europe/Berlin")))
         val provider = HasteTimeProvider(haste)

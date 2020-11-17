@@ -15,7 +15,7 @@ import io.vavr.collection.HashMap
 import io.vavr.kotlin.toVavrMap
 
 data class JwtConfig(
-    val expirationInSeconds: Long,
+    val expirationInSeconds: Long = 1000,
     val issuer: String,
     val signerSecret: String
 )
