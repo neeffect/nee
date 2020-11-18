@@ -45,11 +45,10 @@ object Libs {
     }
 
     object Kotest {
-        private const val version = "4.2.5"
-        private const val consoleVersion = "4.1.3.2"
+        private const val version = "4.3.1"
         const val runnerJunit5Jvm ="io.kotest:kotest-runner-junit5-jvm:$version"
         const val assertionsCoreJvm = "io.kotest:kotest-assertions-core-jvm:$version"
-        const val runnerConsoleJvm = "io.kotest:kotest-runner-console-jvm:${consoleVersion}"
+        //const val runnerConsoleJvm = "io.kotest:kotest-runner-console-jvm:${consoleVersion}"
     }
 
     object Slf4J {

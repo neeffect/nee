@@ -24,6 +24,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.ParametersImpl
 import io.ktor.http.headersOf
 import io.ktor.http.parseUrlEncodedParameters
+import io.vavr.kotlin.some
 import java.security.KeyPair
 import java.time.Clock
 import java.time.Instant
@@ -37,10 +38,23 @@ internal class GoogleOpenIdTest : DescribeSpec({
             val url = googleOpenId.generateApiCall("lokal-post")
             url shouldBe expectedUrl
         }
-        it("calls google for tokens") {
+        describe("tokens") {
             val tokens = googleOpenId.verifyOauthToken("acode")
-            tokens.perform(Unit)(Unit).get().idToken shouldBe "someJwt"
+            it("calls google for tokens") {
+                tokens.perform(Unit)(Unit).get().tokens.idToken shouldBe sampleGoogleToken
+            }
+            it ("gets subject ") {
+                tokens.perform(Unit)(Unit).get().subject shouldBe "108874454676244700380"
+            }
+            it ("gets email ") {
+                tokens.perform(Unit)(Unit).get().email shouldBe some("jratajski@gmail.com")
+            }
+            it ("gets name") {
+                tokens.perform(Unit)(Unit).get().displayName shouldBe some("Jarek Ratajski")
+            }
+
         }
+
 
         it("return no jwt in case of a bad token") {
             val tokens = googleOpenId.verifyOauthToken("bad code")
@@ -89,18 +103,19 @@ internal class GoogleOpenIdTest : DescribeSpec({
                             } else {
                                 respond("I hate you", HttpStatusCode.Forbidden)
                             }
-
                         }
                         else -> error("Unhandled ${request.url}")
                     }
                 }
             }
         }
+        const val  sampleGoogleToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ5NDZiMTM3NzM3Yjk3MzczOGU1Mjg2YzIwOGI2NmU3YTM5ZWU3YzEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDg4NzQ0NTQ2NzYyNDQ3MDAzODAiLCJlbWFpbCI6ImpyYXRhanNraUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InFIR21SMUE3OUhqdEl5cW5MTl9ya2ciLCJuYW1lIjoiSmFyZWsgUmF0YWpza2kiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDQuZ29vZ2xldXNlcmNvbnRlbnQuY29tLy1lWHB2TlJLdVJyZy9BQUFBQUFBQUFBSS9BQUFBQUFBQUFBQS9BTVp1dWNtbTRzS0RCenJhakpXN0NTSVkxeUF4VzZsUGp3L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJKYXJlayIsImZhbWlseV9uYW1lIjoiUmF0YWpza2kiLCJsb2NhbGUiOiJwbCIsImlhdCI6MTYwNTUyOTYyMiwiZXhwIjoxNjA1NTMzMjIyfQ.TfFiTZ4xLYcBllGqHZPAyeUn5Vo5t-hHmyja_upx-6HuXIY4RKxA_IYHX28MsCKD0hX9hX-LiZqIuZus-NKimguHmxbHxweUassraPidI-UmqTkrccFWYXE1wqLvpm_He9fwTf6imFmXnAPDT61bhTm2HQAgwZ_HOVsd8uk1j4uuIM-DHU7ndOtX88KXoXDfILKSAzOUcVwWgUgCmjuGSpd6RQ4JH7remBNcQCs0qQ7WZPKNsY1xKHj7y4LMjPpKFb3vGo1omxTeHCMmmgzS3sf7SAomqbRGUwGWi92HWv560FfXDjFf59zzmgWoNsauRXXjlMNK9QPrj7gUriq2mQ"
+
         val simulatedGoogleTokenResponse =
             """
                 {
                     "access_token" : "at",
-                    "id_token": "someJwt",
+                    "id_token": "$sampleGoogleToken",
                     "refresh_token" : "some refresh token"
                 }
             """.trimIndent()

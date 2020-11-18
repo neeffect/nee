@@ -16,7 +16,7 @@ dependencies {
         exclude("org.jetbrains.kotlin")
     }
     implementation(Libs.Kotlin.coroutinesJdk8)
-    implementation("io.fusionauth:fusionauth-jwt:3.5.4")
+    implementation("io.fusionauth:fusionauth-jwt:4.0.1")
     // this is breaking xml parsers
     // implementation("com.uchuhimo:konf:0.23.0")
     testImplementation (Libs.Kotest.runnerJunit5Jvm)

@@ -5,15 +5,28 @@ import dev.neeffect.nee.security.oauth.OauthProviders
 import dev.neeffect.nee.security.oauth.OauthService
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldHaveMinLength
+import io.vavr.kotlin.some
 
-class OauthServiceTest : DescribeSpec({
+internal class OauthServiceTest : DescribeSpec({
 
     describe("oauth service") {
         val service = OauthService(GoogleOpenIdTest.testModule)
-        it("logs to google") {
+        describe("login to google") {
             val result = service.login("acode", GoogleOpenIdTest.preservedState, OauthProviders.Google.providerName)
                 .perform(Unit)(Unit)
-            result.get().encodedToken shouldBe "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDM1NzkxMjMsImlhdCI6MTYwMzU3ODEyMywiaXNzIjoidGVzdCIsInN1YiI6InRvZG8ifQ.82fsKb_7B2fFcY4DLCM-YKLwllUxZYsYEcake1YQR_Y"
+
+            it ("should be successful") {
+                result.get().encodedToken shouldHaveMinLength 20
+            }
+            //TODO - actually think what is subject here
+            it ("should contain user id in token") {
+                val jwt = result.get().encodedToken
+                GoogleOpenIdTest.testModule.jwtCoder.decodeJwt(jwt).get().subject shouldBe "108874454676244700380"
+            }
+            it ("should contain user name") {
+                result.get().displayName shouldBe some("Jarek Ratajski")
+            }
         }
     }
 

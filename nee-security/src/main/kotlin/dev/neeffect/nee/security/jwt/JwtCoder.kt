@@ -12,6 +12,8 @@ import io.fusionauth.jwt.hmac.HMACVerifier
 import java.time.Clock
 import io.vavr.collection.Map
 import io.vavr.collection.HashMap
+import io.vavr.control.Either
+import io.vavr.control.Try
 import io.vavr.kotlin.toVavrMap
 
 data class JwtConfig(
@@ -58,10 +60,16 @@ class JwtCoder(private val jwtBaseConfig: JwtCoderConfigurationModule) {
 
     fun signJwt(jwt: JWT) = JWT.getEncoder().encode(jwt, jwtBaseConfig.signer)
 
-    fun decodeJwt(signed: String): JWT = jwtBaseConfig.timeProvider.getTimeSource().now().let { time ->
-        val decoder = JWTDecoder(Clock.fixed(time.toInstant(), time.zone))
-        decoder.decode(signed, jwtBaseConfig.verifier)
-    }
+    fun decodeJwt(signed: String): Either<JWTError, JWT> = Try.of {
+        jwtBaseConfig.timeProvider.getTimeSource().now().let { time ->
+            val decoder = JWT.getTimeMachineDecoder(time)
+            decoder.decode(signed, jwtBaseConfig.verifier)
+        }
+    }.toEither().mapLeft { e -> JWTError.WrongJWT(e) }
 }
 
+
+sealed class JWTError {
+    class WrongJWT(val cause: Throwable) : JWTError()
+}
 
