@@ -32,6 +32,7 @@ import java.util.*
 
 internal class GoogleOpenIdTest : DescribeSpec({
     describe("gooogle open id") {
+        val testModule = GoogleOpenIdTest.createTestModule()
         val googleOpenId = GoogleOpenId(testModule)
         it("generates api call url") {
             val url = googleOpenId.generateApiCall("lokal-post")
@@ -42,13 +43,13 @@ internal class GoogleOpenIdTest : DescribeSpec({
             it("calls google for tokens") {
                 tokens.perform(Unit)(Unit).get().tokens.idToken shouldBe sampleGoogleToken
             }
-            it ("gets subject ") {
+            it("gets subject ") {
                 tokens.perform(Unit)(Unit).get().subject shouldBe "108874454676244700380"
             }
-            it ("gets email ") {
+            it("gets email ") {
                 tokens.perform(Unit)(Unit).get().email shouldBe some("jratajski@gmail.com")
             }
-            it ("gets name") {
+            it("gets name") {
                 tokens.perform(Unit)(Unit).get().displayName shouldBe some("Jarek Ratajski")
             }
 
@@ -62,7 +63,6 @@ internal class GoogleOpenIdTest : DescribeSpec({
     }
 }) {
     companion object {
-        val testRandom = Random(42L)
 
         val testOauthConfig = OauthConfig("testId", "testSecret")
         val jwtConfig = JwtConfig(issuer = "test", signerSecret = "marny")
@@ -108,7 +108,8 @@ internal class GoogleOpenIdTest : DescribeSpec({
                 }
             }
         }
-        const val  sampleGoogleToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ5NDZiMTM3NzM3Yjk3MzczOGU1Mjg2YzIwOGI2NmU3YTM5ZWU3YzEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDg4NzQ0NTQ2NzYyNDQ3MDAzODAiLCJlbWFpbCI6ImpyYXRhanNraUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InFIR21SMUE3OUhqdEl5cW5MTl9ya2ciLCJuYW1lIjoiSmFyZWsgUmF0YWpza2kiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDQuZ29vZ2xldXNlcmNvbnRlbnQuY29tLy1lWHB2TlJLdVJyZy9BQUFBQUFBQUFBSS9BQUFBQUFBQUFBQS9BTVp1dWNtbTRzS0RCenJhakpXN0NTSVkxeUF4VzZsUGp3L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJKYXJlayIsImZhbWlseV9uYW1lIjoiUmF0YWpza2kiLCJsb2NhbGUiOiJwbCIsImlhdCI6MTYwNTUyOTYyMiwiZXhwIjoxNjA1NTMzMjIyfQ.TfFiTZ4xLYcBllGqHZPAyeUn5Vo5t-hHmyja_upx-6HuXIY4RKxA_IYHX28MsCKD0hX9hX-LiZqIuZus-NKimguHmxbHxweUassraPidI-UmqTkrccFWYXE1wqLvpm_He9fwTf6imFmXnAPDT61bhTm2HQAgwZ_HOVsd8uk1j4uuIM-DHU7ndOtX88KXoXDfILKSAzOUcVwWgUgCmjuGSpd6RQ4JH7remBNcQCs0qQ7WZPKNsY1xKHj7y4LMjPpKFb3vGo1omxTeHCMmmgzS3sf7SAomqbRGUwGWi92HWv560FfXDjFf59zzmgWoNsauRXXjlMNK9QPrj7gUriq2mQ"
+        const val sampleGoogleToken =
+            "eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ5NDZiMTM3NzM3Yjk3MzczOGU1Mjg2YzIwOGI2NmU3YTM5ZWU3YzEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4OTA0Mzg5MDc5NzYtdmRrZG9kcmo4NjE5dXZxaTZhcG5ocHQ2MTFoMWY5OGguYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDg4NzQ0NTQ2NzYyNDQ3MDAzODAiLCJlbWFpbCI6ImpyYXRhanNraUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InFIR21SMUE3OUhqdEl5cW5MTl9ya2ciLCJuYW1lIjoiSmFyZWsgUmF0YWpza2kiLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDQuZ29vZ2xldXNlcmNvbnRlbnQuY29tLy1lWHB2TlJLdVJyZy9BQUFBQUFBQUFBSS9BQUFBQUFBQUFBQS9BTVp1dWNtbTRzS0RCenJhakpXN0NTSVkxeUF4VzZsUGp3L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJKYXJlayIsImZhbWlseV9uYW1lIjoiUmF0YWpza2kiLCJsb2NhbGUiOiJwbCIsImlhdCI6MTYwNTUyOTYyMiwiZXhwIjoxNjA1NTMzMjIyfQ.TfFiTZ4xLYcBllGqHZPAyeUn5Vo5t-hHmyja_upx-6HuXIY4RKxA_IYHX28MsCKD0hX9hX-LiZqIuZus-NKimguHmxbHxweUassraPidI-UmqTkrccFWYXE1wqLvpm_He9fwTf6imFmXnAPDT61bhTm2HQAgwZ_HOVsd8uk1j4uuIM-DHU7ndOtX88KXoXDfILKSAzOUcVwWgUgCmjuGSpd6RQ4JH7remBNcQCs0qQ7WZPKNsY1xKHj7y4LMjPpKFb3vGo1omxTeHCMmmgzS3sf7SAomqbRGUwGWi92HWv560FfXDjFf59zzmgWoNsauRXXjlMNK9QPrj7gUriq2mQ"
 
         val simulatedGoogleTokenResponse =
             """
@@ -123,21 +124,22 @@ internal class GoogleOpenIdTest : DescribeSpec({
             Clock.fixed(Instant.parse("2020-10-24T22:22:03.00Z"), ZoneId.of("Europe/Berlin"))
         )
 
-        val testModule = object : SimpleOauthConfigModule(testOauthConfig, jwtConfig) {
-            override val rng: Random
-                get() = testRandom
-            override val keyPair: KeyPair
-                get() = serveKeyPair
-            override val httpClient: HttpClient
-                get() = testHttpClient
-            override val jwtConfigModule: JwtConfigurationModule by lazy {
-                object : JwtConfigurationModule(this.jwtConfig) {
-                    override val timeProvider: TimeProvider
-                        get() = HasteTimeProvider(haste)
+        val createTestModule: () -> SimpleOauthConfigModule = {
+            object : SimpleOauthConfigModule(testOauthConfig, jwtConfig) {
+                override val rng: Random by lazy {
+                    Random(42L)
                 }
-
+                override val keyPair: KeyPair
+                    get() = serveKeyPair
+                override val httpClient: HttpClient
+                    get() = testHttpClient
+                override val jwtConfigModule: JwtConfigurationModule by lazy {
+                    object : JwtConfigurationModule(this.jwtConfig) {
+                        override val timeProvider: TimeProvider
+                            get() = HasteTimeProvider(haste)
+                    }
+                }
             }
-
         }
     }
 }
