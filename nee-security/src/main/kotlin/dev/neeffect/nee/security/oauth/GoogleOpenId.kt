@@ -28,8 +28,8 @@ interface OauthProvider {
     fun verifyOauthToken(code: String): Nee<Any, SecurityErrorType, Unit, OauthResponse>
 }
 
-class GoogleOpenId(
-    private val oauthConfigModule: OauthConfigModule
+class GoogleOpenId<USER,ROLE>(
+    private val oauthConfigModule: OauthConfigModule<USER,ROLE>
 ) : OauthProvider {
     private val googleJwtDecoder = JWT.getTimeMachineDecoder(
         oauthConfigModule.jwtConfigModule.timeProvider.getTimeSource().now()

@@ -8,7 +8,7 @@ import dev.neeffect.nee.security.jwt.JwtConfig
 import dev.neeffect.nee.security.jwt.JwtConfigurationModule
 import dev.neeffect.nee.security.oauth.GoogleOpenId
 import dev.neeffect.nee.security.oauth.OauthConfig
-import dev.neeffect.nee.security.oauth.OauthConfigModule
+import dev.neeffect.nee.security.oauth.SimpleOauthConfigModule
 import dev.neeffect.nee.security.state.ServerVerifier
 import io.haste.Haste
 import io.kotest.core.spec.style.DescribeSpec
@@ -21,7 +21,6 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.ParametersImpl
 import io.ktor.http.headersOf
 import io.ktor.http.parseUrlEncodedParameters
 import io.vavr.kotlin.some
@@ -124,7 +123,7 @@ internal class GoogleOpenIdTest : DescribeSpec({
             Clock.fixed(Instant.parse("2020-10-24T22:22:03.00Z"), ZoneId.of("Europe/Berlin"))
         )
 
-        val testModule = object : OauthConfigModule(testOauthConfig, jwtConfig) {
+        val testModule = object : SimpleOauthConfigModule(testOauthConfig, jwtConfig) {
             override val rng: Random
                 get() = testRandom
             override val keyPair: KeyPair

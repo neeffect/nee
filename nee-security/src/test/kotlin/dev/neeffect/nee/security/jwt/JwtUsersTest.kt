@@ -14,23 +14,33 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.*
 
-internal class JwtUsersCoderTest: DescribeSpec( {
+internal class JwtUsersCoderTest : DescribeSpec({
     describe("jwtuserscoder") {
-            val jwtUsersCoder = JwtUsersCoder<User, UserRole>(jwtTestModule,BasicUserCoder())
-        val uuid = UUID(0,1)
-        val user = User(uuid, "badmin", list(UserRole("editor"), UserRole("reader")))
+        val jwtUsersCoder = JwtUsersCoder<User, UserRole>(jwtTestModule, SimpleUserCoder())
+        val uuid = UUID(0, 1)
+        val user = User(
+            uuid,
+            "badmin",
+            list(
+                UserRole("editor"),
+                UserRole("reader")
+            ),
+            "mirek"
+        )
         val jwt = jwtUsersCoder.encodeUser(user)
         describe("decoded user") {
             val decodedUser = jwtUsersCoder.decodeUser(jwt)
-            it ("has id") {
+            it("has id") {
                 decodedUser.get().id shouldBe uuid
             }
-
-            it ("has login") {
+            it("has login") {
                 decodedUser.get().login shouldBe "badmin"
             }
             it("has role") {
-                decodedUser.get().roles shouldContain  UserRole("reader")
+                decodedUser.get().roles shouldContain UserRole("reader")
+            }
+            it("has displayName") {
+                decodedUser.get().displayName shouldBe "mirek"
             }
         }
 

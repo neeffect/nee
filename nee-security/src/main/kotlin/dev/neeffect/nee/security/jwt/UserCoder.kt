@@ -1,6 +1,5 @@
 package dev.neeffect.nee.security.jwt
 
-import dev.neeffect.nee.security.User
 import io.fusionauth.jwt.domain.JWT
 import io.vavr.collection.Map
 import io.vavr.control.Option
@@ -8,7 +7,7 @@ import io.vavr.kotlin.toVavrMap
 
 interface UserCoder<USER, ROLE> {
     fun userToIdAndMapAnd(u: USER): Pair<String, Map<String, String>>
-    fun mapToUser(id:String, m: Map<String, String>): Option<User>
+    fun mapToUser(id:String, m: Map<String, String>): Option<USER>
     fun hasRole(r: ROLE, m: Map<String, String>): Boolean
 }
 
