@@ -21,15 +21,20 @@ class JwtAuthProvider<USER, ROLE>(
                 val jwtToken = fullHeader.substring(bearerAuthHeaderPrefix.length)
                 jwtConf.jwtCoder.decodeJwt(jwtToken).map {jwt ->
                     jwtConf.jwtUsersCoder.decodeUser(jwt).map {user ->
-                        Out.right<SecurityError,SecurityCtx<USER,ROLE>>(TokenSecurityContext<USER, ROLE>(user, jwtConf.jwtUsersCoder) )
+                        Out.right<SecurityError,SecurityCtx<USER,ROLE>>(
+                            TokenSecurityContext(user, jwtConf.jwtUsersCoder) )
                     }.getOrElse  {
-                        Out.left<SecurityError,SecurityCtx<USER,ROLE>>(SecurityErrorType.MalformedCredentials("user not decoded from $jwt"))
+                        Out.left(SecurityErrorType.MalformedCredentials("user not decoded from $jwt"))
                     }
                 }.mapLeft { jwtError ->
-                    Out.left<SecurityError,SecurityCtx<USER,ROLE>>(SecurityErrorType.MalformedCredentials(jwtError.toString()))
+                    Out.left<SecurityError,SecurityCtx<USER,ROLE>>(
+                        SecurityErrorType.MalformedCredentials(jwtError.toString())
+                    )
                 }.merge()
             } else {
-                Out.left<SecurityError,SecurityCtx<USER,ROLE>>(SecurityErrorType.MalformedCredentials("wrong header $fullHeader"))
+                Out.left<SecurityError,SecurityCtx<USER,ROLE>>(
+                    SecurityErrorType.MalformedCredentials("wrong header $fullHeader")
+                )
             }
 
 

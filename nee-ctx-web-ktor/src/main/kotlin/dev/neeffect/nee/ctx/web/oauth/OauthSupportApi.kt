@@ -17,10 +17,10 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import io.ktor.jackson.*
 import io.ktor.routing.post
 import io.ktor.util.pipeline.PipelineContext
 import io.vavr.control.Either

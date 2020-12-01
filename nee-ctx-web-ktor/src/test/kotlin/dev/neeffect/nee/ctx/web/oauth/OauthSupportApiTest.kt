@@ -52,7 +52,7 @@ internal class OauthSupportApiTest : DescribeSpec({
         it("logs user in") {
             val oauthData  = OauthLoginData(
                 code = "acode",
-                state  = "fake state"
+                state  = oauthConfigModule.serverVerifier.generateRandomSignedState()
             )
             val content = engine.handleRequest(
                 HttpMethod.Post,

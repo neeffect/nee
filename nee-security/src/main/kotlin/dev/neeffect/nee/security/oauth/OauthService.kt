@@ -15,7 +15,8 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
 
     private val googleOpenId = GoogleOpenId(oauthConfig)
 
-    fun login(code: String, state: String, oauthProvider: OauthProviderName): UNee<Any, SecurityErrorType, LoginResult> =
+    fun login(code: String, state: String, oauthProvider: OauthProviderName)
+            : UNee<Any, SecurityErrorType, LoginResult> =
         findOauthProvider(oauthProvider).map { provider ->
             if (oauthConfig.serverVerifier.verifySignedText(state)) {
                 provider.verifyOauthToken(code).map { oauthResponse ->
@@ -27,12 +28,12 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
                 }
             } else {
                 Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
-                    Out.left<SecurityErrorType, LoginResult>(SecurityErrorType.MalformedCredentials("state unrecognized: $state"))
+                    Out.left(SecurityErrorType.MalformedCredentials("state unrecognized: $state"))
                 }
             }
         }.getOrElse {
-            Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
-                Out.left<SecurityErrorType, LoginResult>(SecurityErrorType.NoSecurityCtx)
+            Nee.constWithError(NoEffect()) { _ ->
+                Out.left(SecurityErrorType.NoSecurityCtx)
             }
         }
 
@@ -41,7 +42,7 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
             it.generateApiCall(redirectUrl)
         }
 
-    private fun findOauthProvider(oauthProvider: OauthProviderName):Option<OauthProvider> = when (oauthProvider) {
+    private fun findOauthProvider(oauthProvider: OauthProviderName): Option<OauthProvider> = when (oauthProvider) {
         OauthProviderName.Google -> some(googleOpenId)
     }
 
