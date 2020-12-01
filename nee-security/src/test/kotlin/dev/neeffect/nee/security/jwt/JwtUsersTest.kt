@@ -36,12 +36,16 @@ internal class JwtUsersCoderTest : DescribeSpec({
             it("has login") {
                 decodedUser.get().login shouldBe "badmin"
             }
-            it("has role") {
+            it("has role in object") {
                 decodedUser.get().roles shouldContain UserRole("reader")
+            }
+            it ("has given role ") {
+                jwtUsersCoder.hasRole(decodedUser.get(), UserRole("reader")) shouldBe true
             }
             it("has displayName") {
                 decodedUser.get().displayName shouldBe "mirek"
             }
+
         }
 
     }

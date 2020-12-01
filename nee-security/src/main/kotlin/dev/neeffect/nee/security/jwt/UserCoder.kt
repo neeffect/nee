@@ -8,7 +8,7 @@ import io.vavr.kotlin.toVavrMap
 interface UserCoder<USER, ROLE> {
     fun userToIdAndMapAnd(u: USER): Pair<String, Map<String, String>>
     fun mapToUser(id:String, m: Map<String, String>): Option<USER>
-    fun hasRole(r: ROLE, m: Map<String, String>): Boolean
+    fun hasRole(u:USER, r: ROLE): Boolean
 }
 
 class JwtUsersCoder<USER, ROLE>(val jwtCoder: JwtCoder, val coder: UserCoder<USER, ROLE>) {
@@ -17,5 +17,8 @@ class JwtUsersCoder<USER, ROLE>(val jwtCoder: JwtCoder, val coder: UserCoder<USE
         jwtCoder.createJwt(id, mapClaims)
     }
 
-    fun decodeUser(jwt: JWT) = coder.mapToUser(jwt.subject, jwt.allClaims.toVavrMap().mapValues { it.toString() })
+    fun decodeUser(jwt: JWT): Option<USER> =
+        coder.mapToUser(jwt.subject, jwt.allClaims.toVavrMap().mapValues { it.toString() })
+
+    fun hasRole(u:USER, r: ROLE): Boolean = coder.hasRole(u,r)
 }

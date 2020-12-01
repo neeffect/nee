@@ -33,9 +33,7 @@ class SimpleUserCoder : UserCoder<User, UserRole> {
             }
         }
 
-    override fun hasRole(r: UserRole, m: Map<String, String>): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasRole(u:User, r: UserRole): Boolean  = u.roles.contains(r)
 
     fun stringToUUID(id: String) = Try.of { UUID.fromString(id) }.toOption()
 
