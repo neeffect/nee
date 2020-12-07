@@ -12,6 +12,8 @@ import dev.neeffect.nee.security.jwt.JwtUsersCoder
 import dev.neeffect.nee.security.jwt.UserCoder
 import dev.neeffect.nee.security.state.ServerVerifier
 import io.ktor.client.HttpClient
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.vavr.collection.Seq
 import io.vavr.kotlin.list
 import java.security.KeyPair
@@ -38,7 +40,11 @@ abstract class OauthConfigModule<USER, ROLE>(
         ServerVerifier(rng = this.randomGenerator, keyPair = keyPair)
     }
     open val httpClient by lazy {
-        HttpClient()
+        HttpClient() {
+            install(JsonFeature) { //TODO - move it so that it is tested (it was not)
+                serializer = JacksonSerializer()
+            }
+        }
     }
 
     open val jwtConfigModule: JwtConfigurationModule<USER,ROLE> by lazy {

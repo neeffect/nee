@@ -16,7 +16,7 @@ object Libs {
     }
 
     object Ktor {
-        private const val version = "1.4.2"
+        private const val version = "1.4.3"
         const val serverCore = "io.ktor:ktor-server-core:$version"
         const val clientCore =  "io.ktor:ktor-client-core:$version"
         const val clientMockJvm =  "io.ktor:ktor-client-mock-jvm:$version"
