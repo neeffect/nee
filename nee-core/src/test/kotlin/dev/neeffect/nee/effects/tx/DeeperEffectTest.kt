@@ -41,10 +41,8 @@ class DeeperEffectTest  : BehaviorSpec ({
 }) {
     companion object {
         fun function1(log : MutableList<String>) = { db: TestResource ->
-            { _:Unit ->
                 log.add("function1 called with: $db")
                  "OK"
             }
-        }
     }
 }

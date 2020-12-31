@@ -1,9 +1,9 @@
 package dev.neeffect.nee.effects.cache
 
-
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
+import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.test.get
 
 internal class CacheEffectTest : BehaviorSpec({
@@ -39,7 +39,7 @@ internal class CacheEffectTest : BehaviorSpec({
     }
 })
 
-fun returnEnvIgnoringParam(env:Env) = { _:Int -> env}
+fun returnEnvIgnoringParam(env:Env) =  env
 
 sealed class Env {
     object SomeValue : Env()

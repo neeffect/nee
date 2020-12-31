@@ -19,12 +19,12 @@ class DBEffectTest : BehaviorSpec({
             val provider = DBLikeProvider(db)
             val result = simpleAction.perform(provider)
             Then("correct res") {
-                result(Unit).get() shouldBe 6
+                result.get() shouldBe 6
                 //println(db.getLog())
             }
         }
         And("nested second action") {
-            val nestedAction = { orig: Int ->
+            val nestedAction: (Int) -> Nee<DBLikeProvider, TxError, Int> = { orig: Int ->
                 Nee.pure(eff, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
@@ -35,7 +35,7 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    result(Unit).get() shouldBe (1076)
+                    result.get() shouldBe (1076)
                 }
             }
         }
@@ -52,7 +52,7 @@ class DBEffectTest : BehaviorSpec({
                 val provider = DBLikeProvider(db)
                 val result = monad.perform(provider)
                 Then("correct res") {
-                    result(Unit).get()  shouldBe(1724)
+                    result.get() shouldBe (1724)
                 }
             }
 
@@ -61,10 +61,8 @@ class DBEffectTest : BehaviorSpec({
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
             val extractTxLevel = { _: Int ->
                 Nee.pure(effReqNew) { r ->
-                    {_: Unit ->
-                        val connection= r.conn as DBConnection
+                        val connection = r.conn as DBConnection
                         connection.level
-                    }
                 }
             }
             val monad = simpleAction.flatMap(extractTxLevel)
@@ -73,20 +71,20 @@ class DBEffectTest : BehaviorSpec({
                 val db = DBLike()
                 db.appendAnswer("24")
                 val provider = DBLikeProvider(db)
-                val result = monad.perform(provider)(Unit)
+                val result = monad.perform(provider)
                 Then("detected correct level of nested tx ") {
-                    result.get()  shouldBe(2)
+                    result.get() shouldBe (2)
                 }
             }
             //below section documents sometimes not exact execution of flatMap
             When("double internal  action executed") {
-                val monad2 = simpleAction.flatMap{ extractTxLevel(it).flatMap(extractTxLevel)}
+                val monad2 = simpleAction.flatMap { extractTxLevel(it).flatMap(extractTxLevel) }
                 val db = DBLike()
                 db.appendAnswer("24")
                 val provider = DBLikeProvider(db)
-                val result = monad2.perform(provider)(Unit)
+                val result = monad2.perform(provider)
                 Then("detected correct level of nested tx") {
-                    result.get()  shouldBe(3)
+                    result.get() shouldBe (3)
                 }
             }
             When("double internal  action executed - outside") {
@@ -94,9 +92,9 @@ class DBEffectTest : BehaviorSpec({
                 val db = DBLike()
                 db.appendAnswer("24")
                 val provider = DBLikeProvider(db)
-                val result = monad2.perform(provider)(Unit)
+                val result = monad2.perform(provider)
                 Then("detected same level of nested tx") {
-                    result.get()  shouldBe(3)
+                    result.get() shouldBe (3)
                 }
             }
         }
@@ -107,42 +105,37 @@ class DBEffectTest : BehaviorSpec({
             val provider = DBLikeProvider(db)
             val result = failingAction.perform(provider)
             Then("expect error as result") {
-                result(Unit).getLeft() should beInstanceOf ( TxErrorType::class)
+                result.getLeft() should beInstanceOf(TxErrorType::class)
             }
         }
     }
 }) {
     companion object {
         internal val function1 = { db: DBLikeProvider ->
-            { _: Unit ->
                 val resource = db.getConnection().getResource()
                 val result = resource.query("SELECT * FROM all1")
                 result.map {
                     Integer.parseInt(it)
                 }.get()
-            }
         }
 
         internal val functionWithFailQuery = { db: DBLikeProvider ->
-            { _: Unit ->
                 val resource = db.getConnection().getResource()
                 resource.raiseExceptionOnNext()
                 val result = resource.query("SELECT * FROM all1")
                 result.map {
                     Integer.parseInt(it)
                 }.get()
-            }
         }
-        internal val function2 = { orig : Int ->
+        internal val function2 = { orig: Int ->
             { db: DBLikeProvider ->
-                { _: Unit ->
-                    val resource = db.getConnection().getResource()
-                    val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
-                    result.map {
-                        Integer.parseInt(it) + 1000 + orig
-                    }.get()
-                }
+                val resource = db.getConnection().getResource()
+                val result = resource.query("SELECT * FROM all2 LIMIT ${orig})")
+                result.map {
+                    Integer.parseInt(it) + 1000 + orig
+                }.get()
             }
+
         }
     }
 }

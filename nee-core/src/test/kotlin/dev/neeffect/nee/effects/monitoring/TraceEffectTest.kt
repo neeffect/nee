@@ -20,8 +20,8 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ignoreR(::plainFunction))
-            val result = f.perform(SimpleTraceProvider(res))(5)
+            val f = Nee.Companion.pure(eff, ignoreR({plainFunction(5)}))
+            val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
             }
@@ -30,8 +30,8 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ::traceableFunction)
-            val result = f.perform(SimpleTraceProvider(res))(5)
+            val f = Nee.Companion.pure(eff, traceableFunction(5))
+            val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
             }
@@ -42,11 +42,9 @@ internal class TraceEffectTest : BehaviorSpec({
             val res = TraceResource("z1", logger, {  time.get()})
             val f =
                 Nee.Companion.pure(eff) { r ->
-                    { p: Unit ->
                         time.updateAndGet { it + 100 * 1000 }
-                    }
                 }
-            val result = f.perform(SimpleTraceProvider(res))(Unit)
+            val result = f.perform(SimpleTraceProvider(res))
             Then("time is measured"){
                 logger.entries[1].time shouldBe ( 100L + 100000L)
             }
@@ -56,9 +54,9 @@ internal class TraceEffectTest : BehaviorSpec({
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
             val f = Nee.Companion.pure(eff,
-                ignoreR(ExternalObject::plainFunction)
+                ignoreR({ExternalObject.plainFunction(5)})
             )
-            val result = f.perform(SimpleTraceProvider(res))(5)
+            val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
             }
@@ -71,27 +69,27 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ExternalObject::traceableFunction)
-            val result = f.perform(SimpleTraceProvider(res))(5)
+            val f = Nee.Companion.pure(eff, ExternalObject.traceableFunction(5))
+            val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
             }
             Then("logs contain correctly guessed name") {
-                logger.entries[1].codeLocation.toString() shouldStartWith "pl.outside.code.ExternalObject->traceableFunction#ExternalObject.kt"
+                logger.entries[1].codeLocation.toString() shouldStartWith "pl.outside.code.ExternalObject\$traceableFunction"
             }
         }
     }
     Given("guessing code name function") {
         When("called simple function in Nee") {
             val noEffect  = NoEffect<Unit, Unit>()
-            val result = Nee.constR(noEffect, ExternalObject::checkWhereCodeIsSimple).perform(Unit)(Unit)
+            val result = Nee.constR(noEffect, ExternalObject::checkWhereCodeIsSimple).perform(Unit)
             Then("name of function recognized"){
-                result.get().toString() shouldStartWith  "pl.outside.code.ExternalObject->checkWhereCodeIsSimple#ExternalObject.kt@"
+                result.get().toString() shouldStartWith  "fun pl.outside.code.ExternalObject.checkWhereCodeIsSimple(kotlin.Unit)"
             }
         }
 
         When("called wrapped function in Nee") {
-            val result = ExternalObject.checkWhereCodeIsNee().perform(Unit)(Unit)
+            val result = ExternalObject.checkWhereCodeIsNee().perform(Unit)
             Then("name of wrapped function recognized"){
                 result.get().toString() shouldStartWith "pl.outside.code.ExternalObject\$checkWhereCodeIsNee\$"
             }
@@ -115,6 +113,6 @@ internal class TraceEffectTest : BehaviorSpec({
 
 fun plainFunction(i : Int) = i+1
 
-fun <R :TraceProvider<R>> traceableFunction(mon: R) = mon.getTrace().putNamedPlace().let { _ -> ::plainFunction}
+fun <R :TraceProvider<R>> traceableFunction(p: Int) = {mon:R->mon.getTrace().putNamedPlace().let { plainFunction(p)}}
 
 
