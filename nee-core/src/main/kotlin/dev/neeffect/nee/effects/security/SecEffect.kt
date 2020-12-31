@@ -27,6 +27,7 @@ sealed class SecurityErrorType : SecurityError {
      * Credentials were wrong.
      */
     class WrongCredentials(val message: String = "") : SecurityErrorType()
+
     /**
      * User not recognized.
      */
@@ -56,19 +57,18 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
 
     constructor(singleRole: ROLE) : this(List.of(singleRole))
 
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<SecurityError, A>, R> {
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<SecurityError, A>, R> {
         return { provider: R ->
             Pair( //TODO - fail faster?
-                { p: P ->
-                    provider.getSecurityContext().flatMap { securityCtx ->
-                        val missingRoles = roles.filter { role ->
-                            !securityCtx.hasRole(role)
-                        }
-                        if (missingRoles.isEmpty) {
-                            Out.right(f(provider)(p))
-                        } else {
-                            Out.left<SecurityError, A>(SecurityErrorType.MissingRole(missingRoles))
-                        }
+
+                provider.getSecurityContext().flatMap { securityCtx ->
+                    val missingRoles = roles.filter { role ->
+                        !securityCtx.hasRole(role)
+                    }
+                    if (missingRoles.isEmpty) {
+                        Out.right(f(provider))
+                    } else {
+                        Out.left<SecurityError, A>(SecurityErrorType.MissingRole(missingRoles))
                     }
                 }, provider
             )

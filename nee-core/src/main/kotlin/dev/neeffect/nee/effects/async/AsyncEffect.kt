@@ -84,14 +84,16 @@ class ECProvider(private val ectx: ExecutionContext, private val localWins: Bool
 class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
 ) : Effect<R, Nothing>, Logging {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<Nothing, A>, R> =
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> =
         { r: R ->
-            Pair({ p: P ->
+
+
+            Pair(run {
                 val ec = r.findExecutionContext(this.localExecutionContext)
                 val async = AsyncSupport.initiateAsync(r)
                 val result = ec.execute {
                     try {
-                        f(r)(p)
+                        f(r)
                     } catch (e: Exception) {
                         logger().error("error in async handling", e)
                         throw RuntimeException(e)

@@ -14,7 +14,7 @@ import dev.neeffect.nee.effects.tx.FlexTxProvider.Companion.txProviderResource
 class FlexTxEffect<R> : Effect<FlexibleEnv, TxError> {
     private val internal = TxEffect<R, FlexTxProvider<R>>()
 
-    override fun <A, P> wrap(f: (FlexibleEnv) -> (P) -> A): (FlexibleEnv) -> Pair<(P) -> Out<TxError, A>, FlexibleEnv> =
+    override fun <A> wrap(f: (FlexibleEnv) ->  A): (FlexibleEnv) -> Pair< Out<TxError, A>, FlexibleEnv> =
         { env: FlexibleEnv ->
             @Suppress("UNCHECKED_CAST")
             val providerChance = env.get(txProviderResource)
@@ -27,7 +27,7 @@ class FlexTxEffect<R> : Effect<FlexibleEnv, TxError> {
                 val wrapped = internal.wrap(internalF)
                 val result = wrapped(flexProvider)
                 Pair(result.first, result.second.env)
-            }.getOrElse(Pair({ _: P -> Out.left<TxError, A>(TxErrorType.NoConnection) }, env))
+            }.getOrElse(Pair( Out.left<TxError, A>(TxErrorType.NoConnection) , env))
         }
 }
 

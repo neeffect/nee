@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture
 interface OauthProvider {
     fun generateApiCall(redirect: String): String
 
-    fun verifyOauthToken(code: String, redirectUri: String): Nee<Any, SecurityErrorType, Unit, OauthResponse>
+    fun verifyOauthToken(code: String, redirectUri: String): Nee<Any, SecurityErrorType, OauthResponse>
 }
 
 class GoogleOpenId<USER, ROLE>(

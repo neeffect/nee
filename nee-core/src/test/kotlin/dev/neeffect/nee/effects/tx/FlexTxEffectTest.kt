@@ -17,7 +17,7 @@ internal class FlexTxEffectTest : BehaviorSpec({
             val env = FlexibleEnv.empty().withTxProvider(provider)
             val result = simpleAction.perform(env)
             Then("correct res") {
-                result(Unit).get() shouldBe 6
+                result.get() shouldBe 6
             }
         }
     }
