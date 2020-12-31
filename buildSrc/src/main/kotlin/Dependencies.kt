@@ -1,6 +1,7 @@
 
 object Libs {
-    const val kotlin_version = "1.4.0"
+    const val kotlin_version = "1.4.21"
+
     const val liquibase_version="3.6.1"
     const val h2_version="1.4.193"
 
@@ -11,7 +12,8 @@ object Libs {
 
     object Kotlin {
         const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-        const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlin_version"
+        private const val coroutinesVersion = "1.4.1"
+        const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
 
     }
 
