@@ -15,15 +15,13 @@ jobs:
         java-version: 11
     - name: Build with Gradle
       run: ./cibuild.sh ${{ secrets.CODACY_COVERAGE_TOKEN }}
-  buildNewJava:
-
+  buildNewJava: # jacoco 0.8.6 does not work with java 15
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v1
-      - name: Set up JDK 15
+      - name: Set up JDK 14
         uses: actions/setup-java@v1
         with:
-          java-version: 15
+          java-version: 14
       - name: Build with Gradle
         run: ./gradlew build
