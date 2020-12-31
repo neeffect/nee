@@ -49,23 +49,23 @@ internal class GoogleOpenIdTest : DescribeSpec({
         describe("tokens") {
             val tokens = googleOpenId.verifyOauthToken("acode", "http://localhost:8080")
             it("calls google for tokens") {
-                tokens.perform(Unit)(Unit).get().tokens.idToken shouldBe otherGoogleIdToken
+                tokens.perform(Unit).get().tokens.idToken shouldBe otherGoogleIdToken
             }
             it("gets subject ") {
-                tokens.perform(Unit)(Unit).get().subject shouldBe "108874454676244700380"
+                tokens.perform(Unit).get().subject shouldBe "108874454676244700380"
             }
             it("gets email ") {
-                tokens.perform(Unit)(Unit).get().email shouldBe some("jratajski@gmail.com")
+                tokens.perform(Unit).get().email shouldBe some("jratajski@gmail.com")
             }
             it("gets name") {
-                tokens.perform(Unit)(Unit).get().displayName shouldBe some("Jarek Ratajski")
+                tokens.perform(Unit).get().displayName shouldBe some("Jarek Ratajski")
             }
         }
 
 
         it("return no jwt in case of a bad token") {
             val tokens = googleOpenId.verifyOauthToken("bad code", "http://localhost:8080")
-            tokens.perform(Unit)(Unit).getAny().isLeft shouldBe true
+            tokens.perform(Unit).getAny().isLeft shouldBe true
         }
     }
 }) {

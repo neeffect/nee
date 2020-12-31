@@ -49,7 +49,7 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
                 val loginData  = call.receive<OauthLoginData>()
                 val result = extractProvider().map { provider ->
                     oauthService.login(loginData.code, loginData.state, loginData.redirectUri, provider)
-                        .perform(Unit)(Unit)
+                        .perform(Unit)
                 }.mapLeft { apiError ->
                     Out.left<SecurityErrorType, LoginResult>(
                         SecurityErrorType.MalformedCredentials("${apiError.toString()}")

@@ -13,7 +13,7 @@ internal class SecuredRunEffectTest : BehaviorSpec({
         val f = Nee.constP(secEffect, businessFunction)
         When("function called with test user ") {
             val testSecurityProvider = SimpleSecurityProvider<String, String>("test", List.of("test"))
-            val result = f.perform(testSecurityProvider)(Unit)
+            val result = f.perform(testSecurityProvider)
                 .flatMap { it }
             Then("called with correct user") {
                 result.toFuture().get().get() shouldBe "called by: test"
@@ -21,7 +21,7 @@ internal class SecuredRunEffectTest : BehaviorSpec({
         }
         When("function called without roles test user ") {
             val testSecurityProvider = SimpleSecurityProvider<String, String>("test", List.empty())
-            val result = f.perform(testSecurityProvider)(Unit)
+            val result = f.perform(testSecurityProvider)
                 .flatMap { it }
             Then("function is not called") {
                 result.toFuture().get().isLeft shouldBe true

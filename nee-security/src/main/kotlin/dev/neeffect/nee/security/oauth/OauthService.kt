@@ -2,7 +2,6 @@ package dev.neeffect.nee.security.oauth
 
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.NoEffect
-import dev.neeffect.nee.UNee
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.security.SecurityErrorType
 import dev.neeffect.nee.security.jwt.JWTError
@@ -16,7 +15,7 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
     private val googleOpenId = GoogleOpenId(oauthConfig)
 
     fun login(code: String, state: String, redirectUri: String, oauthProvider: OauthProviderName)
-            : UNee<Any, SecurityErrorType, LoginResult> =
+            : Nee<Any, SecurityErrorType, LoginResult> =
         findOauthProvider(oauthProvider).map { provider ->
             if (oauthConfig.serverVerifier.verifySignedText(state)) {
                 provider.verifyOauthToken(code, redirectUri).map { oauthResponse ->

@@ -31,7 +31,7 @@ fun Application.slowApp() {
             val result = Nee.constP(EmptyTestContext.contexProvider.fx().async) {
                 Thread.sleep(100)
                 "ok"
-            }.perform(wc)(Unit)
+            }.perform(wc)
             wc.serveMessage(result)
         }
     }

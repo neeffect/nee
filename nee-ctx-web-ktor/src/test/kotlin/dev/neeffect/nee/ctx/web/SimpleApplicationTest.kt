@@ -33,13 +33,13 @@ fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
                         }
                     }
             }.anyError()
-            wctxProvider.create(call).serveText(function, Unit)
+            wctxProvider.create(call).serveText(function)
         }
         get("/secured") {
             val function = Nee.constP(wctxProvider.fx().secured(List.of(UserRole("badmin")))) { _ ->
                 "Secret message"
             }.anyError()
-            wctxProvider.create(call).serveText(function, Unit)
+            wctxProvider.create(call).serveText(function)
         }
     }
 }

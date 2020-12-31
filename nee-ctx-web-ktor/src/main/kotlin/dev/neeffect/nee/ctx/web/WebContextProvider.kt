@@ -54,7 +54,7 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
         trace.andThen(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)).anyError()
     val tx =
         trace.andThen(TxEffect<Connection, WebContext<R, G>>()).anyError()
-    val cache = CacheEffect<WebContext<R, G>, Nothing>(CaffeineProvider()).anyError()
+    fun <P> cache(p:P) = CacheEffect<WebContext<R, G>, Nothing,P>(p,CaffeineProvider()).anyError()
 
 }
 
@@ -83,7 +83,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
                 ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
             }.anyError()
             val z  = Nee.flatOut(f)
-            create(call).serveMessage(z, Unit)
+            create(call).serveMessage(z)
         }
         get("hasRoles") {
             val roles = (call.request.queryParameters["roles"] ?:"").split(",")
@@ -93,7 +93,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
                 Nee.constP(fx().secured(roles)){
                 "ok"
             }.anyError()
-            create(call).serveMessage(f, Unit)
+            create(call).serveMessage(f)
         }
     }
 
@@ -104,13 +104,11 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
     fun jacksonMapper() : ObjectMapper
 
 
-    fun <E, P, A> async(func: () -> Nee<WebContext<R,G>, E, P, A>) : Nee<WebContext<R,G>, Any, P, A> =
+    fun <E, P, A> async(func: () -> Nee<WebContext<R,G>, E, A>) : Nee<WebContext<R,G>, Any, A> =
         CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
             Nee.pure(this.fx().async) { r ->
-                { _: P ->
                     r.getTrace().putNamedPlace(whereItIsDefined)
                     func()
-                }
             }
                 .flatMap { it.anyError() }
         }

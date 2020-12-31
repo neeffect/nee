@@ -58,8 +58,8 @@ data class WebContext<R, G : TxProvider<R, G>>(
         this.copy(jdbcProvider = jdbcProvider.setConnectionState(newState))
 
 
-    fun <P> serveText(businessFunction: ANee<WebContext<R, G>, P, String>, param: P) =
-        businessFunction.perform(this)(param)
+    fun serveText(businessFunction: ANee<WebContext<R, G>,String>) =
+        businessFunction.perform(this)
             .onComplete { outcome ->
                 val message = outcome.bimap<OutgoingContent, OutgoingContent>(
                     renderHelper::serveError, { regularResult ->
@@ -76,8 +76,8 @@ data class WebContext<R, G : TxProvider<R, G>>(
             renderHelper.serveMessage(applicationCall, msg)
 
 
-    suspend fun <P> serveMessage(businessFunction: ANee<WebContext<R, G>, P, Any>, param: P) =
-        serveMessage(businessFunction.perform(this)(param))
+    suspend fun  serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
+        serveMessage(businessFunction.perform(this))
 
 
 }
