@@ -45,15 +45,10 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
                 renderHelper.renderResponse(call, result)
             }
             post("/loginUser/{provider}") {
-                //TODO
-                //https://youtrack.jetbrains.com/issue/KTOR-1286
-//                val loginData = with(Dispatchers.IO) {
-//                    call.receive<OauthLoginData>()
-//                }
-                val loginData  = call.receive<OauthLoginData>()
 
+                val loginData  = call.receive<OauthLoginData>()
                 val result = extractProvider().map { provider ->
-                    oauthService.login(loginData.code, loginData.state, provider)
+                    oauthService.login(loginData.code, loginData.state, loginData.redirectUri, provider)
                         .perform(Unit)(Unit)
                 }.mapLeft { apiError ->
                     Out.left<SecurityErrorType, LoginResult>(
@@ -78,4 +73,7 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
 }
 
 
-data class OauthLoginData(val code: String, val state: String)
+data class OauthLoginData(
+    val code: String,
+    val state: String,
+    val redirectUri:String)

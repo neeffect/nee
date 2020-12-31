@@ -15,11 +15,11 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
 
     private val googleOpenId = GoogleOpenId(oauthConfig)
 
-    fun login(code: String, state: String, oauthProvider: OauthProviderName)
+    fun login(code: String, state: String, redirectUri: String, oauthProvider: OauthProviderName)
             : UNee<Any, SecurityErrorType, LoginResult> =
         findOauthProvider(oauthProvider).map { provider ->
             if (oauthConfig.serverVerifier.verifySignedText(state)) {
-                provider.verifyOauthToken(code).map { oauthResponse ->
+                provider.verifyOauthToken(code, redirectUri).map { oauthResponse ->
                     println("validate idToken ${oauthResponse}")//TODO
                     val user = oauthConfig.userEncoder(oauthProvider, oauthResponse)
                     val jwt = oauthConfig.jwtConfigModule.jwtUsersCoder.encodeUser(user)

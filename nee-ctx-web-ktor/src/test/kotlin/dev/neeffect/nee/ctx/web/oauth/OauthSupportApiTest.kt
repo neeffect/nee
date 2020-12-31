@@ -39,6 +39,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.hashMap
+import io.vavr.kotlin.option
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -61,7 +62,8 @@ internal class OauthSupportApiTest : DescribeSpec({
         it("logs user in") {
             val oauthData = OauthLoginData(
                 code = "acode",
-                state = oauthConfigModule.serverVerifier.generateRandomSignedState()
+                state = oauthConfigModule.serverVerifier.generateRandomSignedState(),
+                redirectUri = "http://localhost:8080"
             )
             val content = engine.handleRequest(
                 HttpMethod.Post,
@@ -76,10 +78,12 @@ internal class OauthSupportApiTest : DescribeSpec({
     }
 }) {
     companion object {
+        val googleCertificateFile = OauthSupportApiTest::class.java.getResource("/google/keys.json")
+
         val testOauthConfig = OauthConfig(
             providers = hashMap(
                 OauthProviderName.Google.providerName
-                        to ProviderConfig("testId", "testSecret")
+                        to ProviderConfig("testId", "testSecret", googleCertificateFile.toExternalForm().option())
             )
         )
         val jwtConfig = JwtConfig(issuer = "test", signerSecret = "marny")

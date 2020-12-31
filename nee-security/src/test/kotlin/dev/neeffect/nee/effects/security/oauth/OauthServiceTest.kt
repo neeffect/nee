@@ -17,7 +17,7 @@ internal class OauthServiceTest : DescribeSpec({
         val testModule = GoogleOpenIdTest.createTestModule()
         val service = OauthService(testModule)
         describe("login to google") {
-            val result = service.login("acode", GoogleOpenIdTest.preservedState, OauthProviderName.Google)
+            val result = service.login("acode", GoogleOpenIdTest.preservedState, "http://localhost:8080",OauthProviderName.Google)
                 .perform(Unit)(Unit)
 
             it ("should be successful") {
@@ -41,7 +41,7 @@ internal class OauthServiceTest : DescribeSpec({
             url shouldBe some(expectedUrlCall)
         }
         describe("login with bad state") {
-            val result = service.login("acode", "really bad state", OauthProviderName.Google)
+            val result = service.login("acode", "really bad state", "http://localhost:8080", OauthProviderName.Google)
                 .perform(Unit)(Unit)
             it ("should fail") {
                 result.getLeft().shouldBeTypeOf<SecurityErrorType.MalformedCredentials> ()

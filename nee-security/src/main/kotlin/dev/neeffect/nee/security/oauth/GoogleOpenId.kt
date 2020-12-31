@@ -14,6 +14,7 @@ import io.fusionauth.jwks.JSONWebKeySetHelper
 import io.fusionauth.jwks.domain.JSONWebKey
 import io.fusionauth.jwt.Verifier
 import io.fusionauth.jwt.domain.JWT
+import io.fusionauth.jwt.json.Mapper
 import io.fusionauth.jwt.rsa.RSAVerifier
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.header
@@ -31,13 +32,14 @@ import io.vavr.kotlin.toVavrList
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import java.lang.IllegalStateException
+import java.net.URL
 import java.security.interfaces.RSAPublicKey
 import java.util.concurrent.CompletableFuture
 
 interface OauthProvider {
     fun generateApiCall(redirect: String): String
 
-    fun verifyOauthToken(code: String): Nee<Any, SecurityErrorType, Unit, OauthResponse>
+    fun verifyOauthToken(code: String, redirectUri: String): Nee<Any, SecurityErrorType, Unit, OauthResponse>
 }
 
 class GoogleOpenId<USER, ROLE>(
@@ -58,10 +60,10 @@ class GoogleOpenId<USER, ROLE>(
             oauthConfigModule.randomGenerator.nextFloat().toString()
         )
 
-    override fun verifyOauthToken(code: String) = Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
+    override fun verifyOauthToken(code: String, redirectUri: String) = Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
 
         Out.Companion.fromFuture(
-            Future.fromCompletableFuture(InPlaceExecutor, callGoogle(code)).map { result ->
+            Future.fromCompletableFuture(InPlaceExecutor, callGoogle(code, redirectUri)).map { result ->
                 Try.of {
                     val decodedIDToken = googleJwtDecoder.decode(result.idToken, verifier)
                     val email = Option.of(decodedIDToken.getString("email"))
@@ -78,13 +80,13 @@ class GoogleOpenId<USER, ROLE>(
 
 
     private fun createVerifier() =
-        oauthConfigModule.config.providers[OauthProviderName.Google.name]
+        oauthConfigModule.config.providers[OauthProviderName.Google.providerName]
             .flatMap {
                 it.certificatesFile
             }
             .getOrElse("https://www.googleapis.com/oauth2/v3/certs") //TODO use discovery doc
             .let { jwkFile ->
-                val verifiers = JSONWebKeySetHelper.retrieveKeysFromJWKS(jwkFile)
+                val verifiers = retrieveJsonKeys(jwkFile)
                     .toVavrList().map { jwk ->
                         JSONWebKey.parse(jwk)
                     }
@@ -93,9 +95,18 @@ class GoogleOpenId<USER, ROLE>(
                 MultiVerifier(verifiers)
             }
 
+    private fun retrieveJsonKeys(url:String):List<JSONWebKey>  = if (url.startsWith("file:/")) {
+        val fileURL = URL(url)
+        fileURL.openStream().use {  jkeyInputStream ->
+            Mapper.deserialize(jkeyInputStream, LocalJSONWebKeySetResponse::class.java).keys
+        }
+    } else {
+        JSONWebKeySetHelper.retrieveKeysFromJWKS(url)
+    }
+
     //TODO - what is this stupid GlobalScope here? - clean it or test it
     @SuppressWarnings("TooGenericExceptionCaught")
-    private fun callGoogle(code: String): CompletableFuture<OauthTokens> = GlobalScope.future {
+    private fun callGoogle(code: String, redirectUri:String): CompletableFuture<OauthTokens> = GlobalScope.future {
         try {
             val result: OauthTokens = oauthConfigModule.httpClient.submitForm<OauthTokens>(
                 url = "https://oauth2.googleapis.com/token",
@@ -104,7 +115,7 @@ class GoogleOpenId<USER, ROLE>(
                     append("code", code)
                     append("client_id", oauthConfigModule.config.getClientId(OauthProviderName.Google))
                     append("client_secret", oauthConfigModule.config.getClientSecret(OauthProviderName.Google))
-                    append("redirect_uri", "http://localhost:8080")//TODO
+                    append("redirect_uri", redirectUri)
                     append("grant_type", "authorization_code")
                 },
                 encodeInQuery = false,
@@ -173,3 +184,7 @@ data class OauthResponse(
     val displayName: Option<String>,
     val email: Option<String>
 )
+
+ internal class LocalJSONWebKeySetResponse {
+    var keys: List<JSONWebKey> = emptyList()
+}

@@ -47,7 +47,7 @@ internal class GoogleOpenIdTest : DescribeSpec({
             url shouldBe expectedUrl
         }
         describe("tokens") {
-            val tokens = googleOpenId.verifyOauthToken("acode")
+            val tokens = googleOpenId.verifyOauthToken("acode", "http://localhost:8080")
             it("calls google for tokens") {
                 tokens.perform(Unit)(Unit).get().tokens.idToken shouldBe otherGoogleIdToken
             }
@@ -64,7 +64,7 @@ internal class GoogleOpenIdTest : DescribeSpec({
 
 
         it("return no jwt in case of a bad token") {
-            val tokens = googleOpenId.verifyOauthToken("bad code")
+            val tokens = googleOpenId.verifyOauthToken("bad code", "http://localhost:8080")
             tokens.perform(Unit)(Unit).getAny().isLeft shouldBe true
         }
     }
