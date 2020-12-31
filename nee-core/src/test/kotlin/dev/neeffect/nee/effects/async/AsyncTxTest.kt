@@ -6,8 +6,8 @@ import io.vavr.control.Either
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.anyError
-import dev.neeffect.nee.effects.get
-import dev.neeffect.nee.effects.getAny
+import dev.neeffect.nee.effects.test.get
+import dev.neeffect.nee.effects.test.getAny
 import dev.neeffect.nee.effects.tx.DBLike
 import dev.neeffect.nee.effects.tx.DBLikeProvider
 import dev.neeffect.nee.effects.tx.TxConnection

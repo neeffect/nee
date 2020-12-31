@@ -17,10 +17,15 @@ dependencies {
     implementation(Libs.Ktor.serverCore)
     implementation(Libs.Vavr.jackson)
     implementation(Libs.Jackson.jacksonModuleKotlin)
+    implementation(Libs.Ktor.jackson)
+
 
     testImplementation(project (":nee-test:nee-security-jdbc-test"))
     testImplementation(Libs.Ktor.serverTestHost)
+    testImplementation(Libs.Ktor.clientJackson)
+    testImplementation(Libs.Ktor.clientMockJvm)
     testImplementation(Libs.Kotest.runnerJunit5Jvm)
+
 
 }
 apply(from = "../publish-mpp.gradle.kts")
