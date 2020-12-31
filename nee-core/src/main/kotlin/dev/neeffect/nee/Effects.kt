@@ -17,7 +17,7 @@ interface Effect<R, E> {
      *
      * Gives back "wrapped function"
      */
-    fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R>
+    fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<E, A>, R>
 
     /**
      * Installs error handler (kind of mapLeft).
@@ -44,10 +44,10 @@ class Effects<R1, R2, E1, E2>(
 ) : Effect<R2, Either<E1, E2>>
         where R2 : R1 {
 
-    override fun <A, P> wrap(f: (R2) -> (P) -> A): (R2) -> Pair<(P) -> Out<Either<E1, E2>, A>, R2> {
+    override fun <A> wrap(f: (R2) -> A): (R2) -> Pair<Out<Either<E1, E2>, A>, R2> {
         @Suppress("UNCHECKED_CAST")
-        val internalFunct = { r: R2 -> f(r) } as (R1) -> (P) -> A
-        val innerWrapped =
+        val internalFunct = { r: R2 -> f(r) } as (R1) -> A
+        val innerWrapped: (R1) -> Pair<Out<Either<E1, E2>, A>, R1> =
             inner.handleError { error: E1 -> Either.left<E1, E2>(error) }
                 .wrap(internalFunct)
         val outerF =
@@ -57,7 +57,7 @@ class Effects<R1, R2, E1, E2>(
             }
 
 
-        val outerWrapped = outer
+        val outerWrapped: (R2) -> Pair<Out<Either<E1, E2>, Out<Either<E1, E2>, A>>, R2> = outer
             .handleError { error -> Either.right<E1, E2>(error) }
             .wrap(outerF)
         return { r: R2 ->
@@ -65,10 +65,8 @@ class Effects<R1, R2, E1, E2>(
             val finalR = res.second
             //TODO - finalR or r?
             val called = res.first
-            val x = { p: P ->
-                val z = called(p).flatMap { it }
-                z
-            }
+            val x: Out<Either<E1, E2>, A> = called.flatMap { it }
+
             Pair(x, finalR)
         }
     }
@@ -80,22 +78,17 @@ class Effects<R1, R2, E1, E2>(
 }
 
 class NoEffect<R, E> : Effect<R, E> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R> =
-        { r -> Pair({ p -> Out.right<E, A>(f(r)(p)) }, r) }
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<E, A>, R> =
+        { r -> Pair(Out.right<E, A>(f(r)), r) }
 }
 
 class HandleErrorEffect<R, E, E1>(
     private val innerEffect: Effect<R, E>,
     private val handler: (E) -> E1
 ) : Effect<R, E1> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E1, A>, R> {
-        val wrapped = innerEffect.wrap(f)
-        return { r: R ->
-            val result = wrapped(r)
-            Pair({ p: P ->
-                result.first(p).mapLeft(handler)
-            }, result.second)
-        }
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<E1, A>, R> = { r: R ->
+        val result = innerEffect.wrap(f)(r)
+        Pair(result.first.mapLeft(handler), result.second)
     }
 }
 
@@ -105,11 +98,11 @@ fun <R, E> Effect<R, E>.anyError(): Effect<R, Any> = HandleErrorEffect(this) {
 }
 
 //TODO no  test
-private fun foldErrors(e: Any):Any =
-    when (e ) {
-        is Either<*,*> -> {
+private fun foldErrors(e: Any): Any =
+    when (e) {
+        is Either<*, *> -> {
             e.mapLeft { foldErrors(it as Any) }
-                .map { foldErrors(it as Any)}
+                .map { foldErrors(it as Any) }
                 .merge()
         }
         else -> e

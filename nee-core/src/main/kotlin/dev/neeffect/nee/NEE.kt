@@ -18,13 +18,6 @@ package dev.neeffect.nee
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.extend
 
-/**
- * Nee on function without param.
- *
- * Does not actually mean function is constant,
- * means it does not declare any params for Nee framework.
- */
-typealias UNee<R, E, A> = Nee<R, E, Unit, A>
 
 /**
  * Nee returning Any error.
@@ -34,14 +27,8 @@ typealias UNee<R, E, A> = Nee<R, E, Unit, A>
  * I consider it less ugly then Error inheriting from Exception / Throwable
  * //CONTROVERSIAL
  */
-typealias ANee<R, P, A> = Nee<R, Any, P, A>
+typealias ANee<R, A> = Nee<R, Any, A>
 
-/**
- *  Very Generic  Nee monad.
- *
- *  Error is any and does not declare any business param. (it is Unit)
- */
-typealias UANee<R, A> = Nee<R, Any, Unit, A>
 
 /**
  * Nee monad.
@@ -57,56 +44,50 @@ typealias UANee<R, A> = Nee<R, Any, Unit, A>
  *  @param E error that can happen (because of effects)
  *  @param A expected result type
  */
-sealed class Nee<R, E, P, out A>(internal val effect: Effect<R, E>) {
+sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
     /**
      * Call Nee with given environment.
      *
      * @return function ready to apply business param
      */
-    abstract fun perform(env: R): (P) -> Out<E, A>
+    abstract fun perform(env: R): Out<E, A>
 
-    abstract fun <B> map(f: (A) -> B): Nee<R, E, P, B>
-    abstract fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B>
+    abstract fun <B> map(f: (A) -> B): Nee<R, E, B>
+    abstract fun <B> flatMap(f: (A) -> Nee<R, E, B>): Nee<R, E, B>
 
-
-    fun constP(): (P) -> Nee<R, E, Unit, A> = { p: P ->
-        val constFunction = { r: R ->
-            { _: Unit ->
-                this.perform(r)(p)
-            }
-        }
-        FNEE(NoEffect(), constFunction)
-    }
+    //TODO remove it later
+    fun constP(): Nee<R, E, A> = this
 
 
     @Suppress("UNCHECKED_CAST")
-    fun anyError(): ANee<R, P, A> = this as ANee<R, P, A>
+    fun anyError(): ANee<R, A> = this as ANee<R, A>
 
     companion object {
-        fun <R, E, P, A> pure(a: A): Nee<R, E, P, A> =
-            FNEE<R, E, P, A>(
+        fun <R, E, A> pure(a: A): Nee<R, E, A> =
+            FNEE<R, E, A>(
                 NoEffect<R, E>(),
-                extend({ _: R -> { _: P -> a } })
+                extend({ _: R -> a })
             )
 
-        fun <R, E, P, A> constR(effect: Effect<R, E>, func: (P) -> A): Nee<R, E, P, A> =
-            FNEE(effect, dev.neeffect.nee.effects.utils.constR(func))
+        fun <R, E, A : Any> constR(effect: Effect<R, E>, value: A): Nee<R, E, A> =
+            FNEE(effect, dev.neeffect.nee.effects.utils.constR(value))
 
-        fun <R, E, A> constP(effect: Effect<R, E>, func: (R) -> A): Nee<R, E, Unit, A> =
+        //TODO remove it (or rename it - this is now `pure`)
+        fun <R, E, A:Any> constP(effect: Effect<R, E>, func: (R) -> A): Nee<R, E, A> =
             FNEE(effect, dev.neeffect.nee.effects.utils.constP(func))
 
-        fun <R, E, P, A> pure(effect: Effect<R, E>, func: (R) -> (P) -> A): Nee<R, E, P, A> =
+        fun <R, E,  A> pure(effect: Effect<R, E>, func: (R) ->A): Nee<R, E, A> =
             FNEE(effect, extend(func))
 
-        fun <R,E, P, A, E1 : E> flatOut( f: Nee<R,E,P, Out<E1,A>>) =  f.flatMap {value ->
-            FNEE(NoEffect()){ {value.mapLeft { e->e }}}
+        fun <R, E, A, E1 : E> flatOut(f: Nee<R, E, Out<E1, A>>) = f.flatMap { value ->
+            FNEE(NoEffect()) { value.mapLeft { e -> e }  }
         }
-
-        fun <R,E,P,A> withError(effect: Effect<R,E>, func: (R) -> (P) -> Out<E,A>) : Nee<R,E,P,A> =
+        //TODO (is it needed?)
+        fun <R, E,  A> withError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E,  A> =
             FNEE(effect, func)
 
-        fun <R,E,A> constWithError(effect: Effect<R,E>, func: (R) ->  Out<E,A>) : Nee<R,E,Unit,A> =
-            FNEE(effect) {r:R -> {_:Unit-> func(r)}}
+        fun <R, E, A> constWithError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E, A> =
+            FNEE(effect) { r: R ->  func(r)  }
     }
 }
 
@@ -114,55 +95,52 @@ internal fun <T, T1> T.map(f: (T) -> T1) = f(this)
 //CONTROVERSIAL
 
 
-internal class FNEE<R, E, P, A>(
+internal class FNEE<R, E, A>(
     effect: Effect<R, E>,
-    private val func: (R) -> (P) -> Out<E, A>
-) : Nee<R, E, P, A>(effect) {
+    private val func: (R) -> Out<E, A>
+) : Nee<R, E, A>(effect) {
 
     //constructor(effect: Effect<R, E>, f : (R)->(P)->A) : this(effect, {r:R-> {p:P-> Either.right<E,A>(f(r)(p))}} )
 
     private fun action() = effect.wrap(func)
-    override fun perform(env: R): (P) -> Out<E, A> = { p: P -> action()(env).first(p).flatMap { it } }
+    override fun perform(env: R): Out<E, A> = action()(env).first.flatMap { it }
 
     //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
-    override fun <B> map(f: (A) -> B): Nee<R, E, P, B> =
-        FNEE(effect) { r -> { p: P -> func(r)(p).map(f) } }
+    override fun <B> map(f: (A) -> B): Nee<R, E, B> =
+        FNEE(effect) { r -> func(r).map(f) }
 
     /**
      *
      *
      */
-    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FMNEE(effect, func, f)
+    override fun <B> flatMap(f: (A) -> Nee<R, E, B>): Nee<R, E, B> = FMNEE(effect, func, f)
 
 }
 
-internal class FMNEE<R, E, P, A, A1>(
+internal class FMNEE<R, E, A, A1>(
     effect: Effect<R, E>,
-    private val func: (R) -> (P) -> Out<E, A1>,
-    private val mapped: (A1) -> Nee<R, E, P, A>
+    private val func: (R) -> Out<E, A1>,
+    private val mapped: (A1) -> Nee<R, E, A>
 
-) : Nee<R, E, P, A>(effect) {
+) : Nee<R, E, A>(effect) {
 
 
-    override fun perform(env: R): (P) -> Out<E, A> = { p: P ->
-
-        val newF = { r: R ->
-            { p1: P ->
-                val res1 = func(r)(p1).map(mapped)
-                    .flatMap {
-                        it.perform(r)(p1)
-                    }
-                res1
+    override fun perform(env: R): Out<E, A> = { r: R ->
+        val res1 = func(r).map(mapped)
+            .flatMap {
+                it.perform(r)
             }
-        }
-        effect.wrap(newF)(env).first(p).flatMap { it }
+        res1
+
+    }.let { newF ->
+        effect.wrap(newF)(env).first.flatMap { it }
     }
 
-    override fun <B> map(f: (A) -> B): Nee<R, E, P, B> = FMNEE(effect, func, { a: A1 ->
+    override fun <B> map(f: (A) -> B): Nee<R, E, B> = FMNEE(effect, func, { a: A1 ->
         mapped(a).map(f)
     })
 
-    override fun <B> flatMap(f: (A) -> Nee<R, E, P, B>): Nee<R, E, P, B> = FMNEE(effect, func, { a: A1 ->
+    override fun <B> flatMap(f: (A) -> Nee<R, E, B>): Nee<R, E, B> = FMNEE(effect, func, { a: A1 ->
         mapped(a).flatMap(f)
     })
 }

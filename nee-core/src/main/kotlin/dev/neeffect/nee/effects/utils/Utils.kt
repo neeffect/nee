@@ -7,13 +7,11 @@ import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import dev.neeffect.nee.effects.monitoring.TraceProvider
 
-internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = guessCodePlaceName(2).let { placeName ->
+internal fun <R, E, A> extend(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
-        { p: P ->
-            Out.right<E, A>(f(r)(p)).also {
-                if (r is TraceProvider<*>) {
-                    r.getTrace().putGuessedPlace(placeName, f)
-                }
+        Out.right<E, A>(f(r)).also {
+            if (r is TraceProvider<*>) {
+                r.getTrace().putGuessedPlace(placeName, f)
             }
         }
     }
@@ -22,36 +20,31 @@ internal fun <R, E, P, A> extend(f: (R) -> (P) -> A) = guessCodePlaceName(2).let
 //was extendP
 internal fun <R, E, A> constP(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
-        { _: Unit ->
-            Out.right<E, A>(f(r)).also {
-                if (r is TraceProvider<*>) {
-                    r.getTrace().putGuessedPlace(placeName, f)
-                }
+        Out.right<E, A>(f(r)).also {
+            if (r is TraceProvider<*>) {
+                r.getTrace().putGuessedPlace(placeName, f)
             }
         }
-
     }
 }
 
-internal fun <R, E, P, A> constR(f: (P) -> A) = guessCodePlaceName(2).let { placeName ->
+internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
-        { p: P ->
-            Out.right<E, A>(f(p)).also {
-                if (r is TraceProvider<*>) {
-                    r.getTrace().putGuessedPlace(placeName, f)
-                }
+        Out.right<E, A>(f).also {
+            if (r is TraceProvider<*>) {
+                r.getTrace().putGuessedPlace(placeName, f)
             }
         }
+
     }
 }
 
-internal fun <P, A> ignoreR(f: (P) -> A) = guessCodePlaceName(2).let { placeName ->
+internal fun <A : Any> ignoreR(f: A) = guessCodePlaceName(2).let { placeName ->
     { r: Any ->
-        { p: P ->
-            f(p).also {
-                if (r is TraceProvider<*>) {
-                    r.getTrace().putGuessedPlace(placeName, f)
-                }
+
+        f.also {
+            if (r is TraceProvider<*>) {
+                r.getTrace().putGuessedPlace(placeName, f)
             }
         }
     }
