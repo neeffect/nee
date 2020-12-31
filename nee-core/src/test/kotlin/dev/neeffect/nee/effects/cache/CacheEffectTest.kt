@@ -3,10 +3,8 @@ package dev.neeffect.nee.effects.cache
 
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.BehaviorSpec
-import io.vavr.collection.Stream
 import dev.neeffect.nee.Nee
-import dev.neeffect.nee.effects.get
-import java.util.concurrent.atomic.AtomicInteger
+import dev.neeffect.nee.effects.test.get
 
 internal class CacheEffectTest : BehaviorSpec({
     Given("cache effect and naive implementation") {

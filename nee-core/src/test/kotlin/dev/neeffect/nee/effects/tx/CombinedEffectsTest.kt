@@ -7,8 +7,8 @@ import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.effects.async.AsyncStack
 import dev.neeffect.nee.effects.async.CleanAsyncStack
-import dev.neeffect.nee.effects.get
-import dev.neeffect.nee.effects.getLeft
+import dev.neeffect.nee.effects.test.get
+import dev.neeffect.nee.effects.test.getLeft
 import dev.neeffect.nee.effects.security.SecuredRunEffect
 import dev.neeffect.nee.effects.security.SecurityError
 import dev.neeffect.nee.effects.security.SecurityErrorType

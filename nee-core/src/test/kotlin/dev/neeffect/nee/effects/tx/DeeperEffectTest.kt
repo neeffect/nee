@@ -5,7 +5,7 @@ import io.kotest.matchers.should
 import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
-import dev.neeffect.nee.effects.get
+import dev.neeffect.nee.effects.test.get
 
 class DeeperEffectTest  : BehaviorSpec ({
     Given("TestEffect") {

@@ -8,7 +8,7 @@ import io.vavr.collection.List
 import pl.outside.code.ExternalObject
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.NoEffect
-import dev.neeffect.nee.effects.get
+import dev.neeffect.nee.effects.test.get
 import dev.neeffect.nee.effects.utils.ignoreR
 import java.util.concurrent.atomic.AtomicLong
 

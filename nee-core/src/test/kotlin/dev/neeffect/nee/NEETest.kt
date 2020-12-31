@@ -2,7 +2,7 @@ package dev.neeffect.nee
 
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
-import dev.neeffect.nee.effects.get
+import dev.neeffect.nee.effects.test.get
 import dev.neeffect.nee.effects.tx.TestEffect
 import dev.neeffect.nee.effects.tx.TestResource
 
