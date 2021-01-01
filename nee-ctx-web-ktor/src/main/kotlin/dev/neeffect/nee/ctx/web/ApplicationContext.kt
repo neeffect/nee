@@ -1,12 +1,12 @@
 package dev.neeffect.nee.ctx.web
 
-import dev.neeffect.nee.UANee
+import dev.neeffect.nee.ANee
 
 /**
  * Generic app context.
  */
 interface ApplicationContextProvider<CTX, LOCAL> {
-    suspend fun serve(businessFunction: UANee<CTX, Any>, localParam: LOCAL)
+    suspend fun serve(businessFunction: ANee<CTX, Any>, localParam: LOCAL)
 }
 
 /**

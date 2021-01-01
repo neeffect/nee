@@ -1,6 +1,5 @@
 package dev.neeffect.nee.effects.cache
 
-
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
@@ -9,14 +8,14 @@ import dev.neeffect.nee.effects.test.get
 internal class CacheEffectTest : BehaviorSpec({
     Given("cache effect and naive implementation") {
         val cacheProvider = NaiveCacheProvider()
-        val cache = CacheEffect<Env, Nothing>(cacheProvider)
+        val cache = {p:Int ->CacheEffect<Env, Nothing, Int>(p,cacheProvider)}
         When("function called twice using same param and different env") {
-            val businessFunction =
-                Nee.pure(
-                    cache, ::returnEnvIgnoringParam)
+            fun businessFunction(p:Int) =
+                Nee.with(
+                    cache(p), ::returnEnvIgnoringParam)
 
-            val x1 = businessFunction.perform(env = Env.SomeValue)(1)
-            val x2 = businessFunction.perform(env = Env.OtherValue)(1)
+            val x1 = businessFunction(1).perform(env = Env.SomeValue)
+            val x2 = businessFunction(1).perform(env = Env.OtherValue)
             Then("second call should ignore different env") {
                 x2.get() shouldBe x1.get()
             }
@@ -25,12 +24,12 @@ internal class CacheEffectTest : BehaviorSpec({
             }
         }
         When("function called twice using different params and env") {
-            val businessFunction =
-                Nee.pure(
-                    cache, ::returnEnvIgnoringParam)
+            fun businessFunction(p:Int) =
+                Nee.with(
+                    cache(p), ::returnEnvIgnoringParam)
 
-            val x2 = businessFunction.perform(env = Env.SomeValue)(1).flatMap { _ ->
-                businessFunction.perform(env = Env.OtherValue)(2)
+            val x2 = businessFunction(1).perform(env = Env.SomeValue).flatMap { _ ->
+                businessFunction(2).perform(env = Env.OtherValue)
             }
             Then("second call should return other env value") {
                 x2.get() shouldBe Env.OtherValue
@@ -39,7 +38,7 @@ internal class CacheEffectTest : BehaviorSpec({
     }
 })
 
-fun returnEnvIgnoringParam(env:Env) = { _:Int -> env}
+fun returnEnvIgnoringParam(env:Env) =  env
 
 sealed class Env {
     object SomeValue : Env()

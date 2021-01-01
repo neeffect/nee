@@ -8,12 +8,11 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<Nothing, A>, R> = { r: R ->
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> = { r: R ->
         val entry = r.getTrace().begin(tracerName)
         val traced = r.setTrace(entry.first)
-        Pair({ p: P ->
-            val r1 = f(traced)
-            val result = r1(p)
+        Pair(run {
+            val result = f(traced)
             entry.second.codeLocation.updateAndGet { location ->
                 location ?: CodeLocation(functionName = f::class.toString())
             }
