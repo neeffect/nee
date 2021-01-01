@@ -20,7 +20,7 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ignoreR({plainFunction(5)}))
+            val f = Nee.Companion.with(eff, ignoreR({plainFunction(5)}))
             val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
@@ -30,7 +30,7 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, traceableFunction(5))
+            val f = Nee.Companion.with(eff, traceableFunction(5))
             val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6
@@ -41,7 +41,7 @@ internal class TraceEffectTest : BehaviorSpec({
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
             val f =
-                Nee.Companion.pure(eff) { r ->
+                Nee.Companion.with(eff) { r ->
                         time.updateAndGet { it + 100 * 1000 }
                 }
             val result = f.perform(SimpleTraceProvider(res))
@@ -53,7 +53,7 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff,
+            val f = Nee.Companion.with(eff,
                 ignoreR({ExternalObject.plainFunction(5)})
             )
             val result = f.perform(SimpleTraceProvider(res))
@@ -69,7 +69,7 @@ internal class TraceEffectTest : BehaviorSpec({
             val logger = StoringLogger()
             var time = AtomicLong(100)
             val res = TraceResource("z1", logger, {  time.get()})
-            val f = Nee.Companion.pure(eff, ExternalObject.traceableFunction(5))
+            val f = Nee.Companion.with(eff, ExternalObject.traceableFunction(5))
             val result = f.perform(SimpleTraceProvider(res))
             Then("result is ok"){
                 result.get() shouldBe 6

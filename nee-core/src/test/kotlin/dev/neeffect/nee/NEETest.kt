@@ -11,11 +11,11 @@ internal class NEETest : BehaviorSpec({
         val effectLog = mutableListOf<String>()
         val res = TestResource(1)
         val effect= TestEffect("neetest", effectLog)
-        val m1 = Nee.pure(effect) { _ ->
+        val m1 = Nee.with(effect) { _ ->
                 1
         }
         val m2 = {_:Int ->
-            Nee.pure(effect) {r->
+            Nee.with(effect) { r->
                     r.version
             }
         }

@@ -17,7 +17,7 @@ import dev.neeffect.nee.effects.tx.TxProvider
 internal class AsyncTxTest : DescribeSpec({
     describe("combined effect") {
 
-        val action = Nee.Companion.constP(combinedEffect) { env ->
+        val action = Nee.Companion.with(combinedEffect) { env ->
             val connection = env.getConnection()
             if (connection.hasTransaction()) {
                 "is trx"
@@ -34,7 +34,7 @@ internal class AsyncTxTest : DescribeSpec({
             r1 shouldBe "is trx"
         }
         val nestedF = { prevResult: String ->
-            Nee.constP(combinedEffect) { env: AsyncEnv ->
+            Nee.with(combinedEffect) { env: AsyncEnv ->
                 val connection = env.getConnection()
                 val res = connection.getResource()
                 if (connection.hasTransaction()) {

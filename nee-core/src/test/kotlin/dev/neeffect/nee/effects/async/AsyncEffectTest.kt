@@ -20,7 +20,7 @@ class AsyncEffectTest : DescribeSpec({
         describe("test function") {
             val runned = AtomicBoolean(false)
             val testFunction =  {runned.set(true)}
-            val async = Nee.Companion.pure(eff, ignoreR(testFunction))
+            val async = Nee.Companion.with(eff, ignoreR(testFunction))
             async.perform(ecProvider)
 
             it("does not run before executor calls") {
@@ -37,7 +37,7 @@ class AsyncEffectTest : DescribeSpec({
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))
             val runned = AtomicBoolean(false)
             val testFunction = {  runned.set(true) }
-            val async = Nee.Companion.pure(
+            val async = Nee.Companion.with(
                 localEff,
                 ignoreR(testFunction)
             )

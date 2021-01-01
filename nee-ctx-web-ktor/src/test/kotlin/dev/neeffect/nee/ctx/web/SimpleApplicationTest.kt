@@ -20,7 +20,7 @@ fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
 
     routing {
         get("/") {
-            val function = Nee.constP(wctxProvider.fx().tx) { webCtx ->
+            val function = Nee.with(wctxProvider.fx().tx) { webCtx ->
                 webCtx.getConnection().getResource()
                     .prepareStatement("select 41 from dual").use { preparedStatement ->
                         preparedStatement.executeQuery().use { resultSet ->
@@ -36,7 +36,7 @@ fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
             wctxProvider.create(call).serveText(function)
         }
         get("/secured") {
-            val function = Nee.constP(wctxProvider.fx().secured(List.of(UserRole("badmin")))) { _ ->
+            val function = Nee.with(wctxProvider.fx().secured(List.of(UserRole("badmin")))) { _ ->
                 "Secret message"
             }.anyError()
             wctxProvider.create(call).serveText(function)

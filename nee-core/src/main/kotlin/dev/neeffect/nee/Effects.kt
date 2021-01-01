@@ -80,7 +80,17 @@ class Effects<R1, R2, E1, E2>(
 class NoEffect<R, E> : Effect<R, E> {
     override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<E, A>, R> =
         { r -> Pair(Out.right<E, A>(f(r)), r) }
+
+    companion object {
+        private val singleInstance = NoEffect<Any, Any>()
+
+        @Suppress("UNCHECKED_CAST")
+        fun <R, E> get() = singleInstance as NoEffect<R, E>
+    }
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <R,E> noEffect() = NoEffect.get<R,E>()
 
 class HandleErrorEffect<R, E, E1>(
     private val innerEffect: Effect<R, E>,

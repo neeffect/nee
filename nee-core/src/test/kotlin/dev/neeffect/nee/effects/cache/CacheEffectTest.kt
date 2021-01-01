@@ -3,7 +3,6 @@ package dev.neeffect.nee.effects.cache
 import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
-import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.test.get
 
 internal class CacheEffectTest : BehaviorSpec({
@@ -12,7 +11,7 @@ internal class CacheEffectTest : BehaviorSpec({
         val cache = {p:Int ->CacheEffect<Env, Nothing, Int>(p,cacheProvider)}
         When("function called twice using same param and different env") {
             fun businessFunction(p:Int) =
-                Nee.pure(
+                Nee.with(
                     cache(p), ::returnEnvIgnoringParam)
 
             val x1 = businessFunction(1).perform(env = Env.SomeValue)
@@ -26,7 +25,7 @@ internal class CacheEffectTest : BehaviorSpec({
         }
         When("function called twice using different params and env") {
             fun businessFunction(p:Int) =
-                Nee.pure(
+                Nee.with(
                     cache(p), ::returnEnvIgnoringParam)
 
             val x2 = businessFunction(1).perform(env = Env.SomeValue).flatMap { _ ->

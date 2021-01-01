@@ -10,7 +10,7 @@ internal class SecuredRunEffectTest : BehaviorSpec({
     Given("secure provider") {
 
         val secEffect = SecuredRunEffect<String, String, SimpleSecurityProvider<String, String>>("test")
-        val f = Nee.constP(secEffect, businessFunction)
+        val f = Nee.with(secEffect, businessFunction)
         When("function called with test user ") {
             val testSecurityProvider = SimpleSecurityProvider<String, String>("test", List.of("test"))
             val result = f.perform(testSecurityProvider)

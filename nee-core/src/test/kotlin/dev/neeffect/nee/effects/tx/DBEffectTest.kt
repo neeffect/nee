@@ -11,7 +11,7 @@ import dev.neeffect.nee.effects.test.getLeft
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
         val eff = TxEffect<DBLike, DBLikeProvider>()
-        val simpleAction = Nee.pure(eff, function1)
+        val simpleAction = Nee.with(eff, function1)
 
         When("run on db") {
             val db = DBLike()
@@ -25,7 +25,7 @@ class DBEffectTest : BehaviorSpec({
         }
         And("nested second action") {
             val nestedAction: (Int) -> Nee<DBLikeProvider, TxError, Int> = { orig: Int ->
-                Nee.pure(eff, function2(orig))
+                Nee.with(eff, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
             When("db connected") {
@@ -42,7 +42,7 @@ class DBEffectTest : BehaviorSpec({
         And("nested second action in internal tx") {
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
             val nestedAction = { orig: Int ->
-                Nee.pure(effReqNew, function2(orig))
+                Nee.with(effReqNew, function2(orig))
             }
             val monad = simpleAction.flatMap(nestedAction)
             When("internal  action executed") {
@@ -60,7 +60,7 @@ class DBEffectTest : BehaviorSpec({
         And(" internal tx is detected") {
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
             val extractTxLevel = { _: Int ->
-                Nee.pure(effReqNew) { r ->
+                Nee.with(effReqNew) { r ->
                         val connection = r.conn as DBConnection
                         connection.level
                 }
@@ -99,7 +99,7 @@ class DBEffectTest : BehaviorSpec({
             }
         }
         When("running query with forced exception") {
-            val failingAction = Nee.pure(eff, functionWithFailQuery)
+            val failingAction = Nee.with(eff, functionWithFailQuery)
             val db = DBLike()
             db.appendAnswer("6")
             val provider = DBLikeProvider(db)

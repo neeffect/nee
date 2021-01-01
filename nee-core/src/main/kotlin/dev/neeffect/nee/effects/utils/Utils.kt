@@ -7,7 +7,7 @@ import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import dev.neeffect.nee.effects.monitoring.TraceProvider
 
-internal fun <R, E, A> extend(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
+internal fun <R, E, A> trace(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
         Out.right<E, A>(f(r)).also {
             if (r is TraceProvider<*>) {
@@ -18,15 +18,16 @@ internal fun <R, E, A> extend(f: (R) -> A) = guessCodePlaceName(2).let { placeNa
 }
 
 //was extendP
-internal fun <R, E, A> constP(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
-    { r: R ->
-        Out.right<E, A>(f(r)).also {
-            if (r is TraceProvider<*>) {
-                r.getTrace().putGuessedPlace(placeName, f)
-            }
-        }
-    }
-}
+//REMOVE
+//internal fun <R, E, A> constP(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
+//    { r: R ->
+//        Out.right<E, A>(f(r)).also {
+//            if (r is TraceProvider<*>) {
+//                r.getTrace().putGuessedPlace(placeName, f)
+//            }
+//        }
+//    }
+//}
 
 internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->

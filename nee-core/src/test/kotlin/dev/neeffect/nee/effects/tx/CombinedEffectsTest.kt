@@ -23,7 +23,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
             .handleError { e -> CombinedError.SecurityError(e) as CombinedError }
         val combined = secEff.andThen(dbEff)
         When("Called with admin role") {
-            val simpleAction = Nee.pure(combined, function1)
+            val simpleAction = Nee.with(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -37,7 +37,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
         }
 
         When("Called with no roles") {
-            val simpleAction = Nee.pure(combined, function1)
+            val simpleAction = Nee.with(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)

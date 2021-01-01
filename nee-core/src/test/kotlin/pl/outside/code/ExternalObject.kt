@@ -14,7 +14,7 @@ object ExternalObject {
 
     fun checkWhereCodeIsSimple(a: Unit) = guessCodePlaceName()
 
-    fun checkWhereCodeIsNee() = Nee.Companion.pure(NoEffect<Unit, Unit>()) {
+    fun checkWhereCodeIsNee() = Nee.Companion.with(NoEffect<Unit, Unit>()) {
         guessCodePlaceName()
     }
 }

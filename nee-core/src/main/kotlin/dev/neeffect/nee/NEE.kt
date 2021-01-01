@@ -16,7 +16,7 @@ limitations under the License.
 package dev.neeffect.nee
 
 import dev.neeffect.nee.effects.Out
-import dev.neeffect.nee.effects.utils.extend
+import dev.neeffect.nee.effects.utils.trace
 
 
 /**
@@ -55,29 +55,27 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
     abstract fun <B> map(f: (A) -> B): Nee<R, E, B>
     abstract fun <B> flatMap(f: (A) -> Nee<R, E, B>): Nee<R, E, B>
 
-    //TODO remove it later
-    fun constP(): Nee<R, E, A> = this
-
-
     @Suppress("UNCHECKED_CAST")
     fun anyError(): ANee<R, A> = this as ANee<R, A>
 
     companion object {
         fun <R, E, A> pure(a: A): Nee<R, E, A> =
             FNEE<R, E, A>(
-                NoEffect<R, E>(),
-                extend({ _: R -> a })
+                NoEffect.get(),
+                {_:R -> Out.right(a)}
             )
 
+        /**
+         * Same as pure, but adds tracing.
+         */
         fun <R, E, A : Any> constR(effect: Effect<R, E>, value: A): Nee<R, E, A> =
             FNEE(effect, dev.neeffect.nee.effects.utils.constR(value))
 
-        //TODO remove it (or rename it - this is now `pure`)
-        fun <R, E, A:Any> constP(effect: Effect<R, E>, func: (R) -> A): Nee<R, E, A> =
-            FNEE(effect, dev.neeffect.nee.effects.utils.constP(func))
-
-        fun <R, E,  A> pure(effect: Effect<R, E>, func: (R) ->A): Nee<R, E, A> =
-            FNEE(effect, extend(func))
+        /**
+            from function - adds tracing.
+         */
+        fun <R, E,  A> with(effect: Effect<R, E>, func: (R) ->A): Nee<R, E, A> =
+            FNEE(effect, trace(func))
 
         fun <R, E, A, E1 : E> flatOut(f: Nee<R, E, Out<E1, A>>) = f.flatMap { value ->
             FNEE(NoEffect()) { value.mapLeft { e -> e }  }

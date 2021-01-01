@@ -9,7 +9,7 @@ import dev.neeffect.nee.effects.test.get
 internal class FlexTxEffectTest : BehaviorSpec({
     Given("FlexTxEffects") {
         val eff = FlexTxEffect<DBLike>()
-        val simpleAction = Nee.constP(eff, function1.flex())
+        val simpleAction = Nee.with(eff, function1.flex())
         When("run on db") {
             val db = DBLike()
             db.appendAnswer("6")

@@ -11,7 +11,7 @@ class DeeperEffectTest  : BehaviorSpec ({
     Given("TestEffect") {
         val log = mutableListOf<String>()
         val eff = TestEffect("ef1", log)
-        val nee = Nee.Companion.pure(eff, function1(log))
+        val nee = Nee.Companion.with(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))
             Then ("log is ok") {
@@ -27,7 +27,7 @@ class DeeperEffectTest  : BehaviorSpec ({
         val eff1 = TestEffect("ef1", log)
         val eff2 = TestEffect("ef2", log)
         val eff = eff1.andThen(eff2)
-        val nee = Nee.Companion.pure(eff, function1(log))
+        val nee = Nee.Companion.with(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))
             Then ("log is ok") {

@@ -35,16 +35,14 @@ class Hasiok {
 It is possible to have similar goodies rewriting code like below:
 ```kotlin
 class  Hasiok {
-    private val  f =  {jdbcConnection:Connection ->
-            {p: P ->
-            //code
-        }
-    }
-    val enterprisyF = Nee.pure(
+
+    fun enterprisyFunction(x:Int) = Nee.pure(
         secure
         .and(retryable)
         .and(cacheable)
-        .and(transactional), f)
+        .and(transactional))  {jdbcConnection:Connection ->
+                    //code using jdbcConnection
+    }
     //declaration above means security is checked before retrial
     //and retrial is made before cache which happens before transaction 
  }
@@ -57,12 +55,11 @@ motto :
 
 ### Business function
 ```kotlin
-businessFunction  = (R) -> (P) -> A 
+businessFunction  = (R) -> A 
 ```
 
 Where:
  **R**  - is an environment / infrastructure that a function may use
- **P** - is a *tracked* parameter to function (optional)
  **A** - is a result of the function
 
 This is very generic way to present any piece of work.
@@ -78,14 +75,14 @@ Next step is to put business function inside Nee monad.
 Nee monad wraps business logic with a given infrastructure.
 
 ```kotlin
-val functionOnRealHardware = Nee.pure(Nop)(businessFunction)
+val functionOnRealHardware = Nee.pure(noEffect())(businessFunction)
 ```
 
 Now `functionOnRealHardware` is blessed with side effects and now is 
 wrapped inside Nee monad. It is enclosed in a monad to make it "composable"
 with other functions. Just think of performing multiple jdbc calls inside one transaction. 
 
-As for side effects we see `Nop`... meaning not a real one - but it is time to tell more about `Effects`
+As for side effects we see `noEffect()`... meaning not a real one - but it is time to tell more about `Effects`
 
 ### Effects
 
@@ -93,15 +90,13 @@ As for side effects we see `Nop`... meaning not a real one - but it is time to t
  
  ```kotlin
  interface Effect<R, E> {
-     fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<E, A>, R>
+     fun <A, P> wrap(f: (R) -> A): (R) -> Pair<Out<E, A>, R>
   }
 ```
 
 In order to provide effect we need to implement interface as above.
 Where:
 -   **R** as before is some environment object, think this is how to get DB connection from,
-
--   **P** is a generic parameter that might be used by effect (actually it is only needed for caching)
 
 -   **E** is an error that might happen during application of effect 
             (notice - it does not have to be Exception)
@@ -114,8 +109,7 @@ takes a function (businessFunction) which may rely on environment `R`, and on a 
 giving  some result `A`. 
 Then wraps it into a function that:
     takes environment `R` (no change),
-      - runs some infrastructure code (effect),  
-      - later takes `P` and returns `Out` object (the result)
+      - runs some infrastructure code (effect),
       - it also returns  changed environment `(R)` - think that maybe transaction is now started            
 
 *Notice  - this no a typical effect as known from haskell 
@@ -148,12 +142,12 @@ val f = f1.flatMap { f2 }.perform(jdbcConfig)
 
 if you want to run in separate transactions:
 ```kotlin
- val f1 = Nee.constP(jdbcTransaction) {connection ->
+ val f1 = Nee.with(jdbcTransaction) {connection ->
             connection.prepareStatement()
             [F1 code]
     }
 
- val f2 = Nee.constP(jdbcTransaction) {connection ->
+ val f2 = Nee.with(jdbcTransaction) {connection ->
             connection.prepareStatement()
             [F2 code]
     }
@@ -170,7 +164,6 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
   - R extract (for effect) - multiple db support
   - R as Map (ugly but practical)
   - arrow?
-  - Swap P, E in  -> NEE R,P,E,A
 - Tests:
   - real assertions
   - unhappy paths
