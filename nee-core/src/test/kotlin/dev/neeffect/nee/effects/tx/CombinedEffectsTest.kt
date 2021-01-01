@@ -20,10 +20,10 @@ internal class CombinedEffectsTest : BehaviorSpec({
         val dbEff = TxEffect<DBLike, CombinedProviders>()
             .handleError { e -> CombinedError.TxError(e) as CombinedError }
         val secEff = SecuredRunEffect<String, String, CombinedProviders>("admin")
-            .handleError { e -> CombinedError.SecurityError(e) as CombinedError}
+            .handleError { e -> CombinedError.SecurityError(e) as CombinedError }
         val combined = secEff.andThen(dbEff)
         When("Called with admin role") {
-            val simpleAction = Nee.pure(combined, function1)
+            val simpleAction = Nee.with(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -32,12 +32,12 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val result = simpleAction.perform(env)
             Then("result should be 6") {
 
-                result(Unit).get().get() shouldBe 6
+                result.get().get() shouldBe 6
             }
         }
 
         When("Called with no roles") {
-            val simpleAction = Nee.pure(combined, function1)
+            val simpleAction = Nee.with(combined, function1)
             val db = DBLike()
             db.appendAnswer("6")
             val dbProvider = DBLikeProvider(db)
@@ -45,19 +45,17 @@ internal class CombinedEffectsTest : BehaviorSpec({
             val env = CombinedProviders(secProvider, dbProvider)
             val result = simpleAction.perform(env)
             Then("result should be Insufficient roles") {
-                result(Unit).getLeft().merge().secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
+                result.getLeft().merge().secError() shouldBe SecurityErrorType.MissingRole(List.of("admin"))
             }
         }
     }
 }) {
     companion object {
         val function1 = { db: CombinedProviders ->
-            { _:Unit ->
-                val resource = db.getConnection().getResource()
-                val result = resource.query("SELECT * FROM all1")
-                result.map {
-                    Integer.parseInt(it)
-                }
+            val resource = db.getConnection().getResource()
+            val result = resource.query("SELECT * FROM all1")
+            result.map {
+                Integer.parseInt(it)
             }
         }
     }
@@ -65,7 +63,7 @@ internal class CombinedEffectsTest : BehaviorSpec({
 
 sealed class CombinedError : TxError, SecurityError {
     class TxError(val internal: dev.neeffect.nee.effects.tx.TxError) : CombinedError() {
-        override fun txError(): TxErrorType = internal.txError();
+        override fun txError(): TxErrorType = internal.txError()
         override fun secError(): SecurityErrorType = TODO("??? maybe nullability")
     }
 

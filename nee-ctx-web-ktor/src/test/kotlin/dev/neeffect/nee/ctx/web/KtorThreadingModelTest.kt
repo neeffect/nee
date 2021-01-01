@@ -28,10 +28,10 @@ fun Application.slowApp() {
         }
         get("/fast") {
             val wc = EmptyTestContext.contexProvider.create(call)
-            val result = Nee.constP(EmptyTestContext.contexProvider.fx().async) {
+            val result = Nee.with(EmptyTestContext.contexProvider.fx().async) {
                 Thread.sleep(100)
                 "ok"
-            }.perform(wc)(Unit)
+            }.perform(wc)
             wc.serveMessage(result)
         }
     }

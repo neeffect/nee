@@ -11,21 +11,17 @@ internal class NEETest : BehaviorSpec({
         val effectLog = mutableListOf<String>()
         val res = TestResource(1)
         val effect= TestEffect("neetest", effectLog)
-        val m1 = Nee.pure(effect) { _ ->
-            {_:Unit ->
+        val m1 = Nee.with(effect) { _ ->
                 1
-            }
         }
         val m2 = {_:Int ->
-            Nee.pure(effect) {r->
-                {_:Unit ->
+            Nee.with(effect) { r->
                     r.version
-                }
             }
         }
         When ("flatMapped") {
             val resutl = m1.flatMap(m2)
-                .perform(res)(Unit).get()
+                .perform(res).get()
            Then("have correct env version"){
                resutl shouldBe 21
            }

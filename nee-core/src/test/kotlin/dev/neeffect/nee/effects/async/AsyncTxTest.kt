@@ -17,7 +17,7 @@ import dev.neeffect.nee.effects.tx.TxProvider
 internal class AsyncTxTest : DescribeSpec({
     describe("combined effect") {
 
-        val action = Nee.Companion.constP(combinedEffect) { env ->
+        val action = Nee.Companion.with(combinedEffect) { env ->
             val connection = env.getConnection()
             if (connection.hasTransaction()) {
                 "is trx"
@@ -28,13 +28,13 @@ internal class AsyncTxTest : DescribeSpec({
         it("works in tx normally") {
             val db = DBLike()
             val initialEnv = AsyncEnv(DBLikeProvider(db), ecProvider)
-            val result = action.perform(initialEnv)(Unit)
+            val result = action.perform(initialEnv)
             controllableExecutionContext.runSingle()
             val r1 = result.get()
             r1 shouldBe "is trx"
         }
         val nestedF = { prevResult: String ->
-            Nee.constP(combinedEffect) { env: AsyncEnv ->
+            Nee.with(combinedEffect) { env: AsyncEnv ->
                 val connection = env.getConnection()
                 val res = connection.getResource()
                 if (connection.hasTransaction()) {
@@ -49,7 +49,7 @@ internal class AsyncTxTest : DescribeSpec({
         it("works in nested tx") {
             val db = DBLike()
             val initialEnv = AsyncEnv(DBLikeProvider(db), ecProvider)
-            val result = nestedAction.perform(initialEnv)(Unit)
+            val result = nestedAction.perform(initialEnv)
             controllableExecutionContext.runSingle()
             controllableExecutionContext.runSingle()
             val r1 = result.getAny()
@@ -59,7 +59,7 @@ internal class AsyncTxTest : DescribeSpec({
             val dblNested = nestedAction.flatMap(nestedF)
             val db = DBLike()
             val initialEnv = AsyncEnv(DBLikeProvider(db), ecProvider)
-            val result = dblNested.perform(initialEnv)(Unit)
+            val result = dblNested.perform(initialEnv)
             controllableExecutionContext.runSingle()
             controllableExecutionContext.runSingle()
             controllableExecutionContext.runSingle()

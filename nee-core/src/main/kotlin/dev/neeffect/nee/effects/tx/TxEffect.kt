@@ -80,7 +80,7 @@ sealed class TxErrorType : TxError {
  * @param R  provider of resource (also must support update of connection state)
  */
 class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = false) : Effect<R, TxError> {
-    override fun <A, P> wrap(f: (R) -> (P) -> A): (R) -> Pair<(P) -> Out<TxError, A>, R> {
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<TxError, A>, R> {
         return { res: R ->
             res.getConnection().let { connection ->
                 try {
@@ -96,12 +96,12 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                             val newRes = res.setConnectionState(startedTransaction)
                             doInTransaction(f, newRes, continueOldTransaction, startedTransaction)
                         } catch (e: Exception) {
-                            handleTxException<A, P>(continueOldTransaction, connection, startedTransaction, e)
+                            handleTxException<A>(continueOldTransaction, connection, startedTransaction, e)
                         }
                     }.map {
                         Pair(it.first, res.setConnectionState(it.second))
                     }.getOrElseGet { error ->
-                        Pair({ _: P -> Out.left<TxError, A>(error) }, res)
+                        Pair( Out.left<TxError, A>(error), res)
                     }
                     z
                 } finally {
@@ -111,12 +111,12 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
         }
     }
 
-    private fun <A, P> handleTxException(
+    private fun <A> handleTxException(
         continueOldTransaction: Boolean,
         connection: TxConnection<DB>,
         startedTransaction: TxStarted<DB>,
         e: Exception
-    ): Pair<(P) -> Out<TxError, A>, TxConnection<DB>> =
+    ): Pair<Out<TxError, A>, TxConnection<DB>> =
         if (continueOldTransaction) {
             Pair(Option.none<TxError>(), connection)
         } else {
@@ -124,7 +124,7 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
         }.let { txCancelled ->
             txCancelled.first.map { rollbackError ->
                 Pair(
-                    { _: P ->
+
                         Out.left<TxError, A>(
                             TxErrorType.MultipleErrors(
                                 List.of(
@@ -133,28 +133,28 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                                 )
                             )
                         )
-                    }, txCancelled.second
+                    , txCancelled.second
                 )
             }.getOrElse {
-                Pair({ _: P ->
+                Pair(
                     Out.left<TxError, A>(
                         TxErrorType.InternalException(
                             e
                         )
                     )
-                }, txCancelled.second)
+                , txCancelled.second)
             }
         }
 
-    private fun <A, P> doInTransaction(
-        f: (R) -> (P) -> A,
+    private fun <A> doInTransaction(
+        f: (R) ->  A,
         res: R,
         continueOldTransaction: Boolean,
         startedTransaction: TxStarted<DB>
-    ): Pair<(P) -> Out<TxError, A>, TxStarted<DB>> {
-        val result = { p: P ->
+    ): Pair<Out<TxError, A>, TxStarted<DB>> {
+        val result =
             executeAsyncCleaning(res, {
-                f(res)(p)
+                f(res)
             }, { r ->
                 if (!continueOldTransaction) {
                     startedTransaction.commit().also {
@@ -163,13 +163,13 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                 }
                 r
             })
-        }
-        return Pair({ p: P ->
+
+        return Pair(
             try {
-                Out.right<TxError, A>(result(p))
+                Out.right<TxError, A>(result)
             } catch (e: Exception) {
                 Out.left<TxError, A>(TxErrorType.InternalException(e))
             }
-        }, startedTransaction)
+        , startedTransaction)
     }
 }

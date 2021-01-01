@@ -54,8 +54,13 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
         trace.andThen(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)).anyError()
     val tx =
         trace.andThen(TxEffect<Connection, WebContext<R, G>>()).anyError()
-    val cache = CacheEffect<WebContext<R, G>, Nothing>(CaffeineProvider()).anyError()
 
+    fun  cache() = Cache<R,G>()
+
+    class Cache<R,G : TxProvider<R, G>> {
+        val internalCache= CaffeineProvider()
+        fun <P> of(p:P) = CacheEffect<WebContext<R, G>, Nothing,P>(p,internalCache).anyError()
+    }
 }
 
 interface WebContextProvider<R, G : TxProvider<R, G>> {
@@ -79,21 +84,21 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     fun userSecurityApi(): Route.() -> Unit = {
         get("currentUser") {
-            val f = Nee.constP(fx().secured(List.empty())){ ctx->
+            val f = Nee.with(fx().secured(List.empty())){ ctx->
                 ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
             }.anyError()
             val z  = Nee.flatOut(f)
-            create(call).serveMessage(z, Unit)
+            create(call).serveMessage(z)
         }
         get("hasRoles") {
             val roles = (call.request.queryParameters["roles"] ?:"").split(",")
                 .toVavrList().map { UserRole(it)}
 
             val f =
-                Nee.constP(fx().secured(roles)){
+                Nee.with(fx().secured(roles)){
                 "ok"
             }.anyError()
-            create(call).serveMessage(f, Unit)
+            create(call).serveMessage(f)
         }
     }
 
@@ -104,13 +109,11 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
     fun jacksonMapper() : ObjectMapper
 
 
-    fun <E, P, A> async(func: () -> Nee<WebContext<R,G>, E, P, A>) : Nee<WebContext<R,G>, Any, P, A> =
+    fun <E, A> async(func: () -> Nee<WebContext<R,G>, E, A>) : Nee<WebContext<R,G>, Any, A> =
         CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
-            Nee.pure(this.fx().async) { r ->
-                { _: P ->
+            Nee.with(this.fx().async) { r ->
                     r.getTrace().putNamedPlace(whereItIsDefined)
                     func()
-                }
             }
                 .flatMap { it.anyError() }
         }
