@@ -46,7 +46,8 @@ class JwtAuthProvider<USER, ROLE>(
     }
 }
 
-class TokenSecurityContext<USER, ROLE>(val user:USER, val jwtCoder:JwtUsersCoder<USER, ROLE>) : SecurityCtx<USER, ROLE> {
+class TokenSecurityContext<USER, ROLE>(val user:USER, val jwtCoder:JwtUsersCoder<USER, ROLE>)
+        : SecurityCtx<USER, ROLE> {
     override fun getCurrentUser(): Out<SecurityError, USER> =
         Out.right(user)
 

@@ -11,6 +11,7 @@ import dev.neeffect.nee.effects.utils.logger
 import java.lang.Exception
 import java.lang.RuntimeException
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Technical interface for threading model.
@@ -84,26 +85,38 @@ class ECProvider(private val ectx: ExecutionContext, private val localWins: Bool
 class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
 ) : Effect<R, Nothing>, Logging {
+
+
     override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> =
         { r: R ->
-
+            val asyncNmb = asyncCounter.getAndIncrement()
 
             Pair(run {
                 val ec = r.findExecutionContext(this.localExecutionContext)
+                logger().debug("initiated async ($asyncNmb)")
                 val async = AsyncSupport.initiateAsync(r)
                 val result = ec.execute {
+                    logger().debug("started async ($asyncNmb)")
                     try {
                         f(r)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         logger().error("error in async handling", e)
                         throw RuntimeException(e)
+                    }
+                    finally {
+                        logger().debug("done async ($asyncNmb)")
                     }
                 }
                 Out.FutureOut(result.map {
                     Either.right<Nothing, A>(it.also {
+                        logger().debug("cleaning async ($asyncNmb)")
                         async.closeAsync(r)
                     })
                 })
             }, r)
         }
+    companion object {
+        private val asyncCounter = AtomicLong()
+
+    }
 }

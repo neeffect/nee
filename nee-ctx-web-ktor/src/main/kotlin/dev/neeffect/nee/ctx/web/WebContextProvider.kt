@@ -2,6 +2,7 @@ package dev.neeffect.nee.ctx.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import dev.neeffect.nee.Effect
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
@@ -33,33 +34,45 @@ import dev.neeffect.nee.effects.monitoring.TraceEffect
 import dev.neeffect.nee.effects.monitoring.TraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceResource
 import dev.neeffect.nee.effects.security.SecuredRunEffect
+import dev.neeffect.nee.effects.security.SecurityError
 import dev.neeffect.nee.effects.security.SecurityProvider
 import dev.neeffect.nee.effects.time.HasteTimeProvider
 import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.effects.tx.TxEffect
+import dev.neeffect.nee.effects.tx.TxError
 import dev.neeffect.nee.effects.tx.TxProvider
 import dev.neeffect.nee.security.DBUserRealm
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRealm
 import dev.neeffect.nee.security.UserRole
+import dev.neeffect.nee.with
 import java.sql.Connection
 import java.util.concurrent.Executors
 
 class EffectsInstance<R, G : TxProvider<R, G>> {
-    val trace = TraceEffect<WebContext<R,G>>("web")
 
-    val async = trace.andThen(AsyncEffect<WebContext<R, G>>())
-        .anyError()
-    fun secured(roles: List<UserRole>) =
-        trace.andThen(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles)).anyError()
-    val tx =
-        trace.andThen(TxEffect<Connection, WebContext<R, G>>()).anyError()
+    val plainFx = PlainInstances<R,G>()
 
-    fun  cache() = Cache<R,G>()
+    val trace: TraceEffect<WebContext<R, G>> = TraceEffect<WebContext<R,G>>("web")
+
+    val async: Effect<WebContext<R, G>, Nothing> = trace.with(AsyncEffect<WebContext<R, G>>())
+
+    fun secured(roles: List<UserRole>): Effect<WebContext<R, G>, SecurityError> =
+        trace.with(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles))
+
+    val tx: Effect<WebContext<R, G>, TxError> =
+        trace.with(async).with(plainFx.tx)
+
+    fun cache() = Cache<R,G>()
+
+    class PlainInstances<R,G : TxProvider<R, G>> {
+        val tx =  TxEffect<Connection, WebContext<R, G>>()
+    }
 
     class Cache<R,G : TxProvider<R, G>> {
         val internalCache= CaffeineProvider()
-        fun <P> of(p:P) = CacheEffect<WebContext<R, G>, Nothing,P>(p,internalCache).anyError()
+        fun <P> of(p:P): CacheEffect<WebContext<R, G>, Nothing, P> =
+            CacheEffect<WebContext<R, G>, Nothing,P>(p,internalCache)
     }
 }
 
@@ -111,11 +124,11 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     fun <E, A> async(func: () -> Nee<WebContext<R,G>, E, A>) : Nee<WebContext<R,G>, Any, A> =
         CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
-            Nee.with(this.fx().async) { r ->
+            val z: Nee<WebContext<R, G>, Nothing, Nee<WebContext<R, G>, E, A>> = Nee.with(this.fx().async) { r ->
                     r.getTrace().putNamedPlace(whereItIsDefined)
                     func()
             }
-                .flatMap { it.anyError() }
+            z.anyError().flatMap { it.anyError()}
         }
 }
 
