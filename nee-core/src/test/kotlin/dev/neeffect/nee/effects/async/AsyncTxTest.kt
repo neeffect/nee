@@ -13,6 +13,7 @@ import dev.neeffect.nee.effects.tx.DBLikeProvider
 import dev.neeffect.nee.effects.tx.TxConnection
 import dev.neeffect.nee.effects.tx.TxEffect
 import dev.neeffect.nee.effects.tx.TxProvider
+import io.kotest.assertions.assertSoftly
 
 internal class AsyncTxTest : DescribeSpec({
     describe("combined effect") {
@@ -67,7 +68,10 @@ internal class AsyncTxTest : DescribeSpec({
             controllableExecutionContext.assertEmpty()
 
             val r1 = result.getAny()
-            r1 shouldBe Either.right<Any, String>("is trx+is trx+is trx")
+            assertSoftly {
+                r1 shouldBe Either.right<Any, String>("is trx+is trx+is trx")
+                db.transactionLevel() shouldBe  0
+            }
         }
     }
 }) {

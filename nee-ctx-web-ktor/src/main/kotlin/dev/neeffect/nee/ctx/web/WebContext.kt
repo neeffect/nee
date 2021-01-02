@@ -65,28 +65,16 @@ data class WebContext<R, G : TxProvider<R, G>>(
         this.copy(jdbcProvider = jdbcProvider.setConnectionState(newState))
 
 
-    fun serveText(businessFunction: ANee<WebContext<R, G>,String>) =
-        businessFunction.perform(this)
-            .onComplete { outcome ->
-                val message = outcome.bimap<OutgoingContent, OutgoingContent>(
-                    renderHelper::serveError, { regularResult ->
-                    TextContent(
-                        text = regularResult,
-                        contentType = ContentType.Text.Plain,
-                        status = HttpStatusCode.OK
-                    )
-                }).merge()
-                runBlocking { applicationCall.respond(message) }
-            }
+    suspend fun serveText(businessFunction: ANee<WebContext<R, G>,String>) =
+        businessFunction.perform(this).let { result ->
+            renderHelper.serveText(applicationCall, result)
+        }
 
     suspend fun <E, A> serveMessage(msg: Out<E, A>): Unit =
             renderHelper.serveMessage(applicationCall, msg)
 
-
     suspend fun  serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
         serveMessage(businessFunction.perform(this))
-
-
 
 
 }

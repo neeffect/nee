@@ -14,13 +14,14 @@ import dev.neeffect.nee.Nee
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
 import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.security.test.TestDB
+import java.sql.Connection
 import kotlin.test.assertEquals
 
 fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
 
     routing {
         get("/") {
-            val function = Nee.with(wctxProvider.fx().tx) { webCtx ->
+            val function: Nee<WebContext<Connection, JDBCProvider>, Any, String> = Nee.with(wctxProvider.fx().tx) { webCtx ->
                 webCtx.getConnection().getResource()
                     .prepareStatement("select 41 from dual").use { preparedStatement ->
                         preparedStatement.executeQuery().use { resultSet ->
@@ -61,9 +62,7 @@ class SimpleApplicationTest : BehaviorSpec({
 
             When("requested") {
                 Then("db connection works") {
-                    engine.handleRequest(HttpMethod.Get, "/").let { call ->
-                        assertEquals("Hello! Result is 41", call.response.content)
-                    }
+                    assertEquals("Hello! Result is 41", engine.handleRequest(HttpMethod.Get, "/").response.content)
                 }
 
             }

@@ -106,7 +106,6 @@ internal class FNEE<R, E, A>(
     //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
     override fun <B> map(f: (A) -> B): Nee<R, E, B> =
         FNEE(effect) { r -> func(r).map(f) }
-
     /**
      *
      *
