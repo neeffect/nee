@@ -1,9 +1,7 @@
 package dev.neeffect.nee.ctx.web.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import dev.neeffect.nee.ANee
 import dev.neeffect.nee.ctx.web.ErrorHandler
-import dev.neeffect.nee.ctx.web.WebContext
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
@@ -49,7 +47,7 @@ class  RenderHelper(
                 else -> TODO()
             }
         }.merge().let { content ->
-            call.respond(content)
+                 call.respond(content)
         }
 
     suspend fun <E, A> serveMessage(applicationCall:ApplicationCall, msg: Out<E, A>): Unit =
