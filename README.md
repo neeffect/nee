@@ -37,10 +37,8 @@ It is possible to have similar goodies rewriting code like below:
 class  Hasiok {
 
     fun enterprisyFunction(x:Int) = Nee.pure(
-        secure
-        .and(retryable)
-        .and(cacheable)
-        .and(transactional))  {jdbcConnection:Connection ->
+        secure + retryable + cache.of(x) + transactional
+        )  {jdbcConnection:Connection ->
                     //code using jdbcConnection
     }
     //declaration above means security is checked before retrial
@@ -62,12 +60,9 @@ Where:
  **R**  - is an environment / infrastructure that a function may use
  **A** - is a result of the function
 
-This is very generic way to present any piece of work.
+Typically R would be something like a `database connection`.
+It might be `security context`. It can be all infrasture handlers that are relevant in a given context.
 
-In order to use NEE logic must be presented in this form ( which is mostly simple).
-
-(we will show it later)
-(let me be honest, the only reason this crazy param P is used is the possibility to define `caching`)
 
 ### Putting inside Nee Monad
 
@@ -86,7 +81,7 @@ As for side effects we see `noEffect()`... meaning not a real one - but it is ti
 
 ### Effects
 
- Effect is a special class that tells how to connect businessFunction with a reality.
+Effect is a special class that tells how to wrap businessFunction and run it providing infrastructure.
  
  ```kotlin
  interface Effect<R, E> {
@@ -112,9 +107,6 @@ Then wraps it into a function that:
       - runs some infrastructure code (effect),
       - it also returns  changed environment `(R)` - think that maybe transaction is now started            
 
-*Notice  - this no a typical effect as known from haskell 
-more a Side Effect or simply maybe it should be called Aspect, 
-cause it tries to mimic runtime aspects.
 
 ### Monads
 
@@ -158,11 +150,11 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
 
 ## TODO
 - Code:
-  - remove warnings
+
   - naming & long lambdas clean 
 - Ideas:
   - R extract (for effect) - multiple db support
-  - R as Map (ugly but practical)
+ 
   - arrow?
 - Tests:
   - real assertions

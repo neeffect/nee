@@ -1,9 +1,7 @@
 package dev.neeffect.nee.ctx.web.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import dev.neeffect.nee.ANee
 import dev.neeffect.nee.ctx.web.ErrorHandler
-import dev.neeffect.nee.ctx.web.WebContext
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
@@ -21,6 +19,16 @@ import kotlinx.coroutines.future.await
 class  RenderHelper(
     val objectMapper: ObjectMapper,
     val errorHandler: ErrorHandler) : Logging {
+
+    suspend fun renderText(call: ApplicationCall, text:String) =
+        TextContent(
+            text = text,
+            contentType = ContentType.Text.Plain,
+            status = HttpStatusCode.OK
+        ).let {
+            call.respond(it)
+        }
+
     suspend fun <T> renderResponse(call: ApplicationCall, resp: Either<ApiError, T>) =
         resp.mapLeft { error ->
             TextContent(
@@ -39,8 +47,9 @@ class  RenderHelper(
                 else -> TODO()
             }
         }.merge().let { content ->
-            call.respond(content)
+                 call.respond(content)
         }
+
     suspend fun <E, A> serveMessage(applicationCall:ApplicationCall, msg: Out<E, A>): Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
             val message = outcome.bimap<OutgoingContent, OutgoingContent>({ serveError(it as Any) }, { regularResult ->
@@ -58,6 +67,21 @@ class  RenderHelper(
             }
         }
 
+    suspend fun <E> serveText(applicationCall:ApplicationCall, msg: Out<E, String>): Unit =
+        msg.toFuture().toCompletableFuture().await().let { outcome ->
+            val message = outcome.bimap<OutgoingContent, OutgoingContent>({ serveError(it as Any) }, { regularResult ->
+                TextContent(
+                    text = regularResult,
+                    contentType = ContentType.Text.Plain,
+                    status = HttpStatusCode.OK
+                )
+            }).merge()
+            try {
+                applicationCall.respond(message)
+            } catch (e: Exception) {
+                logger().warn("exception in sending response", e)
+            }
+        }
 
 
     internal fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)

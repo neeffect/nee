@@ -38,6 +38,15 @@ fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.andThen(otherEffect: Effect<R1, E1>) = 
 
 infix fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.then(otherEffect: Effect<R1, E1>) = Effects.combine(otherEffect, this)
 
+infix fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.with(otherEffect: Effect<R1, E1>) =
+    Effects.combine(otherEffect, this).handleError { error: Either<E1, E2> ->
+        error.map { it as E1 }.merge()
+}
+
+operator fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.plus(otherEffect: Effect<R1, E1>) =
+    this.with(otherEffect)
+
+
 class Effects<R1, R2, E1, E2>(
     private val inner: Effect<R1, E1>,
     private val outer: Effect<R2, E2>
