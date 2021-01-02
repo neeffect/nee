@@ -3,6 +3,9 @@ package dev.neeffect.nee.ctx.web
 import dev.neeffect.nee.ANee
 import dev.neeffect.nee.ctx.web.util.RenderHelper
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.async.AsyncEnvWrapper
+import dev.neeffect.nee.effects.async.AsyncStack
+import dev.neeffect.nee.effects.async.AsyncSupport
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
 import dev.neeffect.nee.effects.monitoring.TraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceResource
@@ -35,15 +38,19 @@ data class WebContext<R, G : TxProvider<R, G>>(
     private val contextProvider: WebContextProvider<R, G>,
     private val traceProvider: TraceProvider<*>,
     private val timeProvider: TimeProvider,
-    private val applicationCall: ApplicationCall
+    private val applicationCall: ApplicationCall,
+    private val asyncEnv : AsyncEnvWrapper<WebContext<R, G>> = AsyncEnvWrapper()
 ) : TxProvider<R, WebContext<R, G>>,
     SecurityProvider<User, UserRole> by securityProvider,
     ExecutionContextProvider by executionContextProvider,
     TraceProvider<WebContext<R, G>>,
     TimeProvider by timeProvider,
-    Logging {
+    Logging,
+    AsyncSupport<WebContext<R, G>> by asyncEnv{
 
     private val renderHelper = RenderHelper(contextProvider.jacksonMapper(), errorHandler)
+
+
 
     override fun getTrace(): TraceResource = traceProvider.getTrace()
 
@@ -78,6 +85,8 @@ data class WebContext<R, G : TxProvider<R, G>>(
 
     suspend fun  serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
         serveMessage(businessFunction.perform(this))
+
+
 
 
 }
