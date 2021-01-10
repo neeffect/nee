@@ -56,11 +56,22 @@ object NoGoExecutor : Executor {
 }
  */
 
-class ExecutorExecutionContext(private val executor: Executor) : ExecutionContext {
+class ExecutorExecutionContext(private val executor: Executor) : ExecutionContext,Logging {
+    @Suppress("TooGenericExceptionCaught")
     override fun <T> execute(f: () -> T): Future<T> =
         Promise.make<T>(InPlaceExecutor).let { promise ->
             executor.execute {
-                promise.success(f())
+                //LESSON not property fandled exception
+                try {
+                    val result = f()
+                    promise.success(result)
+                } catch (e:Exception) {
+                    //NOTEST
+                    promise.failure(e)
+                } catch (e:Throwable) {
+                    logger().error("Unhandled throwable in executor",e)
+                    promise.failure(e)
+                }
             }
             promise.future()
         }
