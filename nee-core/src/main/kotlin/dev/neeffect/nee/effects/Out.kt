@@ -23,22 +23,29 @@ sealed class Out<E, out A> {
 
     abstract fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B>
 
-    abstract fun onComplete(f: (Either<E, out A>) -> Unit)
-
     abstract fun toFuture(): Future<out Either<E, out A>>
+
+    fun <E1, B> handle(fe: (E) -> Out<E1, B>, fa: (A) -> B): Out<E1, B> =
+
+        this.mapLeft(fe).map { a -> Out.right<E1, B>(fa(a)) }.let { result: Out<Out<E1, B>, Out<E1, B>> ->
+            when (result) {
+                is FutureOut -> FutureOut(result.futureVal.map { Either.right<E1, Out<E1, B>>(it.merge()) }).flatMap { it }
+                is InstantOut -> result.v.merge()
+            }
+        }
 
     companion object {
         fun <E, A> left(e: E): Out<E, A> = InstantOut(Either.left<E, A>(e));
         fun <E, A> right(a: A): Out<E, A> = InstantOut(Either.right<E, A>(a));
 
-        fun <E,A> fromFuture( future: Future<Either<E,A>>):Out<E,A>  = FutureOut(future)
-        fun <E,A> right( future: Future<A>):Out<E,A>  = fromFuture(future.map { Either.right<E,A>(it) })
+        fun <E, A> fromFuture(future: Future<Either<E, A>>): Out<E, A> = FutureOut(future)
+        fun <E, A> right(future: Future<A>): Out<E, A> = fromFuture(future.map { Either.right<E, A>(it) })
     }
 
     internal class InstantOut<E, A>(internal val v: Either<E, A>) : Out<E, A>() {
         override fun toFuture(): Future<Either<E, out A>> = Future.successful(v)
 
-        override fun onComplete(f: (Either<E, out A>) -> Unit) = f(v)
+        // override fun onComplete(f: (Either<E, out A>) -> Unit) = f(v)
 
         override fun <B> map(f: (A) -> B): Out<E, B> = InstantOut(v.map(f))
 
@@ -54,14 +61,15 @@ sealed class Out<E, out A> {
                 @Suppress("UNCHECKED_CAST")
                 this as Out<E, B>
             }.merge()
+
     }
 
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
         override fun toFuture(): Future<Either<E, A>> = futureVal
 
-        override fun onComplete(f: (Either<E, out A>) -> Unit) = futureVal.onComplete { value ->
-            f(value.get())
-        }.let { Unit }
+//        override fun onComplete(f: (Either<E, out A>) -> Unit) = futureVal.onComplete { value ->
+//            f(value.get())
+//        }.let { Unit }
 
         override fun <B> map(f: (A) -> B): Out<E, B> = FutureOut(futureVal.map { it.map(f) })
 
@@ -78,5 +86,8 @@ sealed class Out<E, out A> {
                 }.mapLeft { e1 -> Future.successful(futureVal.executor(), Either.left<E, B>(e1)) }
                     .merge()
             })
+
+
     }
 }
+

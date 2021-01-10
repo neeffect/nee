@@ -97,7 +97,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
 ) : Effect<R, Nothing>, Logging {
 
-
+    @Suppress("TooGenericExceptionCaught")
     override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> =
         { r: R ->
             val asyncNmb = asyncCounter.getAndIncrement()
