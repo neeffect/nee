@@ -18,6 +18,7 @@ import io.vavr.jackson.datatype.VavrModule
 import io.vavr.kotlin.option
 import io.vavr.kotlin.toVavrList
 import dev.neeffect.nee.Nee
+import dev.neeffect.nee.NoEffect
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.anyError
 import dev.neeffect.nee.effects.async.AsyncEffect
@@ -56,6 +57,8 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
     val trace: TraceEffect<WebContext<R, G>> = TraceEffect<WebContext<R,G>>("web")
 
     val async: Effect<WebContext<R, G>, Nothing> = trace.with(AsyncEffect<WebContext<R, G>>())
+
+    val nop : Effect<WebContext<R,G>, Nothing> = NoEffect.get()
 
     fun secured(roles: List<UserRole>): Effect<WebContext<R, G>, SecurityError> =
         trace.with(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles))
