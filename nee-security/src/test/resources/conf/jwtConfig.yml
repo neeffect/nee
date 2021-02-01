@@ -1,0 +1,2 @@
+issuer: "test"
+signerSecret: "notsosecret_secret"
