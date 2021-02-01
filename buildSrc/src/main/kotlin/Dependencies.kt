@@ -14,6 +14,7 @@ object Libs {
         const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
         private const val coroutinesVersion = "1.4.1"
         const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
+        const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
 
     }
 
@@ -27,7 +28,6 @@ object Libs {
         const val clientJackson =  "io.ktor:ktor-client-jackson:$version"
         const val jackson =  "io.ktor:ktor-jackson:$version"
         const val serverTestHost ="io.ktor:ktor-server-test-host:$version"
-
     }
 
     object Vavr {
@@ -63,5 +63,12 @@ object Libs {
     object Liquibase {
         private const val version = "3.6.1"
         const val core = "org.liquibase:liquibase-core:$version"
+    }
+
+    object Hoplite {
+        private const val version = "1.3.10"
+        const val core = "com.sksamuel.hoplite:hoplite-core:$version"
+        const val yaml = "com.sksamuel.hoplite:hoplite-yaml:$version"
+
     }
 }

@@ -1,0 +1,4 @@
+providers:
+  google:
+    clientId: "googleClientIdTest"
+    clientSecret: "googleClientSecret"

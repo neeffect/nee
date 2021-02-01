@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":nee-core"))
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
+    implementation(Libs.Kotlin.reflect)
     implementation(Libs.Vavr.kotlin) {
             exclude("org.jetbrains.kotlin")
     }
@@ -18,10 +19,12 @@ dependencies {
     }
     implementation(Libs.Kotlin.coroutinesJdk8)
     api("io.fusionauth:fusionauth-jwt:4.0.1")
-    // this is breaking xml parsers
-    // implementation("com.uchuhimo:konf:0.23.0")
+
     testImplementation (Libs.Kotest.runnerJunit5Jvm)
     testImplementation(Libs.Ktor.clientMockJvm)
+
+    implementation (Libs.Hoplite.core)
+    implementation (Libs.Hoplite.yaml)
 }
 
 apply(from = "../publish-mpp.gradle.kts")
