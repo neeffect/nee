@@ -1,6 +1,10 @@
 package dev.neeffect.nee.security.oauth.config
 
-import com.sksamuel.hoplite.*
+import com.sksamuel.hoplite.ConfigLoader
+import com.sksamuel.hoplite.ConfigResult
+import com.sksamuel.hoplite.DecoderContext
+import com.sksamuel.hoplite.Node
+import com.sksamuel.hoplite.PropertySource
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.decoder.MapDecoder
 import com.sksamuel.hoplite.fp.Validated
@@ -9,12 +13,9 @@ import dev.neeffect.nee.security.jwt.JwtConfig
 import dev.neeffect.nee.security.oauth.OauthConfig
 import dev.neeffect.nee.security.oauth.OauthProviderName
 import dev.neeffect.nee.security.oauth.OauthResponse
-import dev.neeffect.nee.security.oauth.OauthService
-import dev.neeffect.nee.security.oauth.SimpleOauthConfigModule
 import io.vavr.collection.Map
 import io.vavr.collection.Seq
 import io.vavr.control.Either
-import io.vavr.kotlin.list
 import io.vavr.kotlin.toVavrMap
 import java.nio.file.Path
 import kotlin.reflect.KType
