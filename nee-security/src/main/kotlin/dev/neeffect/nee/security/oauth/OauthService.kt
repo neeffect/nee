@@ -5,6 +5,7 @@ import dev.neeffect.nee.NoEffect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.security.SecurityErrorType
 import dev.neeffect.nee.security.jwt.JWTError
+import dev.neeffect.nee.security.oauth.config.GithubOAuth
 import io.vavr.control.Either
 import io.vavr.control.Option
 import io.vavr.kotlin.some
@@ -13,12 +14,13 @@ import io.vavr.kotlin.toVavrMap
 class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, ROLE>) {
 
     private val googleOpenId = GoogleOpenId(oauthConfig)
+    private val githubOAuth = GithubOAuth(oauthConfig)
 
     fun login(code: String, state: String, redirectUri: String, oauthProvider: OauthProviderName)
             : Nee<Any, SecurityErrorType, LoginResult> =
         findOauthProvider(oauthProvider).map { provider ->
             if (oauthConfig.serverVerifier.verifySignedText(state)) {
-                provider.verifyOauthToken(code, redirectUri).map { oauthResponse ->
+                provider.verifyOauthToken(code, redirectUri, state).map { oauthResponse ->
                     println("validate idToken ${oauthResponse}")//TODO
                     val user = oauthConfig.userEncoder(oauthProvider, oauthResponse)
                     val jwt = oauthConfig.jwtConfigModule.jwtUsersCoder.encodeUser(user)
@@ -43,6 +45,7 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
 
     private fun findOauthProvider(oauthProvider: OauthProviderName): Option<OauthProvider> = when (oauthProvider) {
         OauthProviderName.Google -> some(googleOpenId)
+        OauthProviderName.Github -> some(githubOAuth)
     }
 
     fun decodeUser(jwtToken: String): Either<SecurityErrorType, USER> =
