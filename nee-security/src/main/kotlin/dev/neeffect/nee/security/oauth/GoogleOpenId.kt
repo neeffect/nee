@@ -39,7 +39,7 @@ import java.util.concurrent.CompletableFuture
 interface OauthProvider {
     fun generateApiCall(redirect: String): String
 
-    fun verifyOauthToken(code: String, redirectUri: String): Nee<Any, SecurityErrorType, OauthResponse>
+    fun verifyOauthToken(code: String, redirectUri: String, state:String): Nee<Any, SecurityErrorType, OauthResponse>
 }
 
 class GoogleOpenId<USER, ROLE>(
@@ -60,23 +60,28 @@ class GoogleOpenId<USER, ROLE>(
             oauthConfigModule.randomGenerator.nextFloat().toString()
         )
 
-    override fun verifyOauthToken(code: String, redirectUri: String) = Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
+    override fun verifyOauthToken(code: String, redirectUri: String, state:String) =
+        Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
 
-        Out.Companion.fromFuture(
-            Future.fromCompletableFuture(InPlaceExecutor, callGoogle(code, redirectUri)).map { result ->
-                Try.of {
-                    val decodedIDToken = googleJwtDecoder.decode(result.idToken, verifier)
-                    val email = Option.of(decodedIDToken.getString("email"))
-                    val name = Option.of(decodedIDToken.getString("name"))
-                    OauthResponse(result, decodedIDToken.subject, name, email)
-                }.toEither().mapLeft<SecurityErrorType> {
-                    SecurityErrorType.MalformedCredentials(it.localizedMessage)
+            Out.Companion.fromFuture(
+                Future.fromCompletableFuture(InPlaceExecutor, callGoogle(code, redirectUri)).map { result ->
+                    result.idToken.toEither<SecurityErrorType>(SecurityErrorType.MalformedCredentials("no idToken received"))
+                        .flatMap { idToken ->
+                            Try.of {
+                                val decodedIDToken = googleJwtDecoder.decode(idToken, verifier)
+                                val email = Option.of(decodedIDToken.getString("email"))
+                                val name = Option.of(decodedIDToken.getString("name"))
+                                OauthResponse(result, decodedIDToken.subject, name, email)
+                            }.toEither().mapLeft<SecurityErrorType> {
+                                SecurityErrorType.MalformedCredentials(it.localizedMessage)
+                            }
+                        }
+
+                }.orElse {
+                    Future.successful(Either.left<SecurityErrorType, OauthResponse>(SecurityErrorType.NoSecurityCtx))
                 }
-            }.orElse {
-                Future.successful(Either.left<SecurityErrorType, OauthResponse>(SecurityErrorType.NoSecurityCtx))
-            }
-        )
-    }
+            )
+        }
 
 
     private fun createVerifier() =
@@ -95,9 +100,9 @@ class GoogleOpenId<USER, ROLE>(
                 MultiVerifier(verifiers)
             }
 
-    private fun retrieveJsonKeys(url:String):List<JSONWebKey>  = if (url.startsWith("file:/")) {
+    private fun retrieveJsonKeys(url: String): List<JSONWebKey> = if (url.startsWith("file:/")) {
         val fileURL = URL(url)
-        fileURL.openStream().use {  jkeyInputStream ->
+        fileURL.openStream().use { jkeyInputStream ->
             Mapper.deserialize(jkeyInputStream, LocalJSONWebKeySetResponse::class.java).keys
         }
     } else {
@@ -106,7 +111,7 @@ class GoogleOpenId<USER, ROLE>(
 
     //TODO - what is this stupid GlobalScope here? - clean it or test it
     @SuppressWarnings("TooGenericExceptionCaught")
-    private fun callGoogle(code: String, redirectUri:String): CompletableFuture<OauthTokens> = GlobalScope.future {
+    private fun callGoogle(code: String, redirectUri: String): CompletableFuture<OauthTokens> = GlobalScope.future {
         try {
             val result: OauthTokens = oauthConfigModule.httpClient.submitForm<OauthTokens>(
                 url = "https://oauth2.googleapis.com/token",
@@ -144,8 +149,6 @@ class GoogleOpenId<USER, ROLE>(
         nonce=${nonce}""".trimIndent().replace("\n", "")
 
 
-
-
     }
 
 }
@@ -154,8 +157,8 @@ data class OauthTokens(
     @JsonProperty("access_token")
     val accessToken: String,
     @JsonProperty("id_token")
-    val idToken: String,
-    val refreshToken: Option<String>,
+    val idToken: Option<String> = Option.none(),
+    val refreshToken: Option<String> = Option.none(),
     val expiresIn: String = "0", //TODO
     val scope: String = "",
     val tokenType: String = ""
@@ -165,7 +168,7 @@ data class OauthTokens(
         @JsonProperty("access_token")
         accessToken: String,
         @JsonProperty("id_token")
-        idToken: String,
+        idToken: String? = null,
         @JsonProperty("refresh_token")
         refreshToken: String? = null,
         @JsonProperty("expires_in")
@@ -174,7 +177,7 @@ data class OauthTokens(
         scope: String = "",
         @JsonProperty("token_type")
         tokenType: String = ""
-    ) : this(accessToken, idToken, refreshToken.option(), expiresIn, scope, tokenType)
+    ) : this(accessToken, idToken.option(), refreshToken.option(), expiresIn, scope, tokenType)
 }
 
 
@@ -185,6 +188,6 @@ data class OauthResponse(
     val email: Option<String>
 )
 
- internal class LocalJSONWebKeySetResponse {
+internal class LocalJSONWebKeySetResponse {
     var keys: List<JSONWebKey> = emptyList()
 }
