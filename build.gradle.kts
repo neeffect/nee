@@ -124,4 +124,9 @@ allprojects {
 }
 
 
+nexusStaging {
+    packageGroup = "pl.setblack" //optional if packageGroup == project.getGroup()
+}
+
+
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications
