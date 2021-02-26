@@ -1,34 +1,36 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-    }
-
-    dependencies {
-        classpath(kotlin("gradle-plugin", version = Libs.kotlin_version))
-    }
-}
+//buildscript {
+////    repositories {
+////        mavenLocal()
+////        mavenCentral()
+////        jcenter()
+////    }
+//
+////    dependencies {
+////        classpath(kotlin("gradle-plugin", version = Libs.kotlin_version))
+////    }
+//}
 
 plugins {
-    java
+    //java //- not needed probably
+    kotlin("jvm") version "1.4.30"
     id("io.gitlab.arturbosch.detekt").version("1.5.0")
-    `kotlin-dsl` //TODO - read about it
+    //`kotlin-dsl` //TODO - read about it
     id("jacoco")
     id("maven-publish")
-    id("java-library")
+   // id("java-library")//  - not needed probably
     signing
     id("org.jetbrains.dokka") version "0.10.1"
     id("com.bmuschko.nexus") version "2.3.1"
+    id("io.codearte.nexus-staging") version "0.22.0"
 }
 
 repositories {
     jcenter()
 }
 
-allprojects {
+subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "java")
     apply(plugin = "maven-publish")
@@ -95,11 +97,6 @@ allprojects {
                 true // similar to the console output, contains issue signature to manually edit baseline files
         }
     }
-
-//    java {
-//        withSourcesJar()
-//        withJavadocJar()
-//    }
 }
 
 
@@ -111,9 +108,7 @@ tasks.register<JacocoReport>("generateMergedReport") {
     classDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.output }))
     //line below if fishy
     executionData.setFrom(project.fileTree(Pair("dir", "."), Pair("include", "**/build/jacoco/test.exec")))
-//    sourceDirectories.setFrom files(subprojects.sourceSets.main.allSource.srcDirs)
-//    classDirectories.setFrom files(subprojects.sourceSets.main.output)
-//    executionData.setFrom project.fileTree(dir = ".", include = "**/build/jacoco/test.exec")
+
     reports {
         xml.isEnabled = true
         csv.isEnabled = false
@@ -126,6 +121,11 @@ allprojects {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+}
+
+
+nexusStaging {
+    packageGroup = "pl.setblack" //optional if packageGroup == project.getGroup()
 }
 
 
