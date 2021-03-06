@@ -66,9 +66,9 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
             )
 
         /**
-         alias to pure
+        alias to pure
          */
-        fun <R,E,A> success(a:A)  = pure<R,E,A>(a)
+        fun <R, E, A> success(a: A) = pure<R, E, A>(a)
 
         /**
          * Same as pure, but adds tracing.

@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture
 interface OauthProvider {
     fun generateApiCall(redirect: String): String
 
-    fun verifyOauthToken(code: String, redirectUri: String, state:String): Nee<Any, SecurityErrorType, OauthResponse>
+    fun verifyOauthToken(code: String, redirectUri: String, state: String): Nee<Any, SecurityErrorType, OauthResponse>
 }
 
 class GoogleOpenId<USER, ROLE>(
@@ -54,7 +54,7 @@ class GoogleOpenId<USER, ROLE>(
             oauthConfigModule.randomGenerator.nextFloat().toString()
         )
 
-    override fun verifyOauthToken(code: String, redirectUri: String, state:String) =
+    override fun verifyOauthToken(code: String, redirectUri: String, state: String) =
         Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
 
             Out.Companion.fromFuture(

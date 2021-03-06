@@ -35,7 +35,7 @@ internal open class EmptyTestContextProvider {
     val serverExecutor = Executors.newFixedThreadPool(KtorThreadingModelTest.reqs)
     val ec = ExecutorExecutionContext(serverExecutor)
 
-    val contexProvider  = object : BaseWebContextProvider<Connection, JDBCProvider>() {
+    val contexProvider = object : BaseWebContextProvider<Connection, JDBCProvider>() {
         override val txProvider = myTxProvider
         override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> =
             security(call)

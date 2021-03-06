@@ -7,18 +7,18 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.should
 
-class DeeperEffectTest  : BehaviorSpec ({
+class DeeperEffectTest : BehaviorSpec({
     Given("TestEffect") {
         val log = mutableListOf<String>()
         val eff = TestEffect("ef1", log)
         val nee = Nee.Companion.with(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))
-            Then ("log is ok") {
+            Then("log is ok") {
                 ///TODO() write expectations on order of items in log
                 println(res)
                 println(log)
-                res.get() should be ("OK")
+                res.get() should be("OK")
             }
         }
     }
@@ -30,19 +30,19 @@ class DeeperEffectTest  : BehaviorSpec ({
         val nee = Nee.Companion.with(eff, function1(log))
         When("called") {
             val res = nee.perform(TestResource(1))
-            Then ("log is ok") {
+            Then("log is ok") {
                 println(res)
                 println(log)
-                res.get() should be ("OK")
+                res.get() should be("OK")
             }
         }
     }
 
 }) {
     companion object {
-        fun function1(log : MutableList<String>) = { db: TestResource ->
-                log.add("function1 called with: $db")
-                 "OK"
-            }
+        fun function1(log: MutableList<String>) = { db: TestResource ->
+            log.add("function1 called with: $db")
+            "OK"
+        }
     }
 }

@@ -22,19 +22,20 @@ fun Application.main(wctxProvider: JDBCBasedWebContextProvider) {
 
     routing {
         get("/") {
-            val function: Nee<WebContext<Connection, JDBCProvider>, Any, String> = Nee.with(wctxProvider.fx().tx) { webCtx ->
-                webCtx.getConnection().getResource()
-                    .prepareStatement("select 41 from dual").use { preparedStatement ->
-                        preparedStatement.executeQuery().use { resultSet ->
-                            if (resultSet.next()) {
-                                val result = resultSet.getString(1)
-                                "Hello! Result is $result"
-                            } else {
-                                "Bad result"
+            val function: Nee<WebContext<Connection, JDBCProvider>, Any, String> =
+                Nee.with(wctxProvider.fx().tx) { webCtx ->
+                    webCtx.getConnection().getResource()
+                        .prepareStatement("select 41 from dual").use { preparedStatement ->
+                            preparedStatement.executeQuery().use { resultSet ->
+                                if (resultSet.next()) {
+                                    val result = resultSet.getString(1)
+                                    "Hello! Result is $result"
+                                } else {
+                                    "Bad result"
+                                }
                             }
                         }
-                    }
-            }.anyError()
+                }.anyError()
             wctxProvider.create(call).serveText(function)
         }
         get("/secured") {

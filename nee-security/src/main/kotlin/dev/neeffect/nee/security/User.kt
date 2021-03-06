@@ -8,7 +8,7 @@ data class User(
     val id: UUID,
     val login: String,
     val roles: List<UserRole>,
-    val displayName:String = login
+    val displayName: String = login
 )
 
 data class UserRole(val roleName: String) {

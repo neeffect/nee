@@ -70,7 +70,7 @@ internal class AsyncTxTest : DescribeSpec({
             val r1 = result.getAny()
             assertSoftly {
                 r1 shouldBe Either.right<Any, String>("is trx+is trx+is trx")
-                db.transactionLevel() shouldBe  0
+                db.transactionLevel() shouldBe 0
             }
         }
     }

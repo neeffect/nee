@@ -115,6 +115,6 @@ data class GithubUserData(
     val login: String,
     val id: Long,
     val email: String,
-    val name: String?=null,
+    val name: String? = null,
     val company: String? = null
 )

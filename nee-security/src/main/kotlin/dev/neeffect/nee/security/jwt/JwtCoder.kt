@@ -21,7 +21,8 @@ data class JwtConfig(
 
 open class JwtCoderConfigurationModule(
     cfg: JwtConfig,
-    val timeProvider: TimeProvider = HasteTimeProvider()) {
+    val timeProvider: TimeProvider = HasteTimeProvider()
+) {
 
     open val config: JwtConfig = cfg
 
@@ -36,12 +37,13 @@ open class JwtCoderConfigurationModule(
 
 }
 
-abstract class JwtConfigurationModule<USER,ROLE>(
-    cfg: JwtConfig, timeProvider: TimeProvider) : JwtCoderConfigurationModule(cfg, timeProvider) {
+abstract class JwtConfigurationModule<USER, ROLE>(
+    cfg: JwtConfig, timeProvider: TimeProvider
+) : JwtCoderConfigurationModule(cfg, timeProvider) {
     open val jwtCoder: JwtCoder by lazy {
         JwtCoder(this)
     }
-    open val jwtUsersCoder : JwtUsersCoder<USER, ROLE> by lazy {
+    open val jwtUsersCoder: JwtUsersCoder<USER, ROLE> by lazy {
         JwtUsersCoder(jwtCoder, userCoder)
     }
 

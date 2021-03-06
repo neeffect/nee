@@ -45,7 +45,7 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
             }
             post("/loginUser/{provider}") {
 
-                val loginData  = call.receive<OauthLoginData>()
+                val loginData = call.receive<OauthLoginData>()
                 val result = extractProvider().map { provider ->
                     oauthService.login(loginData.code, loginData.state, loginData.redirectUri, provider)
                         .perform(Unit)
@@ -75,4 +75,5 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
 data class OauthLoginData(
     val code: String,
     val state: String,
-    val redirectUri:String)
+    val redirectUri: String
+)

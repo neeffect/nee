@@ -37,7 +37,7 @@ internal class BasicAuthProviderTest : DescribeSpec({
             it("should not find user") {
                 provider.getSecurityContext()
                     .toFuture().get().get()
-                    .getCurrentUser().toFuture().get().swap().get() shouldBe(SecurityErrorType.UnknownUser)
+                    .getCurrentUser().toFuture().get().swap().get() shouldBe (SecurityErrorType.UnknownUser)
             }
             it("should have no roles") {
                 provider.getSecurityContext()

@@ -53,14 +53,12 @@ class OauthConfigLoder(private val configPath: Path) {
             })
 
     fun loadConfig(rolesMapper: RolesMapper) = loadOauthConfig().flatMap { oauthConf ->
-        loadJwtConfig().map { jwtConf->
-            OauthModule(oauthConf,jwtConf,rolesMapper)
+        loadJwtConfig().map { jwtConf ->
+            OauthModule(oauthConf, jwtConf, rolesMapper)
         }
     }
 
 }
-
-
 
 
 data class ConfigError(val msg: String)

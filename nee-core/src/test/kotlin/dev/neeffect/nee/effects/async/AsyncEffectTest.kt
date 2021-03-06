@@ -19,7 +19,7 @@ class AsyncEffectTest : DescribeSpec({
         val eff = AsyncEffect<ECProvider>()
         describe("test function") {
             val runned = AtomicBoolean(false)
-            val testFunction =  {runned.set(true)}
+            val testFunction = { runned.set(true) }
             val async = Nee.Companion.with(eff, ignoreR(testFunction))
             async.perform(ecProvider)
 
@@ -36,7 +36,7 @@ class AsyncEffectTest : DescribeSpec({
             //val localProvider = ECProvider(controllableExecutionContext)
             val localEff = AsyncEffect<ECProvider>(Option.some(localEC))
             val runned = AtomicBoolean(false)
-            val testFunction = {  runned.set(true) }
+            val testFunction = { runned.set(true) }
             val async = Nee.Companion.with(
                 localEff,
                 ignoreR(testFunction)
