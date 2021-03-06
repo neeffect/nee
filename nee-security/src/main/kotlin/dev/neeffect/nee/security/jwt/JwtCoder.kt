@@ -2,19 +2,15 @@ package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.time.HasteTimeProvider
 import dev.neeffect.nee.effects.time.TimeProvider
-import dev.neeffect.nee.security.User
-import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.Signer
 import io.fusionauth.jwt.Verifier
 import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.hmac.HMACSigner
 import io.fusionauth.jwt.hmac.HMACVerifier
-import java.time.Clock
-import io.vavr.collection.Map
 import io.vavr.collection.HashMap
+import io.vavr.collection.Map
 import io.vavr.control.Either
 import io.vavr.control.Try
-import io.vavr.kotlin.toVavrMap
 
 data class JwtConfig(
     val expirationInSeconds: Long = 1000,
@@ -25,7 +21,8 @@ data class JwtConfig(
 
 open class JwtCoderConfigurationModule(
     cfg: JwtConfig,
-    val timeProvider: TimeProvider = HasteTimeProvider()) {
+    val timeProvider: TimeProvider = HasteTimeProvider()
+) {
 
     open val config: JwtConfig = cfg
 
@@ -40,12 +37,13 @@ open class JwtCoderConfigurationModule(
 
 }
 
-abstract class JwtConfigurationModule<USER,ROLE>(
-    cfg: JwtConfig, timeProvider: TimeProvider) : JwtCoderConfigurationModule(cfg, timeProvider) {
+abstract class JwtConfigurationModule<USER, ROLE>(
+    cfg: JwtConfig, timeProvider: TimeProvider
+) : JwtCoderConfigurationModule(cfg, timeProvider) {
     open val jwtCoder: JwtCoder by lazy {
         JwtCoder(this)
     }
-    open val jwtUsersCoder : JwtUsersCoder<USER, ROLE> by lazy {
+    open val jwtUsersCoder: JwtUsersCoder<USER, ROLE> by lazy {
         JwtUsersCoder(jwtCoder, userCoder)
     }
 

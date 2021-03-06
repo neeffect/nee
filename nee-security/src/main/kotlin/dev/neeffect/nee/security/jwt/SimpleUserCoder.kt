@@ -33,7 +33,7 @@ class SimpleUserCoder : UserCoder<User, UserRole> {
             }
         }
 
-    override fun hasRole(u:User, r: UserRole): Boolean  = u.roles.contains(r)
+    override fun hasRole(u: User, r: UserRole): Boolean = u.roles.contains(r)
 
     fun stringToUUID(id: String) = Try.of { UUID.fromString(id) }.toOption()
 

@@ -16,7 +16,7 @@ dependencies {
         exclude("org.jetbrains.kotlin")
     }
     testImplementation(project(":nee-test:nee-security-jdbc-test"))
-    testImplementation (Libs.Kotest.runnerJunit5Jvm)
+    testImplementation(Libs.Kotest.runnerJunit5Jvm)
     testRuntimeOnly(Libs.H2.h2)
     testImplementation(Libs.Liquibase.core)
 

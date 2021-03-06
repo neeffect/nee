@@ -2,25 +2,19 @@ package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.security.oauth.GoogleOpenIdTest.Companion.sampleGoogleToken
 import dev.neeffect.nee.effects.time.HasteTimeProvider
-import dev.neeffect.nee.effects.time.TimeProvider
-import dev.neeffect.nee.security.User
-import dev.neeffect.nee.security.UserRole
-import dev.neeffect.nee.security.oauth.GoogleOpenId
-import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.Signer
 import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.hmac.HMACSigner
 import io.fusionauth.jwt.rsa.RSAVerifier
-import io.fusionauth.security.DefaultCryptoProvider
 import io.haste.Haste
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 import io.vavr.collection.HashMap
 import io.vavr.control.Try
 import io.vavr.kotlin.list
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 
 internal class JwtEncoderTest : DescribeSpec({
@@ -91,6 +85,7 @@ internal class JwtEncoderTest : DescribeSpec({
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDM1NzkxMjMsImlhdCI6MTYwMzU3ODEyMywiaXNzIjoibmVla3QgdGFrZWUiLCJzdWIiOiJ0ZXN0IHN1YmplY3QiLCJyb2xlcyI6ImFkbWluLG5pb25pbyJ9.Gf9vlhBncjndb0fG91vfT8Ah0xAq7jKq_r0dDJC-4bo"
         const val wrongEncodedJwt =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDM2NzkxMjMsImlhdCI6MTYwMzU3ODEyMywiaXNzIjoibmVla3QgdGFrZWUiLCJzdWIiOiJ0ZXN0IHN1YmplY3QiLCJyb2xlcyI6ImFkbWluLG5pb25pbyJ9.Gf9vlhBncjndb0fG91vfT8Ah0xAq7jKq_r0dDJC-4bo"
+
         object GoogleKeys {
             const val googlePublicKey1 = """
             -----BEGIN CERTIFICATE----- MIIDJjCCAg6gAwIBAgIIF3cBaNBmfgUwDQYJKoZIhvcNAQEFBQAwNjE0MDIGA1UE AxMrZmVkZXJhdGVkLXNpZ25vbi5zeXN0ZW0uZ3NlcnZpY2VhY2NvdW50LmNvbTAe Fw0yMDEwMzEwNDI5NDVaFw0yMDExMTYxNjQ0NDVaMDYxNDAyBgNVBAMTK2ZlZGVy YXRlZC1zaWdub24uc3lzdGVtLmdzZXJ2aWNlYWNjb3VudC5jb20wggEiMA0GCSqG SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDj8inD/LNXc4HV9LieCecfZxEPLt1lME/x MRqomIgse97c/Zno1KBOv11ssJReM76nC3q390yzahU8N+kzwj7XSD1w76Bw8DlB PNMpweid53QH2nyPMQS9IMGV6PWofT5KAkyihCtslceNq0XhOIA5MIVP7JHA9txq vRBiG9RY1XnbGMS+PjIOeYrjbLzX0tjsfL4aTOTLiJX2aN/qoQWaXFONJ2rG5CjR jrxgclksZLHetCY3Ni3RdjxKjdoYpfP+/iYweRmXraZAbHlT/zQuYH7ePpaMgleK UmaPWlsxToKnqxaMD2lOADEXksPPGmVemNBqzfe+wnmfXGyYbGmjAgMBAAGjODA2 MAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoGCCsG AQUFBwMCMA0GCSqGSIb3DQEBBQUAA4IBAQC/S0gXu/ExGJsJjZhCcsl75dt97g+i xN6txB+PjqCxFNh7UXJzQbHdRXWzLGtYzE1ZObmDtq7YDi022/Hf4xXf/6ls4Szc ShD7Nad+IXTdmX1lLiY4e+JLhHZ0H0gNhpZUpUAr7KzySgcfufxTH6N1FMtaCDOk f13ulQMCkThTTXzG7eQU2EuHnOMZJ/ttQ7O+XqhrlZT+tBdxKxmO6phZggRWWIh4 zh/9H8a9+RcQc8MKQP1L/WEob42Q383OWUBuoKVveZXyDnIaz5EOqMIIILTAPXBO basHfZtHjuH/Cjx2LWBLrl8tzasKPnYpl7NWWtT6/lH54L92uoyO4l66 -----END CERTIFICATE-----

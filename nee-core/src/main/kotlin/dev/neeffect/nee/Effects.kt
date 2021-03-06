@@ -1,9 +1,8 @@
 package dev.neeffect.nee
 
-import io.vavr.control.Either
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.merge
-import java.lang.IllegalStateException
+import io.vavr.control.Either
 
 /**
  * An effect, or maybe aspect :-)
@@ -41,7 +40,7 @@ infix fun <R1, E1, R2 : R1, E2> Effect<R2, E2>.then(otherEffect: Effect<R1, E1>)
 infix fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.with(otherEffect: Effect<R1, E1>) =
     Effects.combine(otherEffect, this).handleError { error: Either<E1, E2> ->
         error.map { it as E1 }.merge()
-}
+    }
 
 operator fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.plus(otherEffect: Effect<R1, E1>) =
     this.with(otherEffect)
@@ -99,7 +98,7 @@ class NoEffect<R, E> : Effect<R, E> {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun <R,E> noEffect() = NoEffect.get<R,E>()
+inline fun <R, E> noEffect() = NoEffect.get<R, E>()
 
 class HandleErrorEffect<R, E, E1>(
     private val innerEffect: Effect<R, E>,
@@ -116,7 +115,7 @@ fun <R, E> Effect<R, E>.anyError(): Effect<R, Any> = HandleErrorEffect(this) {
     foldErrors(it as Any)
 }
 
-//TODO no  test
+//TODO tests
 private fun foldErrors(e: Any): Any =
     when (e) {
         is Either<*, *> -> {

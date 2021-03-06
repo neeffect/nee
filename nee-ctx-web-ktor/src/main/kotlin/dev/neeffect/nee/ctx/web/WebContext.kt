@@ -4,7 +4,6 @@ import dev.neeffect.nee.ANee
 import dev.neeffect.nee.ctx.web.util.RenderHelper
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.async.AsyncEnvWrapper
-import dev.neeffect.nee.effects.async.AsyncStack
 import dev.neeffect.nee.effects.async.AsyncSupport
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
 import dev.neeffect.nee.effects.monitoring.TraceProvider
@@ -14,20 +13,9 @@ import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.effects.tx.TxConnection
 import dev.neeffect.nee.effects.tx.TxProvider
 import dev.neeffect.nee.effects.utils.Logging
-import dev.neeffect.nee.effects.utils.logger
-import dev.neeffect.nee.effects.utils.merge
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import io.ktor.application.ApplicationCall
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.ByteArrayContent
-import io.ktor.http.content.OutgoingContent
-import io.ktor.http.content.TextContent
-import io.ktor.request.receiveParameters
-import io.ktor.response.respond
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 
 
 data class WebContext<R, G : TxProvider<R, G>>(
@@ -39,17 +27,16 @@ data class WebContext<R, G : TxProvider<R, G>>(
     private val traceProvider: TraceProvider<*>,
     private val timeProvider: TimeProvider,
     private val applicationCall: ApplicationCall,
-    private val asyncEnv : AsyncEnvWrapper<WebContext<R, G>> = AsyncEnvWrapper()
+    private val asyncEnv: AsyncEnvWrapper<WebContext<R, G>> = AsyncEnvWrapper()
 ) : TxProvider<R, WebContext<R, G>>,
     SecurityProvider<User, UserRole> by securityProvider,
     ExecutionContextProvider by executionContextProvider,
     TraceProvider<WebContext<R, G>>,
     TimeProvider by timeProvider,
     Logging,
-    AsyncSupport<WebContext<R, G>> by asyncEnv{
+    AsyncSupport<WebContext<R, G>> by asyncEnv {
 
     private val renderHelper = RenderHelper(contextProvider.jacksonMapper(), errorHandler)
-
 
 
     override fun getTrace(): TraceResource = traceProvider.getTrace()
@@ -65,15 +52,15 @@ data class WebContext<R, G : TxProvider<R, G>>(
         this.copy(jdbcProvider = jdbcProvider.setConnectionState(newState))
 
 
-    suspend fun serveText(businessFunction: ANee<WebContext<R, G>,String>) =
+    suspend fun serveText(businessFunction: ANee<WebContext<R, G>, String>) =
         businessFunction.perform(this).let { result ->
             renderHelper.serveText(applicationCall, result)
         }
 
     suspend fun <E, A> serveMessage(msg: Out<E, A>): Unit =
-            renderHelper.serveMessage(applicationCall, msg)
+        renderHelper.serveMessage(applicationCall, msg)
 
-    suspend fun  serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
+    suspend fun serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
         serveMessage(businessFunction.perform(this))
 
 

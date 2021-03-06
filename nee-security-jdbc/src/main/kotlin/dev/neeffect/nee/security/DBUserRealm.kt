@@ -1,14 +1,15 @@
 package dev.neeffect.nee.security
 
-import io.vavr.collection.List
-import io.vavr.control.Option
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
 import dev.neeffect.nee.security.DBUserRealm.Companion.uuidByteSize
+import io.vavr.collection.List
+import io.vavr.control.Option
 import java.nio.ByteBuffer
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.util.UUID
+import java.util.*
+import kotlin.collections.contentEquals
 
 /**
  * Security realm with classic User and Roles tables.
@@ -30,7 +31,7 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
         userLogin: String,
         password: CharArray,
         jdbcConnection: Connection
-    ): Option<User>  =
+    ): Option<User> =
         statement.run {
             setString(1, userLogin)
             val r = executeQuery().use { resultSet ->
@@ -43,7 +44,6 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
             }
             r
         }
-
 
 
     private fun checkDBRow(

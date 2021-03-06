@@ -9,10 +9,10 @@ class MutableInMemLogger : Logger<MutableInMemLogger>, LogsProvider {
     private val internal = AtomicReference(SimpleBufferedLogger())
 
     override fun log(entry: LogEntry): MutableInMemLogger =
-        internal.updateAndGet{it.log(entry)}.let { this }
+        internal.updateAndGet { it.log(entry) }.let { this }
 
-    override fun getLogs() : Seq<LogMessage> = internal.get().getLogs()
+    override fun getLogs(): Seq<LogMessage> = internal.get().getLogs()
 
-    override fun getReport(): LogsReport  = logsAnalyzer.processLogs(internal.get().getLogs())
+    override fun getReport(): LogsReport = logsAnalyzer.processLogs(internal.get().getLogs())
 
 }

@@ -1,9 +1,7 @@
-import org.gradle.kotlin.dsl.`kotlin-dsl`
-
 repositories {
-   jcenter()
+    jcenter()
 }
 
 plugins {
-   `kotlin-dsl`
+    `kotlin-dsl`
 }

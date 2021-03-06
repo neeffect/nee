@@ -17,21 +17,15 @@ import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.json.Mapper
 import io.fusionauth.jwt.rsa.RSAVerifier
 import io.ktor.client.request.forms.submitForm
-import io.ktor.client.request.header
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
 import io.vavr.control.Option
 import io.vavr.control.Try
-import io.vavr.kotlin.list
-import io.vavr.kotlin.none
 import io.vavr.kotlin.option
 import io.vavr.kotlin.toVavrList
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
-import java.lang.IllegalStateException
 import java.net.URL
 import java.security.interfaces.RSAPublicKey
 import java.util.concurrent.CompletableFuture
@@ -39,7 +33,7 @@ import java.util.concurrent.CompletableFuture
 interface OauthProvider {
     fun generateApiCall(redirect: String): String
 
-    fun verifyOauthToken(code: String, redirectUri: String, state:String): Nee<Any, SecurityErrorType, OauthResponse>
+    fun verifyOauthToken(code: String, redirectUri: String, state: String): Nee<Any, SecurityErrorType, OauthResponse>
 }
 
 class GoogleOpenId<USER, ROLE>(
@@ -60,7 +54,7 @@ class GoogleOpenId<USER, ROLE>(
             oauthConfigModule.randomGenerator.nextFloat().toString()
         )
 
-    override fun verifyOauthToken(code: String, redirectUri: String, state:String) =
+    override fun verifyOauthToken(code: String, redirectUri: String, state: String) =
         Nee.constWithError(NoEffect<Any, SecurityErrorType>()) { _ ->
 
             Out.Companion.fromFuture(

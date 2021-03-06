@@ -1,6 +1,6 @@
 name: Java CI
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -8,13 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-    - name: Build with Gradle
-      run: ./cibuild.sh ${{ secrets.CODACY_COVERAGE_TOKEN }}
+      - uses: actions/checkout@v1
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build with Gradle
+        run: ./cibuild.sh ${{ secrets.CODACY_COVERAGE_TOKEN }}
   buildNewJava: # jacoco 0.8.6 does not work with java 15
     runs-on: ubuntu-latest
     steps:

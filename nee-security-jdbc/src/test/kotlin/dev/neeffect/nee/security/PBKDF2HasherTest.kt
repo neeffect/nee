@@ -10,7 +10,7 @@ class PBKDF2HasherTest : DescribeSpec({
         describe("password with some salt") {
             val salt = ByteArray(16) { 0xCA.toByte() }
             val password = "very secret"
-            val hash  = hasher.hashPassword(password.toCharArray(), salt)
+            val hash = hasher.hashPassword(password.toCharArray(), salt)
             it("hashes to expected value") {
                 BigInteger(1, hash).toString(16) shouldBe "bb70b13aa04c8e21cbaaa54903cb030b"
             }

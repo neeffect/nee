@@ -23,7 +23,6 @@ import io.ktor.util.pipeline.PipelineContext
 import io.vavr.control.Either
 import io.vavr.control.Try
 import io.vavr.kotlin.option
-import kotlinx.coroutines.Dispatchers
 
 class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
 
@@ -46,7 +45,7 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
             }
             post("/loginUser/{provider}") {
 
-                val loginData  = call.receive<OauthLoginData>()
+                val loginData = call.receive<OauthLoginData>()
                 val result = extractProvider().map { provider ->
                     oauthService.login(loginData.code, loginData.state, loginData.redirectUri, provider)
                         .perform(Unit)
@@ -76,4 +75,5 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
 data class OauthLoginData(
     val code: String,
     val state: String,
-    val redirectUri:String)
+    val redirectUri: String
+)

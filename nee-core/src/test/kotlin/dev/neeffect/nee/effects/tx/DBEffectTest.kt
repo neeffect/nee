@@ -1,12 +1,12 @@
 package dev.neeffect.nee.effects.tx
 
+import dev.neeffect.nee.Nee
+import dev.neeffect.nee.effects.test.get
+import dev.neeffect.nee.effects.test.getLeft
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.beInstanceOf
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import dev.neeffect.nee.Nee
-import dev.neeffect.nee.effects.test.get
-import dev.neeffect.nee.effects.test.getLeft
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
@@ -61,8 +61,8 @@ class DBEffectTest : BehaviorSpec({
             val effReqNew = TxEffect<DBLike, DBLikeProvider>(true)
             val extractTxLevel = { _: Int ->
                 Nee.with(effReqNew) { r ->
-                        val connection = r.conn as DBConnection
-                        connection.level
+                    val connection = r.conn as DBConnection
+                    connection.level
                 }
             }
             val monad = simpleAction.flatMap(extractTxLevel)
@@ -112,20 +112,20 @@ class DBEffectTest : BehaviorSpec({
 }) {
     companion object {
         internal val function1 = { db: DBLikeProvider ->
-                val resource = db.getConnection().getResource()
-                val result = resource.query("SELECT * FROM all1")
-                result.map {
-                    Integer.parseInt(it)
-                }.get()
+            val resource = db.getConnection().getResource()
+            val result = resource.query("SELECT * FROM all1")
+            result.map {
+                Integer.parseInt(it)
+            }.get()
         }
 
         internal val functionWithFailQuery = { db: DBLikeProvider ->
-                val resource = db.getConnection().getResource()
-                resource.raiseExceptionOnNext()
-                val result = resource.query("SELECT * FROM all1")
-                result.map {
-                    Integer.parseInt(it)
-                }.get()
+            val resource = db.getConnection().getResource()
+            resource.raiseExceptionOnNext()
+            val result = resource.query("SELECT * FROM all1")
+            result.map {
+                Integer.parseInt(it)
+            }.get()
         }
         internal val function2 = { orig: Int ->
             { db: DBLikeProvider ->

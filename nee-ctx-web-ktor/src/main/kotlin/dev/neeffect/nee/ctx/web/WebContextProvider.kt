@@ -3,24 +3,8 @@ package dev.neeffect.nee.ctx.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.neeffect.nee.Effect
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.ByteArrayContent
-import io.ktor.request.header
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.route
-import io.vavr.collection.List
-import io.vavr.jackson.datatype.VavrModule
-import io.vavr.kotlin.option
-import io.vavr.kotlin.toVavrList
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.NoEffect
-import dev.neeffect.nee.andThen
-import dev.neeffect.nee.anyError
 import dev.neeffect.nee.effects.async.AsyncEffect
 import dev.neeffect.nee.effects.async.ECProvider
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
@@ -47,18 +31,32 @@ import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRealm
 import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.with
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.ByteArrayContent
+import io.ktor.request.header
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.get
+import io.ktor.routing.route
+import io.vavr.collection.List
+import io.vavr.jackson.datatype.VavrModule
+import io.vavr.kotlin.option
+import io.vavr.kotlin.toVavrList
 import java.sql.Connection
 import java.util.concurrent.Executors
 
 class EffectsInstance<R, G : TxProvider<R, G>> {
 
-    val plainFx = PlainInstances<R,G>()
+    val plainFx = PlainInstances<R, G>()
 
-    val trace: TraceEffect<WebContext<R, G>> = TraceEffect<WebContext<R,G>>("web")
+    val trace: TraceEffect<WebContext<R, G>> = TraceEffect<WebContext<R, G>>("web")
 
     val async: Effect<WebContext<R, G>, Nothing> = trace.with(AsyncEffect<WebContext<R, G>>())
 
-    val nop : Effect<WebContext<R,G>, Nothing> = NoEffect.get()
+    val nop: Effect<WebContext<R, G>, Nothing> = NoEffect.get()
 
     fun secured(roles: List<UserRole>): Effect<WebContext<R, G>, SecurityError> =
         trace.with(SecuredRunEffect<User, UserRole, WebContext<R, G>>(roles))
@@ -66,16 +64,16 @@ class EffectsInstance<R, G : TxProvider<R, G>> {
     val tx: Effect<WebContext<R, G>, TxError> =
         trace.with(async).with(plainFx.tx)
 
-    fun cache() = Cache<R,G>()
+    fun cache() = Cache<R, G>()
 
-    class PlainInstances<R,G : TxProvider<R, G>> {
-        val tx =  TxEffect<Connection, WebContext<R, G>>()
+    class PlainInstances<R, G : TxProvider<R, G>> {
+        val tx = TxEffect<Connection, WebContext<R, G>>()
     }
 
-    class Cache<R,G : TxProvider<R, G>> {
-        val internalCache= CaffeineProvider()
-        fun <P> of(p:P): CacheEffect<WebContext<R, G>, Nothing, P> =
-            CacheEffect<WebContext<R, G>, Nothing,P>(p,internalCache)
+    class Cache<R, G : TxProvider<R, G>> {
+        val internalCache = CaffeineProvider()
+        fun <P> of(p: P): CacheEffect<WebContext<R, G>, Nothing, P> =
+            CacheEffect<WebContext<R, G>, Nothing, P>(p, internalCache)
     }
 }
 
@@ -84,7 +82,7 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     fun fx(): EffectsInstance<R, G>
 
-    fun sysApi() : Route.() -> Unit = {
+    fun sysApi(): Route.() -> Unit = {
         route("/sys") {
             healthCheck()()
             userSecurityApi()()
@@ -100,20 +98,20 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     fun userSecurityApi(): Route.() -> Unit = {
         get("currentUser") {
-            val f = Nee.with(fx().secured(List.empty())){ ctx->
-                ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser()}
+            val f = Nee.with(fx().secured(List.empty())) { ctx ->
+                ctx.getSecurityContext().flatMap { secCtx -> secCtx.getCurrentUser() }
             }.anyError()
-            val z  = Nee.flatOut(f)
+            val z = Nee.flatOut(f)
             create(call).serveMessage(z)
         }
         get("hasRoles") {
-            val roles = (call.request.queryParameters["roles"] ?:"").split(",")
-                .toVavrList().map { UserRole(it)}
+            val roles = (call.request.queryParameters["roles"] ?: "").split(",")
+                .toVavrList().map { UserRole(it) }
 
             val f =
-                Nee.with(fx().secured(roles)){
-                "ok"
-            }.anyError()
+                Nee.with(fx().secured(roles)) {
+                    "ok"
+                }.anyError()
             create(call).serveMessage(f)
         }
     }
@@ -122,16 +120,16 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
 
     }
 
-    fun jacksonMapper() : ObjectMapper
+    fun jacksonMapper(): ObjectMapper
 
 
-    fun <E, A> async(func: () -> Nee<WebContext<R,G>, E, A>) : Nee<WebContext<R,G>, Any, A> =
+    fun <E, A> async(func: () -> Nee<WebContext<R, G>, E, A>): Nee<WebContext<R, G>, Any, A> =
         CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
             val z: Nee<WebContext<R, G>, Nothing, Nee<WebContext<R, G>, E, A>> = Nee.with(this.fx().async) { r ->
-                    r.getTrace().putNamedPlace(whereItIsDefined)
-                    func()
+                r.getTrace().putNamedPlace(whereItIsDefined)
+                func()
             }
-            z.anyError().flatMap { it.anyError()}
+            z.anyError().flatMap { it.anyError() }
         }
 }
 
@@ -150,16 +148,16 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
     abstract val executionContextProvider: ExecutionContextProvider
 
 
-        override fun create(call: ApplicationCall) = WebContext(
-            txProvider,
-            authProvider(call),
-            executionContextProvider,
-            errorHandler,
-            this,
-            traceProvider,
-            timeProvider,
-            call
-        )
+    override fun create(call: ApplicationCall) = WebContext(
+        txProvider,
+        authProvider(call),
+        executionContextProvider,
+        errorHandler,
+        this,
+        traceProvider,
+        timeProvider,
+        call
+    )
 
     override fun jacksonMapper(): ObjectMapper = jacksonMapper
 
@@ -167,16 +165,18 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
         MutableInMemLogger()
     }
 
-    open val timeProvider:TimeProvider by lazy {
+    open val timeProvider: TimeProvider by lazy {
         HasteTimeProvider()
     }
 
-    open val traceResource : TraceResource by lazy {
-        TraceResource("web",
-            logger)
+    open val traceResource: TraceResource by lazy {
+        TraceResource(
+            "web",
+            logger
+        )
     }
 
-    open  val traceProvider: TraceProvider<*> by lazy {
+    open val traceProvider: TraceProvider<*> by lazy {
         SimpleTraceProvider(traceResource)
     }
 
@@ -187,19 +187,23 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
     override fun monitoringApi(): Route.() -> Unit = {
         get("logs") {
             val bytes = jacksonMapper().writeValueAsBytes(logger.getLogs())
-            call.respond(ByteArrayContent(
-                bytes = bytes,
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.OK
-            ))
+            call.respond(
+                ByteArrayContent(
+                    bytes = bytes,
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.OK
+                )
+            )
         }
         get("report") {
             val bytes = jacksonMapper().writeValueAsBytes(logger.getReport())
-            call.respond(ByteArrayContent(
-                bytes = bytes,
-                contentType = ContentType.Application.Json,
-                status = HttpStatusCode.OK
-            ))
+            call.respond(
+                ByteArrayContent(
+                    bytes = bytes,
+                    contentType = ContentType.Application.Json,
+                    status = HttpStatusCode.OK
+                )
+            )
         }
     }
 }

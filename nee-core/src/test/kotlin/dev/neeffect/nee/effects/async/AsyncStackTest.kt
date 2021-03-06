@@ -9,20 +9,20 @@ internal class AsyncStackTest : DescribeSpec({
         val env = MyEnv(1)
         it("executes action on cleanup") {
             val dirty = stack.onClose { env ->
-                env.copy( test = env.test + 7)
+                env.copy(test = env.test + 7)
             }
             val cleaned = dirty.cleanUp(env)
-            cleaned.second.test shouldBe  8
+            cleaned.second.test shouldBe 8
         }
         it("executes 2 actions on cleanup") {
             val dirty = stack.onClose { env ->
-                env.copy( test = env.test + 7)
+                env.copy(test = env.test + 7)
             }.onClose { env ->
-                env.copy( test = env.test + 11)
+                env.copy(test = env.test + 11)
             }
             val cleaned = dirty.cleanUp(env)
 
-            cleaned.second.test shouldBe  19
+            cleaned.second.test shouldBe 19
         }
     }
 }) {

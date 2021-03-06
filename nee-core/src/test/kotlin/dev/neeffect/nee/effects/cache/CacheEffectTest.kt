@@ -1,18 +1,19 @@
 package dev.neeffect.nee.effects.cache
 
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.effects.test.get
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 
 internal class CacheEffectTest : BehaviorSpec({
     Given("cache effect and naive implementation") {
         val cacheProvider = NaiveCacheProvider()
-        val cache = {p:Int ->CacheEffect<Env, Nothing, Int>(p,cacheProvider)}
+        val cache = { p: Int -> CacheEffect<Env, Nothing, Int>(p, cacheProvider) }
         When("function called twice using same param and different env") {
-            fun businessFunction(p:Int) =
+            fun businessFunction(p: Int) =
                 Nee.with(
-                    cache(p), ::returnEnvIgnoringParam)
+                    cache(p), ::returnEnvIgnoringParam
+                )
 
             val x1 = businessFunction(1).perform(env = Env.SomeValue)
             val x2 = businessFunction(1).perform(env = Env.OtherValue)
@@ -24,9 +25,10 @@ internal class CacheEffectTest : BehaviorSpec({
             }
         }
         When("function called twice using different params and env") {
-            fun businessFunction(p:Int) =
+            fun businessFunction(p: Int) =
                 Nee.with(
-                    cache(p), ::returnEnvIgnoringParam)
+                    cache(p), ::returnEnvIgnoringParam
+                )
 
             val x2 = businessFunction(1).perform(env = Env.SomeValue).flatMap { _ ->
                 businessFunction(2).perform(env = Env.OtherValue)
@@ -38,9 +40,9 @@ internal class CacheEffectTest : BehaviorSpec({
     }
 })
 
-fun returnEnvIgnoringParam(env:Env) =  env
+fun returnEnvIgnoringParam(env: Env) = env
 
 sealed class Env {
     object SomeValue : Env()
-    object OtherValue: Env()
+    object OtherValue : Env()
 }

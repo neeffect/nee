@@ -41,16 +41,16 @@ signing {
 }
 
 val javadocJar2 by tasks.creating(Jar::class) {
-   group = JavaBasePlugin.DOCUMENTATION_GROUP
-   description = "Assembles java doc to jar"
-   archiveClassifier.set("javadoc")
-   from(javadoc)
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles java doc to jar"
+    archiveClassifier.set("javadoc")
+    from(javadoc)
 }
 val dokkaJar by tasks.creating(Jar::class) {
-   group = JavaBasePlugin.DOCUMENTATION_GROUP
-   description = "Assembles Kotlin docs with Dokka"
-   archiveClassifier.set("javadoc")
-   from(dokka)
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    archiveClassifier.set("javadoc")
+    from(dokka)
 }
 //val sourcesJar by tasks.creating(Jar::class) {
 //    group = JavaBasePlugin.DOCUMENTATION_GROUP
@@ -58,7 +58,6 @@ val dokkaJar by tasks.creating(Jar::class) {
 //    archiveClassifier.set("sources")
 //    from(the<SourceSetContainer>()["main"].allSource)
 //}
-
 
 
 publishing {

@@ -1,7 +1,6 @@
 package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.time.HasteTimeProvider
-import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import io.haste.Haste
@@ -39,7 +38,7 @@ internal class JwtUsersCoderTest : DescribeSpec({
             it("has role in object") {
                 decodedUser.get().roles shouldContain UserRole("reader")
             }
-            it ("has given role ") {
+            it("has given role ") {
                 jwtUsersCoder.hasRole(decodedUser.get(), UserRole("reader")) shouldBe true
             }
             it("has displayName") {

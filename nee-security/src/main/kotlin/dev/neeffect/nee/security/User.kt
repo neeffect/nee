@@ -1,14 +1,14 @@
 package dev.neeffect.nee.security
 
-import io.vavr.kotlin.toVavrList
 import io.vavr.collection.List
-import java.util.UUID
+import io.vavr.kotlin.toVavrList
+import java.util.*
 
 data class User(
     val id: UUID,
     val login: String,
     val roles: List<UserRole>,
-    val displayName:String = login
+    val displayName: String = login
 )
 
 data class UserRole(val roleName: String) {

@@ -2,13 +2,11 @@ package dev.neeffect.nee.effects.tx
 
 import io.vavr.control.Either
 import io.vavr.control.Option
-import dev.neeffect.nee.effects.async.AsyncStack
-import java.lang.IllegalStateException
 
 internal class DBLikeProvider(
-        val db: DBLike,
-        val conn: TxConnection<DBLike> = DBConnection(db)
-        ) :
+    val db: DBLike,
+    val conn: TxConnection<DBLike> = DBConnection(db)
+) :
     TxProvider<DBLike, DBLikeProvider> {
     override fun getConnection(): TxConnection<DBLike> =
         if (!db.connected()) {
@@ -28,16 +26,17 @@ internal class DBLikeProvider(
 }
 
 
-internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnection<DBLike> {
-    override fun hasTransaction(): Boolean  = false
+internal open class DBConnection(val db: DBLike, val level: Int = 0) : TxConnection<DBLike> {
+    override fun hasTransaction(): Boolean = false
 
 
     override fun begin(): Either<TxError, TxStarted<DBLike>> =
         if (db.begin()) {
-            Either.right(DBTxConnection(db, level  + 1))
+            Either.right(DBTxConnection(db, level + 1))
         } else {
             Either.left<TxError, TxStarted<DBLike>>(
-                TxErrorType.CannotStartTransaction)
+                TxErrorType.CannotStartTransaction
+            )
         }
 
     override fun continueTx(): Either<TxError, TxStarted<DBLike>> =
@@ -45,7 +44,8 @@ internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnecti
             Either.right(DBTxConnection(db, level))
         } else {
             Either.left<TxError, TxStarted<DBLike>>(
-                TxErrorType.CannotContinueTransaction)
+                TxErrorType.CannotContinueTransaction
+            )
         }
 
     override fun getResource(): DBLike = db
@@ -55,7 +55,7 @@ internal open class DBConnection(val db: DBLike, val level:Int = 0) : TxConnecti
     }
 }
 
-internal class DBTxConnection(db: DBLike, level:Int) : DBConnection(db, level), TxStarted<DBLike> {
+internal class DBTxConnection(db: DBLike, level: Int) : DBConnection(db, level), TxStarted<DBLike> {
 
     override fun hasTransaction(): Boolean = true
 

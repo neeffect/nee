@@ -16,11 +16,12 @@ import io.ktor.response.respond
 import io.vavr.control.Either
 import kotlinx.coroutines.future.await
 
-class  RenderHelper(
+class RenderHelper(
     val objectMapper: ObjectMapper,
-    val errorHandler: ErrorHandler) : Logging {
+    val errorHandler: ErrorHandler
+) : Logging {
 
-    suspend fun renderText(call: ApplicationCall, text:String) =
+    suspend fun renderText(call: ApplicationCall, text: String) =
         TextContent(
             text = text,
             contentType = ContentType.Text.Plain,
@@ -47,10 +48,11 @@ class  RenderHelper(
                 else -> TODO()
             }
         }.merge().let { content ->
-                 call.respond(content)
+            call.respond(content)
         }
 
-    suspend fun <E, A> serveMessage(applicationCall:ApplicationCall, msg: Out<E, A>): Unit =
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun <E, A> serveMessage(applicationCall: ApplicationCall, msg: Out<E, A>): Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
             val message = outcome.bimap<OutgoingContent, OutgoingContent>({ serveError(it as Any) }, { regularResult ->
                 val bytes = objectMapper.writeValueAsBytes(regularResult)
@@ -67,7 +69,8 @@ class  RenderHelper(
             }
         }
 
-    suspend fun <E> serveText(applicationCall:ApplicationCall, msg: Out<E, String>): Unit =
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun <E> serveText(applicationCall: ApplicationCall, msg: Out<E, String>): Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
             val message = outcome.bimap<OutgoingContent, OutgoingContent>({ serveError(it as Any) }, { regularResult ->
                 TextContent(

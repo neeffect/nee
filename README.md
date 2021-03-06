@@ -12,8 +12,7 @@ Help needed. If you want to contribute read [this](contributing.md)
 
 Provide kotlin friendly extensible effects using functional approach.
 
-It should enable (more or less) features known from aspect oriented frameworks, 
-but in a clean, non magic way. 
+It should enable (more or less) features known from aspect oriented frameworks, but in a clean, non magic way.
 
 Instead of writing:
 
@@ -33,6 +32,7 @@ class Hasiok {
 ```
 
 It is possible to have similar goodies rewriting code like below:
+
 ```kotlin
 class  Hasiok {
 
@@ -52,61 +52,57 @@ motto :
 ## Core concept
 
 ### Business function
+
 ```kotlin
 businessFunction  = (R) -> A 
 ```
 
 Where:
- **R**  - is an environment / infrastructure that a function may use
- **A** - is a result of the function
+**R**  - is an environment / infrastructure that a function may use
+**A** - is a result of the function
 
-Typically R would be something like a `database connection`.
-It might be `security context`. It can be all infrasture handlers that are relevant in a given context.
-
+Typically R would be something like a `database connection`. It might be `security context`. It can be all infrasture
+handlers that are relevant in a given context.
 
 ### Putting inside Nee Monad
 
-Next step is to put business function inside Nee monad.
-Nee monad wraps business logic with a given infrastructure.
+Next step is to put business function inside Nee monad. Nee monad wraps business logic with a given infrastructure.
 
 ```kotlin
 val functionOnRealHardware = Nee.pure(noEffect())(businessFunction)
 ```
 
-Now `functionOnRealHardware` is blessed with side effects and now is 
-wrapped inside Nee monad. It is enclosed in a monad to make it "composable"
-with other functions. Just think of performing multiple jdbc calls inside one transaction. 
+Now `functionOnRealHardware` is blessed with side effects and now is wrapped inside Nee monad. It is enclosed in a monad
+to make it "composable"
+with other functions. Just think of performing multiple jdbc calls inside one transaction.
 
 As for side effects we see `noEffect()`... meaning not a real one - but it is time to tell more about `Effects`
 
 ### Effects
 
 Effect is a special class that tells how to wrap businessFunction and run it providing infrastructure.
- 
+
  ```kotlin
  interface Effect<R, E> {
      fun <A, P> wrap(f: (R) -> A): (R) -> Pair<Out<E, A>, R>
   }
 ```
 
-In order to provide effect we need to implement interface as above.
-Where:
--   **R** as before is some environment object, think this is how to get DB connection from,
+In order to provide effect we need to implement interface as above. Where:
 
--   **E** is an error that might happen during application of effect 
-            (notice - it does not have to be Exception)
-            
-```Out``` is special object that represents the final result of calculation. 
-Think of it as:  `Out<E,T>  =~= Future<Either<E,T>>`
+- **R** as before is some environment object, think this is how to get DB connection from,
+
+- **E** is an error that might happen during application of effect
+  (notice - it does not have to be Exception)
+
+```Out``` is special object that represents the final result of calculation. Think of it
+as:  `Out<E,T>  =~= Future<Either<E,T>>`
 
 An effect:
-takes a function (businessFunction) which may rely on environment `R`, and on a  parameter `P`, 
-giving  some result `A`. 
+takes a function (businessFunction) which may rely on environment `R`, and on a parameter `P`, giving some result `A`.
 Then wraps it into a function that:
-    takes environment `R` (no change),
-      - runs some infrastructure code (effect),
-      - it also returns  changed environment `(R)` - think that maybe transaction is now started            
-
+takes environment `R` (no change), - runs some infrastructure code (effect), - it also returns changed environment `(R)`
+- think that maybe transaction is now started
 
 ### Monads
 
@@ -116,7 +112,8 @@ Then wraps it into a function that:
 
 #### Explanation
 
-If you want both methods to run inside same transaction: 
+If you want both methods to run inside same transaction:
+
 ```kotlin
  val f1 = Nee.constP(jdbcTransaction) {connection ->
             connection.prepareStatement()
@@ -133,6 +130,7 @@ val f = f1.flatMap { f2 }.perform(jdbcConfig)
 ```
 
 if you want to run in separate transactions:
+
 ```kotlin
  val f1 = Nee.with(jdbcTransaction) {connection ->
             connection.prepareStatement()
@@ -149,14 +147,15 @@ val f = f1.perform(jdbcConfig).flatMap { f2.perform(jdbcConfig)}
 ```
 
 ## TODO
+
 - Code:
 
-  - naming & long lambdas clean 
+    - naming & long lambdas clean
 - Ideas:
-  - R extract (for effect) - multiple db support
- 
-  - arrow?
+    - R extract (for effect) - multiple db support
+
+    - arrow?
 - Tests:
-  - real assertions
-  - unhappy paths
-  - load tests (sanity)
+    - real assertions
+    - unhappy paths
+    - load tests (sanity)

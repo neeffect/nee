@@ -1,6 +1,10 @@
 package dev.neeffect.nee.scratchpad
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 
 //public fun <T,R,E> CoroutineScope.eff(

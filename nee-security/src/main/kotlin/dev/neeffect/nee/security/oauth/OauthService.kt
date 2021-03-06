@@ -4,7 +4,6 @@ import dev.neeffect.nee.Nee
 import dev.neeffect.nee.NoEffect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.security.SecurityErrorType
-import dev.neeffect.nee.security.jwt.JWTError
 import dev.neeffect.nee.security.oauth.config.GithubOAuth
 import io.vavr.control.Either
 import io.vavr.control.Option

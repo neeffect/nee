@@ -1,12 +1,12 @@
 package dev.neeffect.nee.effects.jdbc
 
-import io.kotest.matchers.shouldBe
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.sql.Connection
-import java.sql.ResultSet
 import io.vavr.collection.List
 import io.vavr.control.Option
+import java.sql.Connection
+import java.sql.ResultSet
 
 class JDBCConnectionTest : DescribeSpec({
     describe("jdbc connection") {

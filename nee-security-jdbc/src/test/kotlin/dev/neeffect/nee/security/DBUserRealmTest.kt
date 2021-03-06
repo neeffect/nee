@@ -1,16 +1,13 @@
 package dev.neeffect.nee.security
 
-import io.kotest.matchers.should
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.DescribeSpec
-import java.sql.Connection
-import java.util.*
-import io.vavr.collection.List
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.vavr.collection.List
 
 class DBUserRealmTest : DescribeSpec({
     describe("dbuser realm") {
-        dev.neeffect.nee.security.test.TestDB().initializeDb().use {testDb ->
+        dev.neeffect.nee.security.test.TestDB().initializeDb().use { testDb ->
             val jdbcProvider = JDBCProvider(testDb.connection)
             val userRealm = DBUserRealm(jdbcProvider)
             describe("db with a single user") {
@@ -27,6 +24,4 @@ class DBUserRealmTest : DescribeSpec({
             }
         }
     }
-}) {
-
-}
+})

@@ -11,11 +11,11 @@ class OauthConfigLoderTest : DescribeSpec({
 
         val confFolder = Paths.get(OauthConfigLoderTest::class.java.getResource("/conf").toURI())
         val configLoader = OauthConfigLoder(confFolder)
-        it ("should load jwtConf" ) {
+        it("should load jwtConf") {
             val jwt = configLoader.loadJwtConfig()
             jwt.get().issuer shouldBe "test"
         }
-        it ("should load oauthConf" ) {
+        it("should load oauthConf") {
             val oauth = configLoader.loadOauthConfig()
             oauth.get().getClientSecret(OauthProviderName.Google) shouldBe "googleClientSecret"
         }

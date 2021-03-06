@@ -1,8 +1,5 @@
 package dev.neeffect.nee.effects.async
 
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.DescribeSpec
-import io.vavr.control.Either
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.anyError
@@ -14,6 +11,9 @@ import dev.neeffect.nee.effects.tx.TxConnection
 import dev.neeffect.nee.effects.tx.TxEffect
 import dev.neeffect.nee.effects.tx.TxProvider
 import io.kotest.assertions.assertSoftly
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.vavr.control.Either
 
 internal class AsyncTxTest : DescribeSpec({
     describe("combined effect") {
@@ -70,7 +70,7 @@ internal class AsyncTxTest : DescribeSpec({
             val r1 = result.getAny()
             assertSoftly {
                 r1 shouldBe Either.right<Any, String>("is trx+is trx+is trx")
-                db.transactionLevel() shouldBe  0
+                db.transactionLevel() shouldBe 0
             }
         }
     }

@@ -1,15 +1,14 @@
 package dev.neeffect.nee.ctx.web
 
+import dev.neeffect.nee.effects.security.SecurityErrorType
+import dev.neeffect.nee.security.InMemoryUserRealm
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import io.vavr.control.Option.none
 import io.vavr.control.Option.some
-import dev.neeffect.nee.ctx.web.BasicAuthProvider
-import dev.neeffect.nee.effects.security.SecurityErrorType
-import dev.neeffect.nee.security.InMemoryUserRealm
-import io.kotest.matchers.types.shouldBeTypeOf
 
 internal class BasicAuthProviderTest : DescribeSpec({
     describe("basic auth") {
@@ -38,7 +37,7 @@ internal class BasicAuthProviderTest : DescribeSpec({
             it("should not find user") {
                 provider.getSecurityContext()
                     .toFuture().get().get()
-                    .getCurrentUser().toFuture().get().swap().get() shouldBe(SecurityErrorType.UnknownUser)
+                    .getCurrentUser().toFuture().get().swap().get() shouldBe (SecurityErrorType.UnknownUser)
             }
             it("should have no roles") {
                 provider.getSecurityContext()

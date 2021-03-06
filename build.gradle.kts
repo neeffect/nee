@@ -19,7 +19,7 @@ plugins {
     //`kotlin-dsl` //TODO - read about it
     id("jacoco")
     id("maven-publish")
-   // id("java-library")//  - not needed probably
+    // id("java-library")//  - not needed probably
     signing
     id("org.jetbrains.dokka") version "0.10.1"
     id("com.bmuschko.nexus") version "2.3.1"
@@ -101,7 +101,6 @@ subprojects {
 
 
 tasks.register<JacocoReport>("generateMergedReport") {
-    //dependsOn(subprojects.test)
     dependsOn(subprojects.map { it.getTasksByName("test", false) })
     additionalSourceDirs.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
     sourceDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))

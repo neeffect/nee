@@ -1,15 +1,13 @@
 package dev.neeffect.nee.effects.async
 
-import io.vavr.concurrent.Future
-import io.vavr.concurrent.Promise
-import io.vavr.control.Either
-import io.vavr.control.Option
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
-import java.lang.Exception
-import java.lang.RuntimeException
+import io.vavr.concurrent.Future
+import io.vavr.concurrent.Promise
+import io.vavr.control.Either
+import io.vavr.control.Option
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
 
@@ -56,7 +54,7 @@ object NoGoExecutor : Executor {
 }
  */
 
-class ExecutorExecutionContext(private val executor: Executor) : ExecutionContext,Logging {
+class ExecutorExecutionContext(private val executor: Executor) : ExecutionContext, Logging {
     @Suppress("TooGenericExceptionCaught")
     override fun <T> execute(f: () -> T): Future<T> =
         Promise.make<T>(InPlaceExecutor).let { promise ->
@@ -65,11 +63,11 @@ class ExecutorExecutionContext(private val executor: Executor) : ExecutionContex
                 try {
                     val result = f()
                     promise.success(result)
-                } catch (e:Exception) {
+                } catch (e: Exception) {
                     //NOTEST
                     promise.failure(e)
-                } catch (e:Throwable) {
-                    logger().error("Unhandled throwable in executor",e)
+                } catch (e: Throwable) {
+                    logger().error("Unhandled throwable in executor", e)
                     promise.failure(e)
                 }
             }
@@ -98,7 +96,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
 ) : Effect<R, Nothing>, Logging {
 
     @Suppress("TooGenericExceptionCaught")
-    override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> =
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<Nothing, A>, R> =
         { r: R ->
             val asyncNmb = asyncCounter.getAndIncrement()
 
@@ -112,9 +110,8 @@ class AsyncEffect<R : ExecutionContextProvider>(
                         f(r)
                     } catch (e: Throwable) {
                         logger().error("error in async handling", e)
-                        throw RuntimeException(e)
-                    }
-                    finally {
+                        throw e
+                    } finally {
                         logger().debug("done async ($asyncNmb)")
                     }
                 }
@@ -126,6 +123,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
                 })
             }, r)
         }
+
     companion object {
         private val asyncCounter = AtomicLong()
 

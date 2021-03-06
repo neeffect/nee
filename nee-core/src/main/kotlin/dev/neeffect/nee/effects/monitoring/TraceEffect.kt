@@ -1,14 +1,14 @@
 package dev.neeffect.nee.effects.monitoring
 
-import io.vavr.collection.List
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
+import io.vavr.collection.List
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
-    override fun <A> wrap(f: (R) -> A): (R) -> Pair< Out<Nothing, A>, R> = { r: R ->
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<Nothing, A>, R> = { r: R ->
         val entry = r.getTrace().begin(tracerName)
         val traced = r.setTrace(entry.first)
         Pair(run {
@@ -42,7 +42,7 @@ class TraceResource(
             Pair(
                 TraceResource(
                     this.resName,
-                    logger.log(traceEntry.toLogEntry(traceEntry.time,EntryType.Begin)),
+                    logger.log(traceEntry.toLogEntry(traceEntry.time, EntryType.Begin)),
                     this.nanoTime,
                     traces.prepend(traceEntry)
                 ), traceEntry
@@ -63,8 +63,10 @@ class TraceResource(
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun putGuessedPlace(placeName: CodeLocation, f: Any) =
         this.traces.headOption().forEach {
-            it.codeLocation.compareAndSet(null,
-                placeName.copy(customInfo = f.toString()))
+            it.codeLocation.compareAndSet(
+                null,
+                placeName.copy(customInfo = f.toString())
+            )
         }
 
     @Suppress("NOTHING_TO_INLINE")
@@ -113,11 +115,12 @@ object CodeNameFinder {
         } ?: CodeLocation()
 
     private fun codePointName(st: StackTraceElement) =
-        CodeLocation(className = st.className,
+        CodeLocation(
+            className = st.className,
             functionName = st.methodName,
             fileName = st.fileName,
-            lineNumber =  st.lineNumber)
-
+            lineNumber = st.lineNumber
+        )
 
 
     private fun calcCost(index: Int, suggestedStackPosition: Int, element: StackTraceElement) =
@@ -147,7 +150,7 @@ data class TraceEntry(
 ) {
     fun getCodeLocation() = codeLocation.get() ?: CodeLocation()
 
-    internal fun toLogEntry(newTime : Long = time, message: EntryType) =
+    internal fun toLogEntry(newTime: Long = time, message: EntryType) =
         LogEntry(tracerName, uuid, newTime, getCodeLocation(), message)
 }
 
@@ -160,20 +163,20 @@ data class LogEntry(
 )
 
 
-
 data class CodeLocation(
     val functionName: String? = null,
-    val className: String?= null,
-    val fileName: String?= null,
-    val lineNumber: Int?= null,
-    val customInfo: String?= null) {
-    override fun toString()  =
+    val className: String? = null,
+    val fileName: String? = null,
+    val lineNumber: Int? = null,
+    val customInfo: String? = null
+) {
+    override fun toString() =
         "${className()}->${functionName()}#${location()}#${customInfo()}"
 
-    private fun className() = className?:"?"
-    private fun functionName() = functionName?:"?"
-    private fun customInfo() : String = customInfo ?: ""
-    private fun location() = (fileName ?: "?") + "@" + (lineNumber?.toString()?: "?")
+    private fun className() = className ?: "?"
+    private fun functionName() = functionName ?: "?"
+    private fun customInfo(): String = customInfo ?: ""
+    private fun location() = (fileName ?: "?") + "@" + (lineNumber?.toString() ?: "?")
 }
 
 
