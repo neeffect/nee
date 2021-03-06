@@ -1,10 +1,5 @@
 package dev.neeffect.nee.ctx.web
 
-import io.ktor.request.ApplicationRequest
-import io.ktor.request.header
-import io.vavr.control.Option
-import io.vavr.control.Try
-import io.vavr.kotlin.option
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.Out.Companion.left
 import dev.neeffect.nee.effects.security.SecurityCtx
@@ -12,6 +7,11 @@ import dev.neeffect.nee.effects.security.SecurityError
 import dev.neeffect.nee.effects.security.SecurityErrorType
 import dev.neeffect.nee.effects.security.SecurityProvider
 import dev.neeffect.nee.security.UserRealm
+import io.ktor.request.ApplicationRequest
+import io.ktor.request.header
+import io.vavr.control.Option
+import io.vavr.control.Try
+import io.vavr.kotlin.option
 import java.nio.charset.Charset
 import java.util.*
 

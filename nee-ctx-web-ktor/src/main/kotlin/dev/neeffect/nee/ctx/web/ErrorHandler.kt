@@ -1,10 +1,10 @@
 package dev.neeffect.nee.ctx.web
 
+import dev.neeffect.nee.effects.security.SecurityError
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.OutgoingContent
 import io.ktor.http.content.TextContent
-import dev.neeffect.nee.effects.security.SecurityError
 
 typealias ErrorHandler = (Any) -> OutgoingContent
 

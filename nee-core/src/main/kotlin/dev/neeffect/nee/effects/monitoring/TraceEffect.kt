@@ -1,9 +1,9 @@
 package dev.neeffect.nee.effects.monitoring
 
-import io.vavr.collection.List
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
+import io.vavr.collection.List
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 

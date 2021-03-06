@@ -1,12 +1,12 @@
 package dev.neeffect.nee.effects.tx
 
-import io.vavr.control.Option
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.env.FlexibleEnv
 import dev.neeffect.nee.effects.env.ResourceId
 import dev.neeffect.nee.effects.env.with
 import dev.neeffect.nee.effects.tx.FlexTxProvider.Companion.txProviderResource
+import io.vavr.control.Option
 
 /**
  * Transaction (flexible env version).

@@ -1,8 +1,8 @@
 package dev.neeffect.nee.security
 
 import io.vavr.collection.HashMap
-import io.vavr.collection.Set
 import io.vavr.collection.HashSet
+import io.vavr.collection.Set
 import io.vavr.control.Option
 import io.vavr.control.Try
 import java.io.ByteArrayOutputStream

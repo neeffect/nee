@@ -1,13 +1,13 @@
 package dev.neeffect.nee.effects.async
 
-import io.kotest.matchers.shouldBe
+import dev.neeffect.nee.Nee
+import dev.neeffect.nee.effects.utils.ignoreR
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
 import io.vavr.collection.List
 import io.vavr.concurrent.Future
 import io.vavr.concurrent.Promise
 import io.vavr.control.Option
-import dev.neeffect.nee.Nee
-import dev.neeffect.nee.effects.utils.ignoreR
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference

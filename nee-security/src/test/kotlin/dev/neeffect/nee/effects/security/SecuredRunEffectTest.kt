@@ -1,9 +1,9 @@
 package dev.neeffect.nee.effects.security
 
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.BehaviorSpec
-import io.vavr.collection.List
 import dev.neeffect.nee.Nee
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
+import io.vavr.collection.List
 
 internal class SecuredRunEffectTest : BehaviorSpec({
 

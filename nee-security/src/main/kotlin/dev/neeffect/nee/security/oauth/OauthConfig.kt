@@ -1,9 +1,8 @@
 package dev.neeffect.nee.security.oauth
 
-import io.vavr.collection.Map
 import io.vavr.collection.HashMap
+import io.vavr.collection.Map
 import io.vavr.control.Option
-import java.lang.IllegalStateException
 
 
 data class OauthConfig(

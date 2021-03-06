@@ -1,15 +1,15 @@
 package dev.neeffect.nee.effects.monitoring
 
+import dev.neeffect.nee.Nee
+import dev.neeffect.nee.NoEffect
+import dev.neeffect.nee.effects.test.get
+import dev.neeffect.nee.effects.utils.ignoreR
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import io.vavr.collection.List
 import pl.outside.code.ExternalObject
-import dev.neeffect.nee.Nee
-import dev.neeffect.nee.NoEffect
-import dev.neeffect.nee.effects.test.get
-import dev.neeffect.nee.effects.utils.ignoreR
 import java.util.concurrent.atomic.AtomicLong
 
 internal class TraceEffectTest : BehaviorSpec({
@@ -96,12 +96,6 @@ internal class TraceEffectTest : BehaviorSpec({
         }
     }
 }) {
-    companion object {
-
-    }
-
-
-
     class StoringLogger(internal var entries:List<LogEntry> = List.empty()) : Logger<StoringLogger> {
         override fun log(entry: LogEntry): StoringLogger  {
             entries = entries.append(entry)

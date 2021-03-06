@@ -1,8 +1,8 @@
 package dev.neeffect.nee.effects.security
 
-import io.vavr.collection.List
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
+import io.vavr.collection.List
 
 interface SecurityCtx<USER, ROLE> {
     fun getCurrentUser(): Out<SecurityError, USER>

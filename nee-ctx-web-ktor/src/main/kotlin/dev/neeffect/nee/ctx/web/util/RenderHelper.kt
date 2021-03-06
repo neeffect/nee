@@ -50,6 +50,7 @@ class  RenderHelper(
                  call.respond(content)
         }
 
+    @Suppress("TooGenericExceptionCaught")
     suspend fun <E, A> serveMessage(applicationCall:ApplicationCall, msg: Out<E, A>): Unit =
         msg.toFuture().toCompletableFuture().await().let { outcome ->
             val message = outcome.bimap<OutgoingContent, OutgoingContent>({ serveError(it as Any) }, { regularResult ->

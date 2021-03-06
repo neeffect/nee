@@ -62,8 +62,13 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
         fun <R, E, A> pure(a: A): Nee<R, E, A> =
             FNEE<R, E, A>(
                 NoEffect.get(),
-                {_:R -> Out.right(a)}
+                { _: R -> Out.right(a) }
             )
+
+        /**
+         alias to pure
+         */
+        fun <R,E,A> success(a:A)  = pure<R,E,A>(a)
 
         /**
          * Same as pure, but adds tracing.
@@ -72,20 +77,21 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
             FNEE(effect, dev.neeffect.nee.effects.utils.constR(value))
 
         /**
-            from function - adds tracing.
+        from function - adds tracing.
          */
-        fun <R, E,  A> with(effect: Effect<R, E>, func: (R) ->A): Nee<R, E, A> =
+        fun <R, E, A> with(effect: Effect<R, E>, func: (R) -> A): Nee<R, E, A> =
             FNEE(effect, trace(func))
 
         fun <R, E, A, E1 : E> flatOut(f: Nee<R, E, Out<E1, A>>) = f.flatMap { value ->
-            FNEE(NoEffect()) { value.mapLeft { e -> e }  }
+            FNEE(NoEffect()) { value.mapLeft { e -> e } }
         }
+
         //TODO (is it needed?)
-        fun <R, E,  A> withError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E,  A> =
+        fun <R, E, A> withError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E, A> =
             FNEE(effect, func)
 
         fun <R, E, A> constWithError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E, A> =
-            FNEE(effect) { r: R ->  func(r)  }
+            FNEE(effect) { r: R -> func(r) }
     }
 }
 
@@ -106,6 +112,7 @@ internal class FNEE<R, E, A>(
     //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
     override fun <B> map(f: (A) -> B): Nee<R, E, B> =
         FNEE(effect) { r -> func(r).map(f) }
+
     /**
      *
      *

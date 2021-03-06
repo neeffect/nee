@@ -4,11 +4,9 @@ import dev.neeffect.nee.effects.time.HasteTimeProvider
 import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
-import dev.neeffect.nee.security.jwt.SimpleUserCoder
-import dev.neeffect.nee.security.jwt.JwtCoder
 import dev.neeffect.nee.security.jwt.JwtConfig
 import dev.neeffect.nee.security.jwt.JwtConfigurationModule
-import dev.neeffect.nee.security.jwt.JwtUsersCoder
+import dev.neeffect.nee.security.jwt.SimpleUserCoder
 import dev.neeffect.nee.security.jwt.UserCoder
 import dev.neeffect.nee.security.state.ServerVerifier
 import io.ktor.client.HttpClient

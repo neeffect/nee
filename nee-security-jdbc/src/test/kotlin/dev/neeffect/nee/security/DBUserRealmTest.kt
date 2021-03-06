@@ -1,12 +1,9 @@
 package dev.neeffect.nee.security
 
-import io.kotest.matchers.should
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.DescribeSpec
-import java.sql.Connection
-import java.util.*
-import io.vavr.collection.List
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.vavr.collection.List
 
 class DBUserRealmTest : DescribeSpec({
     describe("dbuser realm") {
@@ -27,6 +24,4 @@ class DBUserRealmTest : DescribeSpec({
             }
         }
     }
-}) {
-
-}
+})

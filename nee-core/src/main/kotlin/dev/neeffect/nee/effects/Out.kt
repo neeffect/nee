@@ -1,8 +1,8 @@
 package dev.neeffect.nee.effects
 
+import dev.neeffect.nee.effects.utils.merge
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
-import dev.neeffect.nee.effects.utils.merge
 
 
 /**

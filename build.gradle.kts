@@ -101,7 +101,6 @@ subprojects {
 
 
 tasks.register<JacocoReport>("generateMergedReport") {
-    //dependsOn(subprojects.test)
     dependsOn(subprojects.map { it.getTasksByName("test", false) })
     additionalSourceDirs.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))
     sourceDirectories.setFrom(files(subprojects.map { it.sourceSets.asMap["main"]?.allSource?.srcDirs }))

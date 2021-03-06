@@ -6,7 +6,6 @@ import dev.neeffect.nee.effects.security.SecurityError
 import dev.neeffect.nee.effects.security.SecurityErrorType
 import dev.neeffect.nee.effects.security.SecurityProvider
 import dev.neeffect.nee.effects.utils.merge
-import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.security.jwt.JwtConfigurationModule
 import dev.neeffect.nee.security.jwt.JwtUsersCoder
 import io.vavr.control.Option

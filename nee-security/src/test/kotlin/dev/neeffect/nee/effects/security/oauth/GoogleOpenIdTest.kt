@@ -36,7 +36,6 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
-import kotlin.collections.HashMap
 
 internal class GoogleOpenIdTest : DescribeSpec({
     describe("gooogle open id") {

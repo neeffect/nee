@@ -1,6 +1,5 @@
 package dev.neeffect.nee.ctx.web.support
 
-import io.ktor.application.ApplicationCall
 import dev.neeffect.nee.ctx.web.BaseWebContextProvider
 import dev.neeffect.nee.ctx.web.KtorThreadingModelTest
 import dev.neeffect.nee.effects.Out
@@ -15,6 +14,7 @@ import dev.neeffect.nee.effects.tx.TxProvider
 import dev.neeffect.nee.effects.utils.invalid
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
+import io.ktor.application.ApplicationCall
 import java.sql.Connection
 import java.util.concurrent.Executors
 
@@ -44,7 +44,4 @@ internal open class EmptyTestContextProvider {
     }
 }
 
-
-internal object EmptyTestContext : EmptyTestContextProvider() {
-
-}
+internal object EmptyTestContext : EmptyTestContextProvider()

@@ -1,9 +1,8 @@
 package dev.neeffect.nee.effects.tx
 
-import io.vavr.kotlin.toVavrList
 import io.vavr.collection.List
 import io.vavr.control.Option
-import java.lang.RuntimeException
+import io.vavr.kotlin.toVavrList
 
 internal class DBException(msg: String) : RuntimeException(msg)
 

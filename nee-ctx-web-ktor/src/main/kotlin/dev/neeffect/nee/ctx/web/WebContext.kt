@@ -4,7 +4,6 @@ import dev.neeffect.nee.ANee
 import dev.neeffect.nee.ctx.web.util.RenderHelper
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.async.AsyncEnvWrapper
-import dev.neeffect.nee.effects.async.AsyncStack
 import dev.neeffect.nee.effects.async.AsyncSupport
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
 import dev.neeffect.nee.effects.monitoring.TraceProvider
@@ -14,20 +13,9 @@ import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.effects.tx.TxConnection
 import dev.neeffect.nee.effects.tx.TxProvider
 import dev.neeffect.nee.effects.utils.Logging
-import dev.neeffect.nee.effects.utils.logger
-import dev.neeffect.nee.effects.utils.merge
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import io.ktor.application.ApplicationCall
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.content.ByteArrayContent
-import io.ktor.http.content.OutgoingContent
-import io.ktor.http.content.TextContent
-import io.ktor.request.receiveParameters
-import io.ktor.response.respond
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.runBlocking
 
 
 data class WebContext<R, G : TxProvider<R, G>>(
