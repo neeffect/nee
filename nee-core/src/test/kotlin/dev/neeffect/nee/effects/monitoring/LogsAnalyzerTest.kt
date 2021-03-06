@@ -1,9 +1,8 @@
 package dev.neeffect.nee.effects.monitoring
 
+import dev.neeffect.nee.toUUID
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.vavr.collection.Seq
-import dev.neeffect.nee.toUUID
 import io.vavr.collection.List
 
 internal class LogsAnalyzerTest: DescribeSpec ({

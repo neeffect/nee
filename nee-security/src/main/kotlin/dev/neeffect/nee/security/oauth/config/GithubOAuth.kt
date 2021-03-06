@@ -21,7 +21,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
-import io.vavr.control.Option
 import io.vavr.kotlin.option
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future

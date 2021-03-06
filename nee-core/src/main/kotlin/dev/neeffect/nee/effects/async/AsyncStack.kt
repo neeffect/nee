@@ -1,10 +1,10 @@
 package dev.neeffect.nee.effects.async
 
-import io.vavr.collection.List
-import io.vavr.collection.Seq
 import dev.neeffect.nee.effects.env.ResourceId
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
+import io.vavr.collection.List
+import io.vavr.collection.Seq
 import java.util.concurrent.atomic.AtomicReference
 
 /**

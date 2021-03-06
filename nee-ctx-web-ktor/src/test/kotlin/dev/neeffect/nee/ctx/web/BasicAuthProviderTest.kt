@@ -1,15 +1,14 @@
 package dev.neeffect.nee.ctx.web
 
+import dev.neeffect.nee.effects.security.SecurityErrorType
+import dev.neeffect.nee.security.InMemoryUserRealm
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.be
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import io.vavr.control.Option.none
 import io.vavr.control.Option.some
-import dev.neeffect.nee.ctx.web.BasicAuthProvider
-import dev.neeffect.nee.effects.security.SecurityErrorType
-import dev.neeffect.nee.security.InMemoryUserRealm
-import io.kotest.matchers.types.shouldBeTypeOf
 
 internal class BasicAuthProviderTest : DescribeSpec({
     describe("basic auth") {

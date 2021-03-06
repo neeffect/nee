@@ -1,7 +1,6 @@
 package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.time.HasteTimeProvider
-import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import io.haste.Haste

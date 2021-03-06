@@ -1,11 +1,11 @@
 package dev.neeffect.nee.effects.tx
 
-import io.kotest.matchers.be
-import io.kotest.matchers.should
-import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.andThen
 import dev.neeffect.nee.effects.test.get
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.be
+import io.kotest.matchers.should
 
 class DeeperEffectTest  : BehaviorSpec ({
     Given("TestEffect") {

@@ -7,7 +7,6 @@ import dev.neeffect.nee.effects.time.TimeProvider
 import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.security.jwt.JwtConfig
-import dev.neeffect.nee.security.oauth.GoogleOpenId
 import dev.neeffect.nee.security.oauth.OauthConfig
 import dev.neeffect.nee.security.oauth.OauthProviderName
 import dev.neeffect.nee.security.oauth.OauthService

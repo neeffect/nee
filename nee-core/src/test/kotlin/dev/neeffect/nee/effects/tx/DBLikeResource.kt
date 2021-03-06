@@ -2,8 +2,6 @@ package dev.neeffect.nee.effects.tx
 
 import io.vavr.control.Either
 import io.vavr.control.Option
-import dev.neeffect.nee.effects.async.AsyncStack
-import java.lang.IllegalStateException
 
 internal class DBLikeProvider(
         val db: DBLike,

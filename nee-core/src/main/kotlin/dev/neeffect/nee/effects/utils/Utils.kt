@@ -1,11 +1,11 @@
 package dev.neeffect.nee.effects.utils
 
-import io.vavr.Tuple2
-import io.vavr.Tuple3
-import io.vavr.control.Either
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import dev.neeffect.nee.effects.monitoring.TraceProvider
+import io.vavr.Tuple2
+import io.vavr.Tuple3
+import io.vavr.control.Either
 
 internal fun <R, E, A> trace(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->

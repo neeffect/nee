@@ -1,9 +1,9 @@
 package dev.neeffect.nee.effects.cache
 
-import io.kotest.matchers.shouldBe
-import io.kotest.core.spec.style.BehaviorSpec
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.effects.test.get
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.shouldBe
 
 internal class CacheEffectTest : BehaviorSpec({
     Given("cache effect and naive implementation") {

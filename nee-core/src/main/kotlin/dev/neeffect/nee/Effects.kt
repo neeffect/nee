@@ -1,9 +1,8 @@
 package dev.neeffect.nee
 
-import io.vavr.control.Either
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.merge
-import java.lang.IllegalStateException
+import io.vavr.control.Either
 
 /**
  * An effect, or maybe aspect :-)

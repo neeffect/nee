@@ -2,25 +2,19 @@ package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.security.oauth.GoogleOpenIdTest.Companion.sampleGoogleToken
 import dev.neeffect.nee.effects.time.HasteTimeProvider
-import dev.neeffect.nee.effects.time.TimeProvider
-import dev.neeffect.nee.security.User
-import dev.neeffect.nee.security.UserRole
-import dev.neeffect.nee.security.oauth.GoogleOpenId
-import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.Signer
 import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.hmac.HMACSigner
 import io.fusionauth.jwt.rsa.RSAVerifier
-import io.fusionauth.security.DefaultCryptoProvider
 import io.haste.Haste
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneId
 import io.vavr.collection.HashMap
 import io.vavr.control.Try
 import io.vavr.kotlin.list
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 
 
 internal class JwtEncoderTest : DescribeSpec({

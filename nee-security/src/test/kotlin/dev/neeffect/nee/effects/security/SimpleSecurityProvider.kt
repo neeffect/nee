@@ -1,7 +1,7 @@
 package dev.neeffect.nee.effects.security
 
-import io.vavr.collection.List
 import dev.neeffect.nee.effects.Out
+import io.vavr.collection.List
 
 class SimpleSecurityProvider<USER, ROLE>(user: USER, roles: List<ROLE>) : SecurityProvider<USER, ROLE> {
     private val ctx = SimpleSecurityContext(user, roles)

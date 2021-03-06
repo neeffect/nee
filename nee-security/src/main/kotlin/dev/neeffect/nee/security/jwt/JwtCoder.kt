@@ -2,19 +2,15 @@ package dev.neeffect.nee.security.jwt
 
 import dev.neeffect.nee.effects.time.HasteTimeProvider
 import dev.neeffect.nee.effects.time.TimeProvider
-import dev.neeffect.nee.security.User
-import io.fusionauth.jwt.JWTDecoder
 import io.fusionauth.jwt.Signer
 import io.fusionauth.jwt.Verifier
 import io.fusionauth.jwt.domain.JWT
 import io.fusionauth.jwt.hmac.HMACSigner
 import io.fusionauth.jwt.hmac.HMACVerifier
-import java.time.Clock
-import io.vavr.collection.Map
 import io.vavr.collection.HashMap
+import io.vavr.collection.Map
 import io.vavr.control.Either
 import io.vavr.control.Try
-import io.vavr.kotlin.toVavrMap
 
 data class JwtConfig(
     val expirationInSeconds: Long = 1000,

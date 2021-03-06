@@ -1,8 +1,8 @@
 package dev.neeffect.nee.security
 
-import io.vavr.kotlin.toVavrList
 import io.vavr.collection.List
-import java.util.UUID
+import io.vavr.kotlin.toVavrList
+import java.util.*
 
 data class User(
     val id: UUID,

@@ -1,15 +1,13 @@
 package dev.neeffect.nee.effects.async
 
-import io.vavr.concurrent.Future
-import io.vavr.concurrent.Promise
-import io.vavr.control.Either
-import io.vavr.control.Option
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
-import java.lang.Exception
-import java.lang.RuntimeException
+import io.vavr.concurrent.Future
+import io.vavr.concurrent.Promise
+import io.vavr.control.Either
+import io.vavr.control.Option
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
 
