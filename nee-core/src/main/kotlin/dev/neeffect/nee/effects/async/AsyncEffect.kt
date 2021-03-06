@@ -112,7 +112,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
                         f(r)
                     } catch (e: Throwable) {
                         logger().error("error in async handling", e)
-                        throw RuntimeException(e)
+                        throw e
                     }
                     finally {
                         logger().debug("done async ($asyncNmb)")
