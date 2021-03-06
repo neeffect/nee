@@ -29,7 +29,9 @@ sealed class Out<E, out A> {
 
         this.mapLeft(fe).map { a -> Out.right<E1, B>(fa(a)) }.let { result: Out<Out<E1, B>, Out<E1, B>> ->
             when (result) {
-                is FutureOut -> FutureOut(result.futureVal.map { Either.right<E1, Out<E1, B>>(it.merge()) }).flatMap { it }
+                is FutureOut -> FutureOut(result.futureVal.map {
+                    Either.right<E1, Out<E1, B>>(it.merge())
+                }).flatMap { it }
                 is InstantOut -> result.v.merge()
             }
         }

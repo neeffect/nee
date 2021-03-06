@@ -8,6 +8,7 @@ import com.sksamuel.hoplite.PropertySource
 import com.sksamuel.hoplite.decoder.Decoder
 import com.sksamuel.hoplite.decoder.MapDecoder
 import com.sksamuel.hoplite.fp.Validated
+import com.sksamuel.hoplite.yaml.YamlParser
 import dev.neeffect.nee.security.UserRole
 import dev.neeffect.nee.security.jwt.JwtConfig
 import dev.neeffect.nee.security.oauth.OauthConfig
@@ -26,7 +27,9 @@ import kotlin.reflect.full.starProjectedType
 typealias RolesMapper = (OauthProviderName, OauthResponse) -> Seq<UserRole>
 
 class OauthConfigLoder(private val configPath: Path) {
+    val yamlParser = YamlParser()
     fun loadOauthConfig(): Either<ConfigError, OauthConfig> = ConfigLoader.Builder()
+        .addFileExtensionMapping("yml", yamlParser)
         .addSource(PropertySource.path(configPath.resolve("oauthConfig.yml")))
         .addDecoder(VMapDecoder())
         .build()
@@ -39,6 +42,7 @@ class OauthConfigLoder(private val configPath: Path) {
 
     fun loadJwtConfig(): Either<ConfigError, JwtConfig> =
         ConfigLoader.Builder()
+            .addFileExtensionMapping("yml", yamlParser)
             .addSource(PropertySource.path(configPath.resolve("jwtConfig.yml")))
             .build()
             .loadConfig<JwtConfig>()
