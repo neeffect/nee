@@ -14,39 +14,41 @@ class JwtAuthProvider<USER, ROLE>(
     private val headerVal: Option<String>,
     private val jwtConf: JwtConfigurationModule<USER, ROLE>
 ) : SecurityProvider<USER, ROLE> {
-    override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>>  =
+    override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USER, ROLE>> =
         headerVal.map { fullHeader ->
             if (fullHeader.startsWith(bearerAuthHeaderPrefix)) {
                 val jwtToken = fullHeader.substring(bearerAuthHeaderPrefix.length)
-                jwtConf.jwtCoder.decodeJwt(jwtToken).map {jwt ->
-                    jwtConf.jwtUsersCoder.decodeUser(jwt).map {user ->
-                        Out.right<SecurityError,SecurityCtx<USER,ROLE>>(
-                            TokenSecurityContext(user, jwtConf.jwtUsersCoder) )
-                    }.getOrElse  {
+                jwtConf.jwtCoder.decodeJwt(jwtToken).map { jwt ->
+                    jwtConf.jwtUsersCoder.decodeUser(jwt).map { user ->
+                        Out.right<SecurityError, SecurityCtx<USER, ROLE>>(
+                            TokenSecurityContext(user, jwtConf.jwtUsersCoder)
+                        )
+                    }.getOrElse {
                         Out.left(SecurityErrorType.MalformedCredentials("user not decoded from $jwt"))
                     }
                 }.mapLeft { jwtError ->
-                    Out.left<SecurityError,SecurityCtx<USER,ROLE>>(
+                    Out.left<SecurityError, SecurityCtx<USER, ROLE>>(
                         SecurityErrorType.MalformedCredentials(jwtError.toString())
                     )
                 }.merge()
             } else {
-                Out.left<SecurityError,SecurityCtx<USER,ROLE>>(
+                Out.left<SecurityError, SecurityCtx<USER, ROLE>>(
                     SecurityErrorType.MalformedCredentials("wrong header $fullHeader")
                 )
             }
 
 
         }.getOrElse {
-            Out.left<SecurityError,SecurityCtx<USER,ROLE>>(SecurityErrorType.NoSecurityCtx)
+            Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx)
         }
+
     companion object {
         const val bearerAuthHeaderPrefix = "Bearer "
     }
 }
 
-class TokenSecurityContext<USER, ROLE>(val user:USER, val jwtCoder:JwtUsersCoder<USER, ROLE>)
-        : SecurityCtx<USER, ROLE> {
+class TokenSecurityContext<USER, ROLE>(val user: USER, val jwtCoder: JwtUsersCoder<USER, ROLE>) :
+    SecurityCtx<USER, ROLE> {
     override fun getCurrentUser(): Out<SecurityError, USER> =
         Out.right(user)
 

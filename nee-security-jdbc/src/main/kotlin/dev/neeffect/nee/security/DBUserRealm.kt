@@ -31,7 +31,7 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
         userLogin: String,
         password: CharArray,
         jdbcConnection: Connection
-    ): Option<User>  =
+    ): Option<User> =
         statement.run {
             setString(1, userLogin)
             val r = executeQuery().use { resultSet ->
@@ -44,7 +44,6 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
             }
             r
         }
-
 
 
     private fun checkDBRow(

@@ -45,15 +45,19 @@ internal class BaseWebContextSysPathsTest : DescribeSpec({
             resp.status() shouldBe (HttpStatusCode.Unauthorized)
         }
         it("returns role check ok") {
-            val status = engine.handleRequest(HttpMethod.Get,
-                "/sys/hasRoles?roles=admin") {
+            val status = engine.handleRequest(
+                HttpMethod.Get,
+                "/sys/hasRoles?roles=admin"
+            ) {
                 this.addHeader(HttpHeaders.Authorization, "testUser admin")
             }.response.status()
             status shouldBe (HttpStatusCode.OK)
         }
         it("returns role check failed") {
-            val status = engine.handleRequest(HttpMethod.Get,
-                "/sys/hasRoles?roles=admin") {
+            val status = engine.handleRequest(
+                HttpMethod.Get,
+                "/sys/hasRoles?roles=admin"
+            ) {
                 this.addHeader(HttpHeaders.Authorization, "testUser ygrek")
             }.response.status()
             status shouldBe (HttpStatusCode.Unauthorized)

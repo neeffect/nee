@@ -1,29 +1,28 @@
-
 object Libs {
     const val kotlin_version = "1.4.30"
 
     object H2 {
         private const val version = "1.4.200"
-        const val  h2 = "com.h2database:h2:$version"
+        const val h2 = "com.h2database:h2:$version"
     }
 
     object Kotlin {
-        const val kotlinStdLib =  "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+        const val kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
         private const val coroutinesVersion = "1.4.2"
-        const val  coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
+        const val coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
         const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     }
 
     object Ktor {
         private const val version = "1.5.1"
         const val serverCore = "io.ktor:ktor-server-core:$version"
-        const val clientCore =  "io.ktor:ktor-client-core:$version"
-        const val clientMockJvm =  "io.ktor:ktor-client-mock-jvm:$version"
-        const val clientJsonJvm =  "io.ktor:ktor-client-json-jvm:$version"
-        const val clientJson =  "io.ktor:ktor-client-json:$version"
-        const val clientJackson =  "io.ktor:ktor-client-jackson:$version"
-        const val jackson =  "io.ktor:ktor-jackson:$version"
-        const val serverTestHost ="io.ktor:ktor-server-test-host:$version"
+        const val clientCore = "io.ktor:ktor-client-core:$version"
+        const val clientMockJvm = "io.ktor:ktor-client-mock-jvm:$version"
+        const val clientJsonJvm = "io.ktor:ktor-client-json-jvm:$version"
+        const val clientJson = "io.ktor:ktor-client-json:$version"
+        const val clientJackson = "io.ktor:ktor-client-jackson:$version"
+        const val jackson = "io.ktor:ktor-jackson:$version"
+        const val serverTestHost = "io.ktor:ktor-server-test-host:$version"
     }
 
     object Vavr {
@@ -45,13 +44,13 @@ object Libs {
 
     object Kotest {
         private const val version = "4.4.1"
-        const val runnerJunit5Jvm ="io.kotest:kotest-runner-junit5-jvm:$version"
+        const val runnerJunit5Jvm = "io.kotest:kotest-runner-junit5-jvm:$version"
         const val assertionsCoreJvm = "io.kotest:kotest-assertions-core-jvm:$version"
     }
 
     object Slf4J {
         private const val version = "1.7.30"
-        const val api =  "org.slf4j:slf4j-api:$version"
+        const val api = "org.slf4j:slf4j-api:$version"
     }
 
 

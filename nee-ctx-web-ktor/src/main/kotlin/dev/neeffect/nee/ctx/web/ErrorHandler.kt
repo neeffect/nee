@@ -10,17 +10,17 @@ typealias ErrorHandler = (Any) -> OutgoingContent
 
 object DefaultErrorHandler : ErrorHandler {
     override fun invoke(error: Any): OutgoingContent =
-        when (error ) {
+        when (error) {
             is SecurityError -> TextContent(
                 text = "security error: ${error.secError()}",
                 contentType = ContentType.Text.Plain,
                 status = HttpStatusCode.Unauthorized
             )
-                else ->  TextContent(
-                    text = "error: $error",
-                    contentType = ContentType.Text.Plain,
-                    status = HttpStatusCode.InternalServerError
-                )
+            else -> TextContent(
+                text = "error: $error",
+                contentType = ContentType.Text.Plain,
+                status = HttpStatusCode.InternalServerError
+            )
         }
 
 }

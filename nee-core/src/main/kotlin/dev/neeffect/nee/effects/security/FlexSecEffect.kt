@@ -16,8 +16,8 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) :
             roles
         )
 
-    override fun <A> wrap(f: (FlexibleEnv) ->  A):
-                (FlexibleEnv) -> Pair< Out<SecurityError, A>, FlexibleEnv> = { env: FlexibleEnv ->
+    override fun <A> wrap(f: (FlexibleEnv) -> A):
+                (FlexibleEnv) -> Pair<Out<SecurityError, A>, FlexibleEnv> = { env: FlexibleEnv ->
         val secProviderChance = env.get(ResourceId(SecurityProvider::class))
         secProviderChance.map { _ ->
             val flexSecProvider =
@@ -28,11 +28,13 @@ class FlexSecEffect<USER, ROLE>(private val roles: List<ROLE>) :
             val wrapped = internal.wrap(internalF)
             val result = wrapped(flexSecProvider)
             Pair(result.first, env.set(ResourceId(SecurityProvider::class), result.second))
-        }.getOrElse(Pair(
-            Out.left<SecurityError, A>(
-                SecurityErrorType.NoSecurityCtx
+        }.getOrElse(
+            Pair(
+                Out.left<SecurityError, A>(
+                    SecurityErrorType.NoSecurityCtx
+                ), env
             )
-        , env))
+        )
     }
 }
 

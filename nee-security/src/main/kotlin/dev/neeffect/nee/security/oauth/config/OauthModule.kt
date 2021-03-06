@@ -13,8 +13,8 @@ import io.vavr.collection.Seq
 class OauthModule(
     oathConfig: OauthConfig,
     jwtConfig: JwtConfig,
-    private val rolesMapper:RolesMapper
-)  : SimpleOauthConfigModule(oathConfig, jwtConfig) {
+    private val rolesMapper: RolesMapper
+) : SimpleOauthConfigModule(oathConfig, jwtConfig) {
 
     val oauthService by lazy {
         OauthService(this)

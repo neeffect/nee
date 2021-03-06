@@ -20,7 +20,7 @@ dependencies {
     implementation(Libs.Ktor.jackson)
 
 
-    testImplementation(project (":nee-test:nee-security-jdbc-test"))
+    testImplementation(project(":nee-test:nee-security-jdbc-test"))
     testImplementation(Libs.Ktor.serverTestHost)
     testImplementation(Libs.Ktor.clientJackson)
     testImplementation(Libs.Ktor.clientMockJvm)

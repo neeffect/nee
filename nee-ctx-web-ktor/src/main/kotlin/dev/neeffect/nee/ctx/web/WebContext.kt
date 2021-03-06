@@ -27,17 +27,16 @@ data class WebContext<R, G : TxProvider<R, G>>(
     private val traceProvider: TraceProvider<*>,
     private val timeProvider: TimeProvider,
     private val applicationCall: ApplicationCall,
-    private val asyncEnv : AsyncEnvWrapper<WebContext<R, G>> = AsyncEnvWrapper()
+    private val asyncEnv: AsyncEnvWrapper<WebContext<R, G>> = AsyncEnvWrapper()
 ) : TxProvider<R, WebContext<R, G>>,
     SecurityProvider<User, UserRole> by securityProvider,
     ExecutionContextProvider by executionContextProvider,
     TraceProvider<WebContext<R, G>>,
     TimeProvider by timeProvider,
     Logging,
-    AsyncSupport<WebContext<R, G>> by asyncEnv{
+    AsyncSupport<WebContext<R, G>> by asyncEnv {
 
     private val renderHelper = RenderHelper(contextProvider.jacksonMapper(), errorHandler)
-
 
 
     override fun getTrace(): TraceResource = traceProvider.getTrace()
@@ -53,15 +52,15 @@ data class WebContext<R, G : TxProvider<R, G>>(
         this.copy(jdbcProvider = jdbcProvider.setConnectionState(newState))
 
 
-    suspend fun serveText(businessFunction: ANee<WebContext<R, G>,String>) =
+    suspend fun serveText(businessFunction: ANee<WebContext<R, G>, String>) =
         businessFunction.perform(this).let { result ->
             renderHelper.serveText(applicationCall, result)
         }
 
     suspend fun <E, A> serveMessage(msg: Out<E, A>): Unit =
-            renderHelper.serveMessage(applicationCall, msg)
+        renderHelper.serveMessage(applicationCall, msg)
 
-    suspend fun  serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
+    suspend fun serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
         serveMessage(businessFunction.perform(this))
 
 

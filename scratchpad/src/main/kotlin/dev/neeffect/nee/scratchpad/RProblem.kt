@@ -3,7 +3,7 @@ package dev.neeffect.nee.scratchpad
 interface A1<T : A1<T>> {
     fun get(): T
     fun getVal(): String
-    fun setVal(s: String): A1<T> = this.let {parent ->
+    fun setVal(s: String): A1<T> = this.let { parent ->
         object : A1<T> {
             override fun get(): T = parent.get()
             override fun getVal(): String = s

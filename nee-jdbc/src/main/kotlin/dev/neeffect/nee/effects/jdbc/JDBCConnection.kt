@@ -19,7 +19,8 @@ import java.sql.Savepoint
  */
 class JDBCConnection(
     private val connection: Connection,
-    private val close: Boolean = false ) : TxConnection<Connection>,
+    private val close: Boolean = false
+) : TxConnection<Connection>,
     Logging {
     override fun begin(): Either<TxError, TxStarted<Connection>> =
         if (hasTransaction()) {
@@ -80,33 +81,36 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
  * Provider of jdbc connection.
  */
 class JDBCProvider(
-    private  val connection: ConnectionWrapper,
-    private val close: Boolean = false) : TxProvider<Connection, JDBCProvider> {
+    private val connection: ConnectionWrapper,
+    private val close: Boolean = false
+) : TxProvider<Connection, JDBCProvider> {
     constructor(connection: Connection) : this(ConnectionWrapper.DirectConnection(connection))
 
-    constructor(cfg: JDBCConfig) : this ( Class.forName(cfg.driverClassName).let {
+    constructor(cfg: JDBCConfig) : this(Class.forName(cfg.driverClassName).let {
         val pool = ComboPooledDataSource()
         pool.user = cfg.user
-        pool.password =cfg.password
+        pool.password = cfg.password
         pool.jdbcUrl = cfg.url
         ConnectionWrapper.PooledConnection(pool)
     }, true)
-    override fun getConnection(): TxConnection<Connection>  =
+
+    override fun getConnection(): TxConnection<Connection> =
         JDBCConnection(connection.conn(), close)
+
     override fun setConnectionState(newState: TxConnection<Connection>): JDBCProvider =
         JDBCProvider(ConnectionWrapper.DirectConnection(newState.getResource()))
 }
 
 sealed class ConnectionWrapper {
 
-    abstract  fun conn() : Connection
+    abstract fun conn(): Connection
 
     data class DirectConnection(private val connection: Connection) : ConnectionWrapper() {
-        override fun conn(): Connection  = connection
+        override fun conn(): Connection = connection
     }
 
-    data class PooledConnection(private val pool : ComboPooledDataSource) : ConnectionWrapper() {
-        override fun conn(): java.sql.Connection  = pool.connection
+    data class PooledConnection(private val pool: ComboPooledDataSource) : ConnectionWrapper() {
+        override fun conn(): java.sql.Connection = pool.connection
     }
 }
 

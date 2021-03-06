@@ -23,7 +23,7 @@ internal class FlexTxEffectTest : BehaviorSpec({
     }
 }) {
     companion object {
-        val function1 = { env:FlexibleEnv ->
+        val function1 = { env: FlexibleEnv ->
             val resource = FlexTxProvider.connection<DBLike>(env)
             val result = resource.query("SELECT * FROM all1")
             result.map {

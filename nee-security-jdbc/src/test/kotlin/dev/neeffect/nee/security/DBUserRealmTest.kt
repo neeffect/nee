@@ -7,7 +7,7 @@ import io.vavr.collection.List
 
 class DBUserRealmTest : DescribeSpec({
     describe("dbuser realm") {
-        dev.neeffect.nee.security.test.TestDB().initializeDb().use {testDb ->
+        dev.neeffect.nee.security.test.TestDB().initializeDb().use { testDb ->
             val jdbcProvider = JDBCProvider(testDb.connection)
             val userRealm = DBUserRealm(jdbcProvider)
             describe("db with a single user") {

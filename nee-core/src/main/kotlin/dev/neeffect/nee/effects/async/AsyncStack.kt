@@ -83,7 +83,7 @@ internal class SthToClean<R>(val asyncClean: ActiveAsynStack<R>) {
 //                    val newStack = asyncClean.cleanUp(env)
 //                    async.setAsyncStack(stack, newStack.first)
 //                    newStack.second
-                     env
+                    env
                 } else {
                     val newStack = asyncClean.cleanUp(env)
                     async.setAsyncStack(stack, newStack.first)
@@ -123,7 +123,7 @@ sealed class AsyncStack<R>(val actions: Seq<AsyncClosingAction<R>> = List.empty(
         action.onClose(r)
     }
 
-    internal open fun dump():String = "AsyncStack[${actions.size()}]"
+    internal open fun dump(): String = "AsyncStack[${actions.size()}]"
 
     abstract fun cleanUp(env: R): Pair<AsyncStack<R>, R>
 
@@ -133,7 +133,7 @@ sealed class AsyncStack<R>(val actions: Seq<AsyncClosingAction<R>> = List.empty(
  * Empty registry.
  */
 class CleanAsyncStack<R> : AsyncStack<R>() {
-    override fun dump():String = "CleanAsyncStack[${actions.size()}]"
+    override fun dump(): String = "CleanAsyncStack[${actions.size()}]"
 
     override fun cleanUp(env: R): Pair<AsyncStack<R>, R> = Pair(this, env)
 
@@ -160,14 +160,14 @@ class ActiveAsynStack<R>(val parent: AsyncStack<R>, actions: Seq<AsyncClosingAct
     override fun cleanUp(env: R): Pair<AsyncStack<R>, R> = Pair(parent, performActions(env))
 
     override fun doOnCleanUp(action: AsyncClosingAction<R>): ActiveAsynStack<R> =
-            ActiveAsynStack(this.parent, actions.prepend(action)) //LESSON - prepend here is critical - do test
+        ActiveAsynStack(this.parent, actions.prepend(action)) //LESSON - prepend here is critical - do test
 
     fun closeAsync(env: R): Pair<AsyncStack<R>, R> =
         Pair(parent, performActions(env))
 
     override fun empty(): AsyncStack<R> = ActiveAsynStack(parent, List.empty())
 
-    override fun dump():String = "ActiveAsyncStack[${actions.size()}] parent{${parent.dump()}}"
+    override fun dump(): String = "ActiveAsyncStack[${actions.size()}] parent{${parent.dump()}}"
 }
 
 /**

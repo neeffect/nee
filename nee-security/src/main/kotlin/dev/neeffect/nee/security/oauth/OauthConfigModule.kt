@@ -45,15 +45,15 @@ abstract class OauthConfigModule<USER, ROLE>(
         }
     }
 
-    open val jwtConfigModule: JwtConfigurationModule<USER,ROLE> by lazy {
+    open val jwtConfigModule: JwtConfigurationModule<USER, ROLE> by lazy {
 
-       object : JwtConfigurationModule<USER,ROLE>(jwtConfig, baseTimeProvider) {
-           override val userCoder: UserCoder<USER, ROLE> = this@OauthConfigModule.userCoder
-       }
+        object : JwtConfigurationModule<USER, ROLE>(jwtConfig, baseTimeProvider) {
+            override val userCoder: UserCoder<USER, ROLE> = this@OauthConfigModule.userCoder
+        }
 
     }
 
-    abstract val userEncoder:(OauthProviderName, OauthResponse) -> USER
+    abstract val userEncoder: (OauthProviderName, OauthResponse) -> USER
 
     abstract val userRoles: (OauthProviderName, OauthResponse) -> Seq<ROLE>
 
@@ -67,19 +67,20 @@ open class SimpleOauthConfigModule(
     jwtConfig: JwtConfig
 ) : OauthConfigModule<User, UserRole>(config, jwtConfig) {
     override val userCoder: UserCoder<User, UserRole> = SimpleUserCoder()
-    override val userEncoder: (OauthProviderName, OauthResponse) -> User = {
-        provider, oauthResponse ->
+    override val userEncoder: (OauthProviderName, OauthResponse) -> User = { provider, oauthResponse ->
         val uuid = UUID(randomGenerator.nextLong(), randomGenerator.nextLong())
         val roles = userRoles(provider, oauthResponse)
 
-        User(uuid,
+        User(
+            uuid,
             "${provider.providerName}:${oauthResponse.subject}",
             roles.toList(),
-            oauthResponse.displayName.getOrElse(oauthResponse.subject))
+            oauthResponse.displayName.getOrElse(oauthResponse.subject)
+        )
     }
-    override val userRoles: (OauthProviderName, OauthResponse) -> Seq<UserRole> = { _, _->
+    override val userRoles: (OauthProviderName, OauthResponse) -> Seq<UserRole> = { _, _ ->
         list(oauthUser)
     }
 
-     val oauthUser = UserRole("oauthUser")
+    val oauthUser = UserRole("oauthUser")
 }
