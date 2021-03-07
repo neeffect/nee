@@ -85,30 +85,28 @@ sealed class TxErrorType : TxError {
 class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = false) : Effect<R, TxError>, Logging {
 
     @Suppress("TooGenericExceptionCaught")
-    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<TxError, A>, R> {
-        return { res: R ->
-            val txNumber = txCounter.getAndIncrement()
-            res.getConnection().let { connection ->
-                val continueOldTransaction = connection.hasTransaction() && !requiresNew
-                val tx = if (continueOldTransaction) {
-                    logger().debug("continuing Tx ($txNumber)")
-                    connection.continueTx()
-                } else {
-                    logger().debug("beginning Tx ($txNumber)")
-                    connection.begin()
+    override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<TxError, A>, R> = { res: R ->
+        val txNumber = txCounter.getAndIncrement()
+        res.getConnection().let { connection ->
+            val continueOldTransaction = connection.hasTransaction() && !requiresNew
+            val tx = if (continueOldTransaction) {
+                logger().debug("continuing Tx ($txNumber)")
+                connection.continueTx()
+            } else {
+                logger().debug("beginning Tx ($txNumber)")
+                connection.begin()
+            }
+            tx.map { startedTransaction ->
+                try {
+                    val newRes = res.setConnectionState(startedTransaction)
+                    doInTransaction(f, newRes, continueOldTransaction, startedTransaction, txNumber)
+                } catch (e: Exception) {
+                    handleTxException<A>(continueOldTransaction, connection, startedTransaction, e)
                 }
-                tx.map { startedTransaction ->
-                    try {
-                        val newRes = res.setConnectionState(startedTransaction)
-                        doInTransaction(f, newRes, continueOldTransaction, startedTransaction, txNumber)
-                    } catch (e: Exception) {
-                        handleTxException<A>(continueOldTransaction, connection, startedTransaction, e)
-                    }
-                }.map {
-                    Pair(it.first, res.setConnectionState(it.second))
-                }.getOrElseGet { error ->
-                    Pair(Out.left<TxError, A>(error), res)
-                }
+            }.map {
+                Pair(it.first, res.setConnectionState(it.second))
+            }.getOrElseGet { error ->
+                Pair(Out.left<TxError, A>(error), res)
             }
         }
     }

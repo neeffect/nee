@@ -22,15 +22,13 @@ class ServerVerifier(
     private val keyPair: KeyPair = generateKeyPair()
 ) {
 
-    fun generateRandomSignedState(): String {
-
-        return ByteArray(randomStateContentLength).let { rndArray ->
+    fun generateRandomSignedState(): String =
+        ByteArray(randomStateContentLength).let { rndArray ->
             rng.nextBytes(rndArray)
             val encoded = Base64.getEncoder().encodeToString(rndArray)
             val signature = signArray(rndArray)
             encoded + "@" + signature
         }
-    }
 
     fun verifySignedText(text: String) =
         text.split("@").let { splitted ->
@@ -40,13 +38,12 @@ class ServerVerifier(
             }
         }
 
-    private fun signArray(data: ByteArray): String {
-        val sig: Signature = Signature.getInstance("SHA1WithRSA")
-        sig.initSign(keyPair.private)
-        sig.update(data)
-        val signatureBytes: ByteArray = sig.sign()
-        return Base64.getEncoder().encodeToString(signatureBytes)
-    }
+    private fun signArray(data: ByteArray): String =
+        Signature.getInstance("SHA1WithRSA").let {sig ->
+            sig.initSign(keyPair.private)
+            sig.update(data)
+            Base64.getEncoder().encodeToString(sig.sign())
+        }
 
     private fun verifyText(base64Text: String, signature: String): Try<Boolean> = Try.of {
         val sig: Signature = Signature.getInstance("SHA1WithRSA")
