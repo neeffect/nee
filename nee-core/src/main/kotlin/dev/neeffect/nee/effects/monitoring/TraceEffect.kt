@@ -99,10 +99,8 @@ class TraceResource(
 
 object CodeNameFinder {
     @Suppress("NOTHING_TO_INLINE")
-    inline fun guessCodePlaceName(suggestedStackPosition: Int = 3): CodeLocation {
-        val stackTrace = Thread.currentThread().stackTrace
-        return findBestStackMatchingCodePlaceName(suggestedStackPosition, stackTrace)
-    }
+    inline fun guessCodePlaceName(suggestedStackPosition: Int = 3): CodeLocation =
+        findBestStackMatchingCodePlaceName(suggestedStackPosition, Thread.currentThread().stackTrace)
 
     fun findBestStackMatchingCodePlaceName(
         suggestedStackPosition: Int,
