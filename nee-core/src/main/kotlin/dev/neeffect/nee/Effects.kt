@@ -52,7 +52,7 @@ class Effects<R1, R2, E1, E2>(
 ) : Effect<R2, Either<E1, E2>>
         where R2 : R1 {
 
-    override fun <A> wrap(f: (R2) -> A): (R2) -> Pair<Out<Either<E1, E2>, A>, R2> {
+    override fun <A> wrap(f: (R2) -> A): (R2) -> Pair<Out<Either<E1, E2>, A>, R2> = run{
         @Suppress("UNCHECKED_CAST")
         val internalFunct = { r: R2 -> f(r) } as (R1) -> A
         val innerWrapped: (R1) -> Pair<Out<Either<E1, E2>, A>, R1> =
@@ -68,7 +68,8 @@ class Effects<R1, R2, E1, E2>(
         val outerWrapped: (R2) -> Pair<Out<Either<E1, E2>, Out<Either<E1, E2>, A>>, R2> = outer
             .handleError { error -> Either.right<E1, E2>(error) }
             .wrap(outerF)
-        return { r: R2 ->
+
+         val result =  { r: R2 ->
             val res = outerWrapped(r)
             val finalR = res.second
             //TODO - finalR or r?
@@ -77,6 +78,7 @@ class Effects<R1, R2, E1, E2>(
 
             Pair(x, finalR)
         }
+        result
     }
 
     companion object {
