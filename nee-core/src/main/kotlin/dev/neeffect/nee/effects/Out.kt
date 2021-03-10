@@ -4,7 +4,6 @@ import dev.neeffect.nee.effects.utils.merge
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
 
-
 /**
  * Outcome of business function.
  *
@@ -37,8 +36,8 @@ sealed class Out<E, out A> {
         }
 
     companion object {
-        fun <E, A> left(e: E): Out<E, A> = InstantOut(Either.left<E, A>(e));
-        fun <E, A> right(a: A): Out<E, A> = InstantOut(Either.right<E, A>(a));
+        fun <E, A> left(e: E): Out<E, A> = InstantOut(Either.left<E, A>(e))
+        fun <E, A> right(a: A): Out<E, A> = InstantOut(Either.right<E, A>(a))
 
         fun <E, A> fromFuture(future: Future<Either<E, A>>): Out<E, A> = FutureOut(future)
         fun <E, A> right(future: Future<A>): Out<E, A> = fromFuture(future.map { Either.right<E, A>(it) })
@@ -63,7 +62,6 @@ sealed class Out<E, out A> {
                 @Suppress("UNCHECKED_CAST")
                 this as Out<E, B>
             }.merge()
-
     }
 
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
@@ -88,8 +86,5 @@ sealed class Out<E, out A> {
                 }.mapLeft { e1 -> Future.successful(futureVal.executor(), Either.left<E, B>(e1)) }
                     .merge()
             })
-
-
     }
 }
-

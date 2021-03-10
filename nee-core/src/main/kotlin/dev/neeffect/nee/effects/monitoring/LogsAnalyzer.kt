@@ -5,7 +5,8 @@ import io.vavr.collection.List
 import io.vavr.collection.Map
 import io.vavr.collection.Seq
 import io.vavr.collection.Stream
-import java.util.*
+import java.util.UUID
+import kotlin.collections.fold
 
 class LogsAnalyzer {
     fun processLogs(logs: Seq<LogMessage>): LogsReport = logs.foldLeft(InvocationAccumulator()) { a, b ->
@@ -30,10 +31,7 @@ data class FunctionReport(
             this.totalTime + other.totalTime,
             this.errorsCount + other.errorsCount
         )
-
-
 }
-
 
 data class InvocationAccumulator(
     val starts: Map<UUID, LogEntry> = HashMap.empty(),
@@ -52,7 +50,6 @@ data class InvocationAccumulator(
             this.copy(reports = addReports(this.reports, errorInv))
         }
 
-
     private fun markEnd(logEntry: LogEntry): InvocationAccumulator =
         starts.get(logEntry.uuid).map { existingEntry ->
             addInvocation(existingEntry, logEntry)
@@ -63,7 +60,6 @@ data class InvocationAccumulator(
     private fun addInvocation(existingEntry: LogEntry, logEntry: LogEntry): InvocationAccumulator =
         makeReport(existingEntry, logEntry).let { invocationReport ->
             addReports(this.reports, invocationReport)
-
         }.let { reports ->
             this.copy(starts = starts.remove(existingEntry.uuid), reports = reports)
         }
@@ -81,6 +77,4 @@ data class InvocationAccumulator(
     }.iterator().fold(LogsReport()) { rep, b ->
         rep.copy(classes = rep.classes.append(ClassReport(b._1 ?: "???", b._2)))
     }
-
-
 }

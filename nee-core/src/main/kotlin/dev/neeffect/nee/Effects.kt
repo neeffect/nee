@@ -45,14 +45,13 @@ infix fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.with(otherEffect: Effect<R1,
 operator fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.plus(otherEffect: Effect<R1, E1>) =
     this.with(otherEffect)
 
-
 class Effects<R1, R2, E1, E2>(
     private val inner: Effect<R1, E1>,
     private val outer: Effect<R2, E2>
 ) : Effect<R2, Either<E1, E2>>
         where R2 : R1 {
 
-    override fun <A> wrap(f: (R2) -> A): (R2) -> Pair<Out<Either<E1, E2>, A>, R2> = run{
+    override fun <A> wrap(f: (R2) -> A): (R2) -> Pair<Out<Either<E1, E2>, A>, R2> = run {
         @Suppress("UNCHECKED_CAST")
         val internalFunct = { r: R2 -> f(r) } as (R1) -> A
         val innerWrapped: (R1) -> Pair<Out<Either<E1, E2>, A>, R1> =
@@ -64,15 +63,14 @@ class Effects<R1, R2, E1, E2>(
                 z.first
             }
 
-
         val outerWrapped: (R2) -> Pair<Out<Either<E1, E2>, Out<Either<E1, E2>, A>>, R2> = outer
             .handleError { error -> Either.right<E1, E2>(error) }
             .wrap(outerF)
 
-         val result =  { r: R2 ->
+        val result = { r: R2 ->
             val res = outerWrapped(r)
             val finalR = res.second
-            //TODO - finalR or r?
+            // TODO - finalR or r?
             val called = res.first
             val x: Out<Either<E1, E2>, A> = called.flatMap { it }
 
@@ -112,12 +110,11 @@ class HandleErrorEffect<R, E, E1>(
     }
 }
 
-
 fun <R, E> Effect<R, E>.anyError(): Effect<R, Any> = HandleErrorEffect(this) {
     foldErrors(it as Any)
 }
 
-//TODO tests
+// TODO tests
 private fun foldErrors(e: Any): Any =
     when (e) {
         is Either<*, *> -> {

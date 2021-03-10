@@ -14,5 +14,4 @@ class MutableInMemLogger : Logger<MutableInMemLogger>, LogsProvider {
     override fun getLogs(): Seq<LogMessage> = internal.get().getLogs()
 
     override fun getReport(): LogsReport = logsAnalyzer.processLogs(internal.get().getLogs())
-
 }

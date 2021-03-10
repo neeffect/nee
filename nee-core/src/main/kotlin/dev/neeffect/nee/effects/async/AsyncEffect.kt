@@ -59,12 +59,12 @@ class ExecutorExecutionContext(private val executor: Executor) : ExecutionContex
     override fun <T> execute(f: () -> T): Future<T> =
         Promise.make<T>(InPlaceExecutor).let { promise ->
             executor.execute {
-                //LESSON not property fandled exception
+                // LESSON not property handled exception
                 try {
                     val result = f()
                     promise.success(result)
                 } catch (e: Exception) {
-                    //NOTEST
+                    // NO TEST
                     promise.failure(e)
                 } catch (e: Throwable) {
                     logger().error("Unhandled throwable in executor", e)
@@ -126,6 +126,5 @@ class AsyncEffect<R : ExecutionContextProvider>(
 
     companion object {
         private val asyncCounter = AtomicLong()
-
     }
 }

@@ -13,5 +13,3 @@ interface Logging
  */
 inline fun <reified T : Logging> T.logger(): Logger =
     LoggerFactory.getLogger(T::class.java)
-
-

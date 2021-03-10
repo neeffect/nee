@@ -31,7 +31,6 @@ class FlexTxEffect<R> : Effect<FlexibleEnv, TxError> {
         }
 }
 
-
 internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
     TxProvider<R, FlexTxProvider<R>> {
     override fun getConnection(): TxConnection<R> =
@@ -53,11 +52,9 @@ internal class FlexTxProvider<R>(internal val env: FlexibleEnv) :
             IllegalStateException("no connection provider")
         }
 
-
     companion object {
         val txProviderResource = ResourceId(TxProvider::class)
 
-        //val flexTxProviderResource = ResourceId(FlexTxProvider::class)
         @Suppress("UNCHECKED_CAST")
         fun <R> connection(env: FlexibleEnv): R =
             env.get(txProviderResource).map {
@@ -74,4 +71,3 @@ fun <R, G : TxProvider<R, G>> FlexibleEnv.withTxProvider(provider: TxProvider<R,
 @Suppress("UNCHECKED_CAST")
 inline fun <reified T : FlexibleEnv, A> ((T) -> A).flex(): (FlexibleEnv) -> A =
     this as (FlexibleEnv) -> A
-

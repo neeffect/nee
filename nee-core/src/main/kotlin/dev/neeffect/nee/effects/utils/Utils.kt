@@ -17,18 +17,6 @@ internal fun <R, E, A> trace(f: (R) -> A) = guessCodePlaceName(2).let { placeNam
     }
 }
 
-//was extendP
-//REMOVE
-//internal fun <R, E, A> constP(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
-//    { r: R ->
-//        Out.right<E, A>(f(r)).also {
-//            if (r is TraceProvider<*>) {
-//                r.getTrace().putGuessedPlace(placeName, f)
-//            }
-//        }
-//    }
-//}
-
 internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
         Out.right<E, A>(f).also {
@@ -36,12 +24,10 @@ internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeNam
                 r.getTrace().putGuessedPlace(placeName, f)
             }
         }
-
     }
 }
 
-//!!! = was (P)->A here
-//TODO - this is for lazy - rename it
+// TODO - this is for lazy - rename it
 internal fun <A : Any> ignoreR(f: () -> A) = guessCodePlaceName(2).let { placeName ->
     { r: Any ->
         f().also {
@@ -69,7 +55,6 @@ fun <ENV, A, B, C, R> tupled3(f: (ENV) -> (A, B, C) -> R) =
             f(env)(p._1, p._2, p._3)
         }
     }
-
 
 /**
  * Marks invalid function (expected to not be called).

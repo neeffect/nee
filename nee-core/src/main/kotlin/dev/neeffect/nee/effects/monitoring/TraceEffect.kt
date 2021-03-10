@@ -4,8 +4,13 @@ import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import io.vavr.collection.List
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.drop
+import kotlin.collections.forEach
+import kotlin.collections.mapIndexed
+import kotlin.collections.minByOrNull
+import kotlin.collections.take
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
     override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<Nothing, A>, R> = { r: R ->
@@ -34,7 +39,6 @@ class TraceResource(
     val traces: List<TraceEntry> = List.empty<TraceEntry>()
 ) {
 
-
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun begin(tracerName: String): Pair<TraceResource, TraceEntry> =
         TraceEntry(tracerName, generateUUID(), nanoTime()).let { traceEntry ->
@@ -48,7 +52,6 @@ class TraceResource(
                 ), traceEntry
             )
         }
-
 
     private fun generateUUID(): UUID = UUID.randomUUID()
 
@@ -93,8 +96,6 @@ class TraceResource(
             this
         }
     }
-
-
 }
 
 object CodeNameFinder {
@@ -120,7 +121,6 @@ object CodeNameFinder {
             lineNumber = st.lineNumber
         )
 
-
     private fun calcCost(index: Int, suggestedStackPosition: Int, element: StackTraceElement) =
         (index - suggestedStackPosition) * (index - suggestedStackPosition) + nameCost(element)
 
@@ -131,10 +131,7 @@ object CodeNameFinder {
 
     private const val neeProjectClassesCost = 15
     private const val maxStackSearch = 10
-
-
 }
-
 
 interface Logger<T : Logger<T>> {
     fun log(entry: LogEntry): T
@@ -160,7 +157,6 @@ data class LogEntry(
     val message: EntryType
 )
 
-
 data class CodeLocation(
     val functionName: String? = null,
     val className: String? = null,
@@ -177,6 +173,4 @@ data class CodeLocation(
     private fun location() = (fileName ?: "?") + "@" + (lineNumber?.toString() ?: "?")
 }
 
-
 typealias NanoTime = () -> Long
-

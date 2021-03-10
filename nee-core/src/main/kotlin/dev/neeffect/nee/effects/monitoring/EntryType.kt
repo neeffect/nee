@@ -10,7 +10,5 @@ sealed class EntryType {
 
     data class InternalError(val msg: String) : EntryType() {
         override fun toString(): String = "Error($msg)"
-
     }
-
 }
