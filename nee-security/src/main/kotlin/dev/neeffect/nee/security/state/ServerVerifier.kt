@@ -12,7 +12,8 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
 import java.security.Signature
-import java.util.*
+import java.util.Base64
+import java.util.Random
 
 /**
  * Utility to use - for CSRF and similar
@@ -39,7 +40,7 @@ class ServerVerifier(
         }
 
     private fun signArray(data: ByteArray): String =
-        Signature.getInstance("SHA1WithRSA").let {sig ->
+        Signature.getInstance("SHA1WithRSA").let { sig ->
             sig.initSign(keyPair.private)
             sig.update(data)
             Base64.getEncoder().encodeToString(sig.sign())
@@ -54,13 +55,14 @@ class ServerVerifier(
         sig.verify(signatureBytes)
     }
 
-
     companion object {
         const val randomStateContentLength = 16
-        fun generateKeyPair(): KeyPair {
-            val kpg = KeyPairGenerator.getInstance("RSA")
-            kpg.initialize(1024)
-            return kpg.genKeyPair()
+        private const val keySize = 1024
+        fun generateKeyPair(): KeyPair = with(
+            KeyPairGenerator.getInstance("RSA").apply {
+                initialize(keySize)
+            }) {
+            genKeyPair()
         }
 
         fun loadKeyPair(path: Path): Option<KeyPair> = Try.of {
@@ -86,4 +88,3 @@ fun main() {
         }
     }
 }
-

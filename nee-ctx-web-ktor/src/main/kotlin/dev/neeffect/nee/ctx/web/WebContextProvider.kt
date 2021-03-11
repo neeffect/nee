@@ -117,11 +117,9 @@ interface WebContextProvider<R, G : TxProvider<R, G>> {
     }
 
     open fun monitoringApi(): Route.() -> Unit = {
-
     }
 
     fun jacksonMapper(): ObjectMapper
-
 
     fun <E, A> async(func: () -> Nee<WebContext<R, G>, E, A>): Nee<WebContext<R, G>, Any, A> =
         CodeNameFinder.guessCodePlaceName(2).let { whereItIsDefined ->
@@ -146,7 +144,6 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
     open val errorHandler: ErrorHandler by lazy { DefaultErrorHandler }
 
     abstract val executionContextProvider: ExecutionContextProvider
-
 
     override fun create(call: ApplicationCall) = WebContext(
         txProvider,
@@ -232,7 +229,6 @@ abstract class JDBCBasedWebContextProvider :
         jdbcProvider
     }
 }
-
 
 object DefaultJacksonMapper {
     val mapper = ObjectMapper()

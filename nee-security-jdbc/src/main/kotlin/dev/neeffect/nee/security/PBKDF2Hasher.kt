@@ -22,5 +22,3 @@ class PBKDF2Hasher {
         val algorithm = SecretKeyFactory.getInstance(algorithmName)
     }
 }
-
-

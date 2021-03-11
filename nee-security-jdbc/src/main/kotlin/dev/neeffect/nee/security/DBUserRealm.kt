@@ -8,7 +8,7 @@ import java.nio.ByteBuffer
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import java.util.*
+import java.util.UUID
 import kotlin.collections.contentEquals
 
 /**
@@ -40,23 +40,21 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
                 } else {
                     Option.none()
                 }
-
             }
             r
         }
-
 
     private fun checkDBRow(
         resultSet: ResultSet,
         password: CharArray,
         userLogin: String,
         jdbcConnection: Connection
-    ): Option<User> {
+    ): Option<User> = run {
         val user = resultSet.getBytes(userIdColumn).toUUID()
         val salt = resultSet.getBytes(saltColumn)
         val passwordHash = resultSet.getBytes(passHashColumn)
         val inputHash = passwordHasher.hashPassword(password, salt)
-        return if (passwordHash.contentEquals(inputHash)) {
+        if (passwordHash.contentEquals(inputHash)) {
             Option.some(User(user, userLogin, loadRoles(jdbcConnection, user)))
         } else {
             Option.none()
@@ -66,16 +64,19 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
     override fun hasRole(user: User, role: UserRole): Boolean =
         user.roles.contains(role)
 
+    private tailrec fun extractUserRoles(rs: ResultSet, prev: List<UserRole>) =
+        if (rs.next()) {
+            val roleName = rs.getString(1)
+            prev.prepend(UserRole(roleName))
+        } else {
+            prev
+        }
+
     private fun loadRoles(jdbcConnection: Connection, userId: UUID): List<UserRole> =
         jdbcConnection.prepareStatement("SELECT role_name FROM user_roles WHERE user_id = ?").use { statement ->
             statement.setBytes(1, userId.toBytes())
             statement.executeQuery().use { resultSet: ResultSet ->
-                var roles = List.empty<UserRole>()
-                while (resultSet.next()) {
-                    val roleName = resultSet.getString(1)
-                    roles = roles.prepend(UserRole(roleName))
-                }
-                roles
+                extractUserRoles(resultSet, List.empty())
             }
         }
 
@@ -97,10 +98,5 @@ fun UUID.toBytes(): ByteArray =
     ByteBuffer.wrap(ByteArray(uuidByteSize)).let {
         it.putLong(this.mostSignificantBits)
         it.putLong(this.leastSignificantBits)
-        return it.array()
+        it.array()
     }
-
-
-
-
-

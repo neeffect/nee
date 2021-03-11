@@ -17,5 +17,4 @@ class MultiVerifier(private val verifiers: Seq<Verifier>) : Verifier {
                 false
             }
         }.map { Unit }.getOrElseThrow { InvalidJWTSignatureException() }
-
 }
