@@ -86,9 +86,7 @@ class RenderHelper(
             }
         }
 
-
     internal fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)
-
 }
 
 sealed class ApiError {

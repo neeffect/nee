@@ -16,7 +16,8 @@ import io.vavr.collection.Seq
 import io.vavr.kotlin.list
 import java.security.KeyPair
 import java.security.SecureRandom
-import java.util.*
+import java.util.Random
+import java.util.UUID
 
 abstract class OauthConfigModule<USER, ROLE>(
     val config: OauthConfig,
@@ -39,7 +40,7 @@ abstract class OauthConfigModule<USER, ROLE>(
     }
     open val httpClient by lazy {
         HttpClient() {
-            install(JsonFeature) { //TODO - move it so that it is tested (it was not)
+            install(JsonFeature) { // TODO - move it so that it is tested (it was not)
                 serializer = JacksonSerializer()
             }
         }
@@ -50,7 +51,6 @@ abstract class OauthConfigModule<USER, ROLE>(
         object : JwtConfigurationModule<USER, ROLE>(jwtConfig, baseTimeProvider) {
             override val userCoder: UserCoder<USER, ROLE> = this@OauthConfigModule.userCoder
         }
-
     }
 
     abstract val userEncoder: (OauthProviderName, OauthResponse) -> USER
@@ -58,9 +58,7 @@ abstract class OauthConfigModule<USER, ROLE>(
     abstract val userRoles: (OauthProviderName, OauthResponse) -> Seq<ROLE>
 
     abstract val userCoder: UserCoder<USER, ROLE>
-
 }
-
 
 open class SimpleOauthConfigModule(
     config: OauthConfig,

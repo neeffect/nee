@@ -51,7 +51,7 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
                         .perform(Unit)
                 }.mapLeft { apiError ->
                     Out.left<SecurityErrorType, LoginResult>(
-                        SecurityErrorType.MalformedCredentials("${apiError.toString()}")
+                        SecurityErrorType.MalformedCredentials("$apiError")
                     )
                 }.merge()
                 renderHelper.serveMessage(call, result)

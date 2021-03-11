@@ -15,12 +15,16 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
     private val googleOpenId = GoogleOpenId(oauthConfig)
     private val githubOAuth = GithubOAuth(oauthConfig)
 
-    fun login(code: String, state: String, redirectUri: String, oauthProvider: OauthProviderName)
-            : Nee<Any, SecurityErrorType, LoginResult> =
+    fun login(
+        code: String,
+        state: String,
+        redirectUri: String,
+        oauthProvider: OauthProviderName
+    ): Nee<Any, SecurityErrorType, LoginResult> =
         findOauthProvider(oauthProvider).map { provider ->
             if (oauthConfig.serverVerifier.verifySignedText(state)) {
                 provider.verifyOauthToken(code, redirectUri, state).map { oauthResponse ->
-                    println("validate idToken ${oauthResponse}")//TODO
+                    println("validate idToken $oauthResponse") // TODO
                     val user = oauthConfig.userEncoder(oauthProvider, oauthResponse)
                     val jwt = oauthConfig.jwtConfigModule.jwtUsersCoder.encodeUser(user)
                     val signedJwt = oauthConfig.jwtConfigModule.jwtCoder.signJwt(jwt)
@@ -57,7 +61,6 @@ class OauthService<USER, ROLE>(private val oauthConfig: OauthConfigModule<USER, 
                     SecurityErrorType.UnknownUser
                 }
         }
-
 }
 
 data class LoginResult(
@@ -65,5 +68,3 @@ data class LoginResult(
     val displayName: Option<String>,
     val subject: String
 )
-
-

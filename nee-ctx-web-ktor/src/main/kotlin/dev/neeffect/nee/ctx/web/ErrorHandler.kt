@@ -22,5 +22,4 @@ object DefaultErrorHandler : ErrorHandler {
                 status = HttpStatusCode.InternalServerError
             )
         }
-
 }

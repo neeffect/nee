@@ -13,7 +13,7 @@ import io.vavr.control.Option
 import io.vavr.control.Try
 import io.vavr.kotlin.option
 import java.nio.charset.Charset
-import java.util.*
+import java.util.Base64
 
 /**
  * Basic auth implementation.
@@ -28,10 +28,10 @@ object BasicAuth {
      * Context for basic auth check.
      */
     class BasicAuthCtx<USERID, ROLE>(private val userRealm: UserRealm<USERID, ROLE>) {
-        fun createSecurityProviderFromRequest(request: ApplicationRequest)
-                : SecurityProvider<USERID, ROLE> = BasicAuthProvider<USERID, ROLE>(
-            request.header(authorizationHeader).option(), userRealm
-        )
+        fun createSecurityProviderFromRequest(request: ApplicationRequest): SecurityProvider<USERID, ROLE> =
+            BasicAuthProvider<USERID, ROLE>(
+                request.header(authorizationHeader).option(), userRealm
+            )
     }
 }
 
@@ -40,8 +40,8 @@ class BasicAuthProvider<USERID, ROLE>(
     private val userRealm: UserRealm<USERID, ROLE>
 ) : SecurityProvider<USERID, ROLE> {
 
-
     private val base64Decoder = Base64.getDecoder()
+
     override fun getSecurityContext(): Out<SecurityError, SecurityCtx<USERID, ROLE>> =
         headerVal.map { baseAuth: String ->
             Try.of {
@@ -60,7 +60,7 @@ class BasicAuthProvider<USERID, ROLE>(
                 val pass = decodedAut.sliceArray(colonIndex + 1 until decodedAut.size)
                     .toCharArray()
                 userRealm.loginUser(login, pass).map { user ->
-                    pass.fill(0.toChar()) //I know that cleaning password in such insecure protocol is useless
+                    pass.fill(0.toChar()) // I know that cleaning password in such insecure protocol is useless
                     Out.right<SecurityError, SecurityCtx<USERID, ROLE>>(UserSecurityContext(user, userRealm))
                 }.getOrElse {
                     left<SecurityError, SecurityCtx<USERID, ROLE>>(SecurityErrorType.WrongCredentials(login))
@@ -75,7 +75,6 @@ class BasicAuthProvider<USERID, ROLE>(
                 SecurityErrorType.MalformedCredentials("no basic auth header: $baseAuth")
             )
         }
-
 
     class AnonymousSecurityContext<USERID, ROLE> : SecurityCtx<USERID, ROLE> {
         override fun getCurrentUser(): Out<SecurityError, USERID> =
@@ -99,9 +98,4 @@ class BasicAuthProvider<USERID, ROLE>(
     }
 }
 
-
-internal fun ByteArray.toCharArray() = CharArray(this.size).also { chars ->
-    for (index in this.indices) {
-        chars[index] = this[index].toChar()
-    }
-}
+internal fun ByteArray.toCharArray() = String(this).toCharArray()

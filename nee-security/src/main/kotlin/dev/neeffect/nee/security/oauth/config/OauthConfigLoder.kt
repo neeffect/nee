@@ -23,7 +23,6 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.starProjectedType
 
-
 typealias RolesMapper = (OauthProviderName, OauthResponse) -> Seq<UserRole>
 
 class OauthConfigLoder(private val configPath: Path) {
@@ -57,18 +56,15 @@ class OauthConfigLoder(private val configPath: Path) {
             OauthModule(oauthConf, jwtConf, rolesMapper)
         }
     }
-
 }
-
 
 data class ConfigError(val msg: String)
 
-//TODO  -  report as problem
+// TODO  -  report as problem
 inline fun <A, E, T> Validated<E, A>.foldi(ifInvalid: (E) -> T, ifValid: (A) -> T): T = when (this) {
     is Validated.Invalid -> ifInvalid(error)
     is Validated.Valid -> ifValid(value)
 }
-
 
 internal class VMapDecoder : Decoder<Map<*, *>> {
     private val hMapDecoder = MapDecoder()
@@ -79,5 +75,4 @@ internal class VMapDecoder : Decoder<Map<*, *>> {
 
     override fun supports(type: KType): Boolean =
         type.isSubtypeOf(Map::class.starProjectedType)
-
 }

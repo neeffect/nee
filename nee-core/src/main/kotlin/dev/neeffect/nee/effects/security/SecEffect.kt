@@ -47,7 +47,6 @@ sealed class SecurityErrorType : SecurityError {
      * Expected role is missing.
      */
     data class MissingRole<ROLE>(val roles: List<ROLE>) : SecurityErrorType()
-
 }
 
 class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
@@ -58,7 +57,7 @@ class SecuredRunEffect<USER, ROLE, R : SecurityProvider<USER, ROLE>>(
     constructor(singleRole: ROLE) : this(List.of(singleRole))
 
     override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<SecurityError, A>, R> = { provider: R ->
-        Pair( //TODO - fail faster?
+        Pair( // TODO - fail faster?
 
             provider.getSecurityContext().flatMap { securityCtx ->
                 val missingRoles = roles.filter { role ->

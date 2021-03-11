@@ -26,11 +26,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
 
-
 class GithubOAuth<USER, ROLE>(
     private val oauthConfigModule: OauthConfigModule<USER, ROLE>
 ) : OauthProvider, Logging {
-
 
     override fun generateApiCall(redirect: String) =
         apiUrlTemplate(
@@ -102,12 +100,11 @@ class GithubOAuth<USER, ROLE>(
         fun apiUrlTemplate(clientId: String, redirect: String, state: String) =
             """
        https://github.com/login/oauth/authorize?
-       client_id=${clientId}&
-       redirect_uri=${redirect}&
-       state=${state}&
+       client_id=$clientId&
+       redirect_uri=$redirect&
+       state=$state&
        allow_signup=true""".trimIndent().replace("\n", "")
     }
-
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)

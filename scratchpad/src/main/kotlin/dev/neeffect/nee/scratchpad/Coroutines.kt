@@ -6,14 +6,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-
-//public fun <T,R,E> CoroutineScope.eff(
-//        effect : Effect<R,E>,
-//        block: suspend CoroutineScope.() -> T) : NEE<R, E, Unit, T> {
-//
-//}
-
-
 fun main() {
     val deferredResult: Deferred<String> = GlobalScope.async {
         delay(1000L)

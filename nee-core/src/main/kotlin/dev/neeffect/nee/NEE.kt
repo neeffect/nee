@@ -18,7 +18,6 @@ package dev.neeffect.nee
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.utils.trace
 
-
 /**
  * Nee returning Any error.
  *
@@ -28,7 +27,6 @@ import dev.neeffect.nee.effects.utils.trace
  * //CONTROVERSIAL
  */
 typealias ANee<R, A> = Nee<R, Any, A>
-
 
 /**
  * Nee monad.
@@ -86,7 +84,7 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
             FNEE(NoEffect()) { value.mapLeft { e -> e } }
         }
 
-        //TODO (is it needed?)
+        // TODO (is it needed?)
         fun <R, E, A> withError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E, A> =
             FNEE(effect, func)
 
@@ -96,20 +94,17 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
 }
 
 internal fun <T, T1> T.map(f: (T) -> T1) = f(this)
-//CONTROVERSIAL
-
+// CONTROVERSIAL
 
 internal class FNEE<R, E, A>(
     effect: Effect<R, E>,
     private val func: (R) -> Out<E, A>
 ) : Nee<R, E, A>(effect) {
 
-    //constructor(effect: Effect<R, E>, f : (R)->(P)->A) : this(effect, {r:R-> {p:P-> Either.right<E,A>(f(r)(p))}} )
-
     private fun action() = effect.wrap(func)
+
     override fun perform(env: R): Out<E, A> = action()(env).first.flatMap { it }
 
-    //fun wrap(eff: Effect<R, E>): BaseENIO<R, E, A> = BaseENIO(f, effs.plusElement(eff).k())
     override fun <B> map(f: (A) -> B): Nee<R, E, B> =
         FNEE(effect) { r -> func(r).map(f) }
 
@@ -118,16 +113,13 @@ internal class FNEE<R, E, A>(
      *
      */
     override fun <B> flatMap(f: (A) -> Nee<R, E, B>): Nee<R, E, B> = FMNEE(effect, func, f)
-
 }
 
 internal class FMNEE<R, E, A, A1>(
     effect: Effect<R, E>,
     private val func: (R) -> Out<E, A1>,
     private val mapped: (A1) -> Nee<R, E, A>
-
 ) : Nee<R, E, A>(effect) {
-
 
     override fun perform(env: R): Out<E, A> = { r: R ->
         val res1 = func(r).map(mapped)
@@ -135,7 +127,6 @@ internal class FMNEE<R, E, A, A1>(
                 it.perform(r)
             }
         res1
-
     }.let { newF ->
         effect.wrap(newF)(env).first.flatMap { it }
     }

@@ -43,6 +43,7 @@ subprojects {
 
     dependencies {
         detektPlugins("pl.setblack:kure-potlin:0.1.3")
+        detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.15.0")
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
         implementation(Libs.Slf4J.api)
     }

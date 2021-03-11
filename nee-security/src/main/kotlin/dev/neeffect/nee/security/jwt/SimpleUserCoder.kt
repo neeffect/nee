@@ -7,7 +7,7 @@ import io.vavr.control.Option
 import io.vavr.control.Try
 import io.vavr.kotlin.hashMap
 import io.vavr.kotlin.toVavrList
-import java.util.*
+import java.util.UUID
 
 class SimpleUserCoder : UserCoder<User, UserRole> {
     override fun userToIdAndMapAnd(u: User): Pair<String, Map<String, String>> =
