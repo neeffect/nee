@@ -98,8 +98,4 @@ class BasicAuthProvider<USERID, ROLE>(
     }
 }
 
-internal fun ByteArray.toCharArray() = CharArray(this.size).also { chars ->
-    for (index in this.indices) {
-        chars[index] = this[index].toChar()
-    }
-}
+internal fun ByteArray.toCharArray() = String(this).toCharArray()

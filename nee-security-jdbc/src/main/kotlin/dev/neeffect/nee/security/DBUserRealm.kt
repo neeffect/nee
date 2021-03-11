@@ -64,10 +64,10 @@ class DBUserRealm(private val dbProvider: JDBCProvider) :
     override fun hasRole(user: User, role: UserRole): Boolean =
         user.roles.contains(role)
 
-    private tailrec fun extractUserRoles(rs: ResultSet, prev: List<UserRole>) =
+    private tailrec fun extractUserRoles(rs: ResultSet, prev: List<UserRole>) : List<UserRole> =
         if (rs.next()) {
             val roleName = rs.getString(1)
-            prev.prepend(UserRole(roleName))
+            extractUserRoles(rs, prev.prepend(UserRole(roleName)))
         } else {
             prev
         }
