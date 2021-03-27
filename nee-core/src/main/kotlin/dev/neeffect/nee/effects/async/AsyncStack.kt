@@ -53,7 +53,7 @@ interface AsyncSupport<R> {
  */
 class ActiveAsyncClose<R>(private val asyncClean: ActiveAsynStack<R>) {
     @Suppress("UNCHECKED_CAST")
-    fun closeAsync(env: R) =
+    fun closeAsync(env: R): R =
         when (env) {
             is AsyncSupport<*> -> {
                 val async = env as AsyncSupport<R>
@@ -63,7 +63,7 @@ class ActiveAsyncClose<R>(private val asyncClean: ActiveAsynStack<R>) {
                     async.setAsyncStack(stack, res.first)
                     res.second
                 } else {
-                    doNothing(env)
+                    doNothing(async) as R
                 }
             }
             else ->
@@ -93,7 +93,7 @@ internal class SthToClean<R>(val asyncClean: ActiveAsynStack<R>) {
 fun <R> doNothing(env: R) = env
 
 fun <R, T> executeAsyncCleaning(env: R, action: () -> T, cleanAction: (R) -> R): T = run {
-    val closingAction = object : AsyncClose<R>() {
+    val closingAction = object : AsyncClose<R> {
         override fun onClose(env: R): R = cleanAction(env)
     }
     val cleaning = AsyncSupport.doOnCleanUp(env, closingAction)
@@ -159,12 +159,12 @@ interface AsyncClosingAction<R> {
     fun onError(env: R, t: Throwable): R
 }
 
-internal abstract class AsyncClose<R> : AsyncClosingAction<R> {
+internal interface AsyncClose<R> : AsyncClosingAction<R> {
     override fun onError(env: R, t: Throwable): R = TODO()
 }
 
 fun <R> AsyncStack<R>.onClose(f: (R) -> R): ActiveAsynStack<R> = this.doOnCleanUp(
-    object : AsyncClose<R>() {
+    object : AsyncClose<R> {
         override fun onClose(env: R): R = f(env)
     }
 )

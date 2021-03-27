@@ -7,6 +7,7 @@ import io.vavr.Tuple2
 import io.vavr.Tuple3
 import io.vavr.control.Either
 
+@Suppress("BranchStatement")
 internal fun <R, E, A> trace(f: (R) -> A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
         Out.right<E, A>(f(r)).also {
@@ -17,6 +18,7 @@ internal fun <R, E, A> trace(f: (R) -> A) = guessCodePlaceName(2).let { placeNam
     }
 }
 
+@Suppress("BranchStatement")
 internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeName ->
     { r: R ->
         Out.right<E, A>(f).also {
@@ -28,6 +30,7 @@ internal fun <R, E, A : Any> constR(f: A) = guessCodePlaceName(2).let { placeNam
 }
 
 // TODO - this is for lazy - rename it
+@Suppress("BranchStatement")
 internal fun <A : Any> ignoreR(f: () -> A) = guessCodePlaceName(2).let { placeName ->
     { r: Any ->
         f().also {
@@ -59,4 +62,5 @@ fun <ENV, A, B, C, R> tupled3(f: (ENV) -> (A, B, C) -> R) =
 /**
  * Marks invalid function (expected to not be called).
  */
+@Suppress("ThrowExpression")
 fun invalid(): Nothing = throw NotImplementedError()

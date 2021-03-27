@@ -16,6 +16,7 @@ class JwtUsersCoder<USER, ROLE>(val jwtCoder: JwtCoder, val coder: UserCoder<USE
         jwtCoder.createJwt(id, mapClaims)
     }
 
+    @Suppress("MutableCollections")
     fun decodeUser(jwt: JWT): Option<USER> =
         coder.mapToUser(jwt.subject, jwt.allClaims.toVavrMap().mapValues { it.toString() })
 

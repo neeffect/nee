@@ -687,3 +687,22 @@ style:
     active: true
     excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/jsTest/**', '**/iosTest/**']
     excludeImports: ['java.util.*', 'kotlinx.android.synthetic.*']
+
+impure:
+  active: true
+  LoopUsage:
+    active: true
+  ReturnStatement:
+    active: true
+  VariableUsage:
+    active: true
+  ReturnUnit:
+    active: true
+  ClassDefinition:
+    active: false
+  AbstractClassDefinition:
+    active: false
+  ThrowExpression:
+    active: true
+  MutableCollections:
+    active: true

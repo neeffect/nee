@@ -78,13 +78,3 @@ class ServerVerifier(
         }.toOption()
     }
 }
-
-fun main() {
-    val keyPair = ServerVerifier.generateKeyPair()
-    val testKeyPath = Paths.get("tmp/testServerKey.bin")
-    Files.newOutputStream(testKeyPath).use {
-        ObjectOutputStream(it).use { objectOut ->
-            objectOut.writeObject(keyPair)
-        }
-    }
-}

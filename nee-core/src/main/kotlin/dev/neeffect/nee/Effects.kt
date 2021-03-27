@@ -45,7 +45,7 @@ infix fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.with(otherEffect: Effect<R1,
 operator fun <R1, E1, R2 : R1, E2 : E1> Effect<R2, E2>.plus(otherEffect: Effect<R1, E1>) =
     this.with(otherEffect)
 
-class Effects<R1, R2, E1, E2>(
+data class Effects<R1, R2, E1, E2>(
     private val inner: Effect<R1, E1>,
     private val outer: Effect<R2, E2>
 ) : Effect<R2, Either<E1, E2>>
@@ -100,7 +100,7 @@ class NoEffect<R, E> : Effect<R, E> {
 @Suppress("NOTHING_TO_INLINE")
 inline fun <R, E> noEffect() = NoEffect.get<R, E>()
 
-class HandleErrorEffect<R, E, E1>(
+data class HandleErrorEffect<R, E, E1>(
     private val innerEffect: Effect<R, E>,
     private val handler: (E) -> E1
 ) : Effect<R, E1> {
