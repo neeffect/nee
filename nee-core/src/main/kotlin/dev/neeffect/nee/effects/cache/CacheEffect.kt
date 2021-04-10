@@ -19,6 +19,7 @@ interface CacheProvider {
     fun <K, V> computeIfAbsent(key: K, func: (K) -> V): V
 }
 
+@Suppress("MutableCollections")
 class NaiveCacheProvider : CacheProvider {
     private val map: ConcurrentHashMap<Any, Any> = ConcurrentHashMap()
 

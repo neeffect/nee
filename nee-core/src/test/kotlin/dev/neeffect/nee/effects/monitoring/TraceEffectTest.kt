@@ -109,7 +109,7 @@ internal class TraceEffectTest : BehaviorSpec({
 
 fun plainFunction(i: Int) = i + 1
 
-fun <R : TraceProvider<R>> traceableFunction(p: Int) =
+fun <R : TraceProvider<R>> traceableFunction(p: Int): (R) -> Int =
     { mon: R -> mon.getTrace().putNamedPlace().let { plainFunction(p) } }
 
 

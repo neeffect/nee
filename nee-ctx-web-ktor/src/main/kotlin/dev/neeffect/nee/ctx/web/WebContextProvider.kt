@@ -208,7 +208,7 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
 abstract class JDBCBasedWebContextProvider :
     BaseWebContextProvider<Connection, JDBCProvider>() {
 
-    open val jdbcTasksScheduler = Executors.newFixedThreadPool(4)
+    open val jdbcTasksScheduler = Executors.newFixedThreadPool(defaultThreadPool)
 
     override val executionContextProvider =
         ECProvider(ExecutorExecutionContext(jdbcTasksScheduler))
@@ -227,6 +227,10 @@ abstract class JDBCBasedWebContextProvider :
 
     override val txProvider: TxProvider<Connection, JDBCProvider> by lazy {
         jdbcProvider
+    }
+
+    companion object {
+        const val defaultThreadPool = 4
     }
 }
 

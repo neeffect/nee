@@ -71,7 +71,6 @@ class OauthSupportApi(private val oauthService: OauthService<User, UserRole>) {
         }
 }
 
-
 data class OauthLoginData(
     val code: String,
     val state: String,

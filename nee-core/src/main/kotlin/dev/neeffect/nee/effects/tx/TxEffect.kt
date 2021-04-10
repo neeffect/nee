@@ -162,10 +162,11 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
                 startedTransaction.commit().also {
                     it.second.close()
                 }
+                r
             } else {
                 logger().debug("not commited Tx ($txNumber) - continued")
+                r
             }
-            r
         }).let { result ->
             Pair(
                 try {

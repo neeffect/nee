@@ -6,11 +6,6 @@ import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import io.vavr.collection.List
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.drop
-import kotlin.collections.forEach
-import kotlin.collections.mapIndexed
-import kotlin.collections.minByOrNull
-import kotlin.collections.take
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
     override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<Nothing, A>, R> = { r: R ->
@@ -58,19 +53,19 @@ class TraceResource(
     private fun lastTrace() = this.traces.headOption()
 
     @Suppress("NOTHING_TO_INLINE")
-    inline fun putNamedPlace(name: CodeLocation = guessCodePlaceName()) =
-        this.traces.headOption().forEach {
+    inline fun putNamedPlace(name: CodeLocation = guessCodePlaceName()): Boolean =
+        this.traces.headOption().map {
             it.codeLocation.compareAndSet(null, name)
-        }
+        }.getOrElse(false)
 
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun putGuessedPlace(placeName: CodeLocation, f: Any) =
-        this.traces.headOption().forEach {
+        this.traces.headOption().map {
             it.codeLocation.compareAndSet(
                 null,
                 placeName.copy(customInfo = f.toString())
             )
-        }
+        }.getOrElse(false)
 
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun end(tracerName: String): TraceResource = lastTrace().let {

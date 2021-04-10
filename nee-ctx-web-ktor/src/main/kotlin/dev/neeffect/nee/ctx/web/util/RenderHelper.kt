@@ -16,6 +16,7 @@ import io.ktor.response.respond
 import io.vavr.control.Either
 import kotlinx.coroutines.future.await
 
+@Suppress("ReturnUnit")
 class RenderHelper(
     val objectMapper: ObjectMapper,
     val errorHandler: ErrorHandler

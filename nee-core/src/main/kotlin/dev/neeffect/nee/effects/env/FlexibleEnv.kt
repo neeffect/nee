@@ -48,6 +48,7 @@ inline fun <reified T : Any> FlexibleEnv.with(
     t: T
 ): FlexibleEnv = WrappedEnv(t, id, this)
 
+@Suppress("ThrowExpression")
 object EnvLeaf : FlexibleEnv {
     override fun <T : Any> get(id: ResourceId<T>): Option<T> = Option.none()
 

@@ -13,7 +13,8 @@ import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.*
+import java.util.Random
+import java.util.UUID
 
 /**s
  *  Small utility for setting sql db for tests.
@@ -43,7 +44,6 @@ class TestDBConnection(val connection: Connection, val jdbcConfig: JDBCConfig) :
     private val hasher = PBKDF2Hasher()
     private val randomGeneratorForUUID = Random(42)
     private val testSalt = UUID.fromString("699add98-2aa2-49ad-8d09-d35f2a36f36b").toBytes()
-
 
     fun addUser(login: String, password: String, roles: List<String>) =
         inTransaction(connection) { cn ->
@@ -93,11 +93,9 @@ class TestDBConnection(val connection: Connection, val jdbcConfig: JDBCConfig) :
             }
         }
 
-
     override fun close() {
         this.connection.close()
     }
-
 }
 
 val h2InMemDatabase = JDBCConfig(
@@ -106,7 +104,6 @@ val h2InMemDatabase = JDBCConfig(
     user = "sa",
     password = ""
 )
-
 
 fun <R> inTransaction(connection: Connection, f: (Connection) -> R) {
     val initialACState = connection.autoCommit

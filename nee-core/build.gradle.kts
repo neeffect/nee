@@ -6,6 +6,7 @@ dependencies {
 
     implementation(Libs.Jackson.jacksonAnnotations)
     implementation(Libs.Kotlin.kotlinStdLib)
+    implementation(Libs.Kotlin.coroutinesTest)
     testImplementation(project(":nee-test:nee-core-test"))
     testImplementation(Libs.Kotest.runnerJunit5Jvm)
     testImplementation(Libs.Kotest.assertionsCoreJvm)

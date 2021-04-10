@@ -176,5 +176,5 @@ data class OauthResponse(
 
 @Suppress("ImpureCode")
 internal class LocalJSONWebKeySetResponse {
-    var keys: List<JSONWebKey> = emptyList()
+    val keys: List<JSONWebKey> = emptyList()
 }
