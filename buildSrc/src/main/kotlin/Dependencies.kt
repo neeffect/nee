@@ -11,6 +11,7 @@ object Libs {
         private const val coroutinesVersion = "1.4.2"
         const val coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
         const val reflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+        const val coroutinesTest = "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
     }
 
     object Ktor {

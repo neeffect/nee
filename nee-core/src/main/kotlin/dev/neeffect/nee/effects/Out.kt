@@ -3,6 +3,7 @@ package dev.neeffect.nee.effects
 import dev.neeffect.nee.effects.utils.merge
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
+import kotlinx.coroutines.future.await
 
 /**
  * Outcome of business function.
@@ -23,6 +24,8 @@ sealed class Out<E, out A> {
     abstract fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B>
 
     abstract fun toFuture(): Future<out Either<E, out A>>
+
+    abstract fun k(): suspend () -> Either<E, out A>
 
     fun <E1, B> handle(fe: (E) -> Out<E1, B>, fa: (A) -> B): Out<E1, B> =
 
@@ -62,14 +65,12 @@ sealed class Out<E, out A> {
                 @Suppress("UNCHECKED_CAST")
                 this as Out<E, B>
             }.merge()
+
+        override fun k(): suspend () -> Either<E, out A> = { v }
     }
 
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
         override fun toFuture(): Future<Either<E, A>> = futureVal
-
-//        override fun onComplete(f: (Either<E, out A>) -> Unit) = futureVal.onComplete { value ->
-//            f(value.get())
-//        }.let { Unit }
 
         override fun <B> map(f: (A) -> B): Out<E, B> = FutureOut(futureVal.map { it.map(f) })
 
@@ -86,5 +87,9 @@ sealed class Out<E, out A> {
                 }.mapLeft { e1 -> Future.successful(futureVal.executor(), Either.left<E, B>(e1)) }
                     .merge()
             })
+
+        override fun k(): suspend () -> Either<E, out A> = {
+            futureVal.toCompletableFuture().await()
+        }
     }
 }

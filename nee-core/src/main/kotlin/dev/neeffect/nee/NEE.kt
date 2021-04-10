@@ -57,16 +57,16 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
     fun anyError(): ANee<R, A> = this as ANee<R, A>
 
     companion object {
-        fun <R, E, A> pure(a: A): Nee<R, E, A> =
+        fun <R, E, A> pure(a: () -> A): Nee<R, E, A> =
             FNEE<R, E, A>(
                 NoEffect.get(),
-                { _: R -> Out.right(a) }
+                { _: R -> Out.right(a()) }
             )
 
         /**
         alias to pure
          */
-        fun <R, E, A> success(a: A) = pure<R, E, A>(a)
+        fun <R, E, A> success(a: () -> A) = pure<R, E, A>(a)
 
         /**
          * Same as pure, but adds tracing.
@@ -83,6 +83,9 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
         fun <R, E, A, E1 : E> flatOut(f: Nee<R, E, Out<E1, A>>) = f.flatMap { value ->
             FNEE(NoEffect()) { value.mapLeft { e -> e } }
         }
+
+        fun <A, E> fromOut(out: Out<E, A>): Nee<Any, E, A> =
+            FNEE(NoEffect()) { out }
 
         // TODO (is it needed?)
         fun <R, E, A> withError(effect: Effect<R, E>, func: (R) -> Out<E, A>): Nee<R, E, A> =
