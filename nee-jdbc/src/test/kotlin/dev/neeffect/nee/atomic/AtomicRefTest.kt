@@ -3,6 +3,11 @@ package dev.neeffect.nee.atomic
 import dev.neeffect.nee.effects.test.get
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 
 class AtomicRefTest : DescribeSpec({
     describe("simple atomic operations") {
@@ -87,6 +92,24 @@ class AtomicRefTest : DescribeSpec({
         }
     }
     describe("multithreaded atomic operations") {
+        val random = Random(7)
+        val badIncrementor = { x: Int ->
+                if (random.nextInt(4) == 0) {
+                    Thread.sleep(1)
+                }
+                Pair(x+1, 0)
+        }
+        val executor = Executors.newFixedThreadPool(32)
+        it ("should update counter to 1000" ) {
+            val initial = AtomicRef(0)
+            (0 until 1000).forEach {
+                executor.submit{initial.modifyGet ( badIncrementor ).perform(Unit).get()}
+            }
+            executor.shutdown()
+            executor.awaitTermination(10, TimeUnit.SECONDS)
+            initial.get().perform(Unit).get() shouldBe 1000
+
+        }
 
     }
 })
