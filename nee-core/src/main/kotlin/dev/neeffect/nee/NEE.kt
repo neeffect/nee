@@ -28,6 +28,8 @@ import dev.neeffect.nee.effects.utils.trace
  */
 typealias ANee<R, A> = Nee<R, Any, A>
 
+typealias IO<A> = Nee<Any, Nothing, A>
+
 /**
  * Nee monad.
  *

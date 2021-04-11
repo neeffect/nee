@@ -1,6 +1,11 @@
 object Libs {
     const val kotlin_version = "1.4.30"
 
+    object Atomic {
+        private const val version = "0.15.0"
+        const val atomicFu =  "org.jetbrains.kotlinx:atomicfu:$version"
+    }
+
     object H2 {
         private const val version = "1.4.200"
         const val h2 = "com.h2database:h2:$version"
