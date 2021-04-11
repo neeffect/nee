@@ -108,8 +108,6 @@ class AtomicRefTest : DescribeSpec({
             executor.shutdown()
             executor.awaitTermination(10, TimeUnit.SECONDS)
             initial.get().perform(Unit).get() shouldBe 1000
-
         }
-
     }
 })
