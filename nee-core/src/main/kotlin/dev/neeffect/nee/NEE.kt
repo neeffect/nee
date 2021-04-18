@@ -16,6 +16,7 @@ limitations under the License.
 package dev.neeffect.nee
 
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.test.get
 import dev.neeffect.nee.effects.utils.trace
 
 /**
@@ -58,6 +59,8 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
     @Suppress("UNCHECKED_CAST")
     fun anyError(): ANee<R, A> = this as ANee<R, A>
 
+    fun runUnsafe(env: R): A = perform(env).get()
+
     companion object {
         fun <R, E, A> pure(a: () -> A): Nee<R, E, A> =
             FNEE<R, E, A>(
@@ -69,6 +72,10 @@ sealed class Nee<R, E, out A>(internal val effect: Effect<R, E>) {
         alias to pure
          */
         fun <R, E, A> success(a: () -> A) = pure<R, E, A>(a)
+
+        fun <R, E, A> fail(e: E): Nee<R, E, A> = FNEE(NoEffect()) { Out.left(e) }
+
+        fun <R, E> failOnly(e: E): Nee<R, E, Nothing> = FNEE(NoEffect()) { Out.left(e) }
 
         /**
          * Same as pure, but adds tracing.
@@ -144,3 +151,6 @@ internal class FMNEE<R, E, A, A1>(
         mapped(a).flatMap(f)
     })
 }
+
+@Suppress("UNCHECKED_CAST")
+fun <R, E, A> Nee<R, Nothing, A>.withErrorType() = this as Nee<R, E, A>

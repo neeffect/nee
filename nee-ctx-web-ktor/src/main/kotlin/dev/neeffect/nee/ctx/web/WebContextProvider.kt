@@ -9,6 +9,7 @@ import dev.neeffect.nee.effects.async.AsyncEffect
 import dev.neeffect.nee.effects.async.ECProvider
 import dev.neeffect.nee.effects.async.ExecutionContextProvider
 import dev.neeffect.nee.effects.async.ExecutorExecutionContext
+import dev.neeffect.nee.effects.async.ThreadedExecutionContextProvider
 import dev.neeffect.nee.effects.cache.CacheEffect
 import dev.neeffect.nee.effects.cache.caffeine.CaffeineProvider
 import dev.neeffect.nee.effects.jdbc.JDBCProvider
@@ -18,11 +19,13 @@ import dev.neeffect.nee.effects.monitoring.SimpleTraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceEffect
 import dev.neeffect.nee.effects.monitoring.TraceProvider
 import dev.neeffect.nee.effects.monitoring.TraceResource
+import dev.neeffect.nee.effects.security.DummySecurityProvider
 import dev.neeffect.nee.effects.security.SecuredRunEffect
 import dev.neeffect.nee.effects.security.SecurityError
 import dev.neeffect.nee.effects.security.SecurityProvider
 import dev.neeffect.nee.effects.time.HasteTimeProvider
 import dev.neeffect.nee.effects.time.TimeProvider
+import dev.neeffect.nee.effects.tx.DummyTxProvider
 import dev.neeffect.nee.effects.tx.TxEffect
 import dev.neeffect.nee.effects.tx.TxError
 import dev.neeffect.nee.effects.tx.TxProvider
@@ -202,6 +205,23 @@ abstract class BaseWebContextProvider<R, G : TxProvider<R, G>> : WebContextProvi
                 )
             )
         }
+    }
+
+    companion object {
+        fun createTransient(customErrorHandler: ErrorHandler = DefaultErrorHandler) =
+            object : BaseWebContextProvider<Nothing, DummyTxProvider>() {
+                val ec = ThreadedExecutionContextProvider()
+
+                val security = DummySecurityProvider<User, UserRole>()
+
+                override val txProvider: TxProvider<Nothing, DummyTxProvider> = DummyTxProvider
+
+                override fun authProvider(call: ApplicationCall): SecurityProvider<User, UserRole> = security
+
+                override val executionContextProvider: ExecutionContextProvider = ec
+
+                override val errorHandler: ErrorHandler = customErrorHandler
+            }
     }
 }
 

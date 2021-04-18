@@ -9,6 +9,7 @@ import io.vavr.concurrent.Promise
 import io.vavr.control.Either
 import io.vavr.control.Option
 import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -128,4 +129,12 @@ class AsyncEffect<R : ExecutionContextProvider>(
     companion object {
         private val asyncCounter = AtomicLong()
     }
+}
+
+class ThreadedExecutionContextProvider(threads: Int = 4)  : ExecutionContextProvider {
+    val executor = Executors.newFixedThreadPool(threads)
+    val executorUsingContext = ExecutorExecutionContext(executor)
+    override fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext
+    = local.getOrElse(executorUsingContext)
+
 }
