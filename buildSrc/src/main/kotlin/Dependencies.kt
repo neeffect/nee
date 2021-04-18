@@ -1,5 +1,5 @@
 object Libs {
-    const val kotlin_version = "1.4.30"
+    const val kotlin_version = "1.4.32"
 
     object Atomic {
         private const val version = "0.15.0"

@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     //java //- not needed probably
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.4.32"
     id("io.gitlab.arturbosch.detekt").version("1.16.0")
     //`kotlin-dsl` //TODO - read about it
     id("jacoco")
