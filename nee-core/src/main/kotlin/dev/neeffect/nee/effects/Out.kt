@@ -15,17 +15,11 @@ import kotlinx.coroutines.future.await
  *
  *
  */
-sealed class Out<E, out A> {
+sealed class Out<out E, out A> {
 
     abstract fun <B> map(f: (A) -> B): Out<E, B>
 
     abstract fun <E1> mapLeft(f: (E) -> E1): Out<E1, A>
-
-    abstract fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B>
-
-    abstract fun toFuture(): Future<out Either<E, out A>>
-
-    abstract fun k(): suspend () -> Either<E, out A>
 
     fun <E1, B> handle(fe: (E) -> Out<E1, B>, fa: (A) -> B): Out<E1, B> =
 
@@ -47,7 +41,7 @@ sealed class Out<E, out A> {
     }
 
     internal class InstantOut<E, A>(internal val v: Either<E, A>) : Out<E, A>() {
-        override fun toFuture(): Future<Either<E, out A>> = Future.successful(v)
+        fun toFutureInternal(): Future<Either<E, A>> = Future.successful(v)
 
         // override fun onComplete(f: (Either<E, out A>) -> Unit) = f(v)
 
@@ -55,7 +49,7 @@ sealed class Out<E, out A> {
 
         override fun <E1> mapLeft(f: (E) -> E1): Out<E1, A> = InstantOut(v.mapLeft(f))
 
-        override fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B> =
+        fun <B> flatMapInternal(f: (A) -> Out<E, B>): Out<E, B> =
             v.map { a: A ->
                 when (val res = f(a)) {
                     is InstantOut -> InstantOut(res.v)
@@ -66,17 +60,17 @@ sealed class Out<E, out A> {
                 this as Out<E, B>
             }.merge()
 
-        override fun k(): suspend () -> Either<E, out A> = { v }
+        fun k(): suspend () -> Either<E, out A> = { v }
     }
 
     internal class FutureOut<E, A>(internal val futureVal: Future<Either<E, A>>) : Out<E, A>() {
-        override fun toFuture(): Future<Either<E, A>> = futureVal
+        fun toFutureInternal(): Future<Either<E, A>> = futureVal
 
         override fun <B> map(f: (A) -> B): Out<E, B> = FutureOut(futureVal.map { it.map(f) })
 
         override fun <E1> mapLeft(f: (E) -> E1): Out<E1, A> = FutureOut(futureVal.map { it.mapLeft(f) })
 
-        override fun <B> flatMap(f: (A) -> Out<E, B>): Out<E, B> =
+        fun <B> flatMapInternal(f: (A) -> Out<E, B>): Out<E, B> =
             FutureOut(futureVal.flatMap { e: Either<E, A> ->
                 e.map { a: A ->
                     val z: Future<Either<E, B>> = when (val res = f(a)) {
@@ -88,8 +82,19 @@ sealed class Out<E, out A> {
                     .merge()
             })
 
-        override fun k(): suspend () -> Either<E, out A> = {
+        fun k(): suspend () -> Either<E, out A> = {
             futureVal.toCompletableFuture().await()
         }
     }
+}
+
+fun <E, A, B> Out<E, A>.flatMap(f: (A) -> Out<E, B>): Out<E, B> =
+    when (this) {
+        is Out.InstantOut -> this.flatMapInternal(f)
+        is Out.FutureOut -> this.flatMapInternal(f)
+    }
+
+fun <E, A> Out<E, A>.toFuture(): Future<Either<E, A>> = when (this) {
+    is Out.InstantOut -> this.toFutureInternal()
+    is Out.FutureOut -> this.toFutureInternal()
 }

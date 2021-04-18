@@ -2,6 +2,7 @@ package dev.neeffect.nee.effects.security
 
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.flatMap
 import io.vavr.collection.List
 
 interface SecurityCtx<USER, ROLE> {

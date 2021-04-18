@@ -3,6 +3,7 @@ package dev.neeffect.nee.ctx.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import dev.neeffect.nee.Effect
+import dev.neeffect.nee.effects.flatMap
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.NoEffect
 import dev.neeffect.nee.effects.async.AsyncEffect

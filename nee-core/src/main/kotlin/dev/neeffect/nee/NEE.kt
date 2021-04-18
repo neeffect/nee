@@ -16,6 +16,7 @@ limitations under the License.
 package dev.neeffect.nee
 
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.flatMap
 import dev.neeffect.nee.effects.test.get
 import dev.neeffect.nee.effects.utils.trace
 
