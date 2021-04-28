@@ -9,6 +9,7 @@ import io.vavr.concurrent.Promise
 import io.vavr.control.Either
 import io.vavr.control.Option
 import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -40,6 +41,7 @@ class SyncExecutionContext : ExecutionContext {
         Future.successful(f())
 }
 
+@Suppress("ReturnUnit")
 object InPlaceExecutor : Executor {
     override fun execute(command: Runnable) = command.run()
 }
@@ -59,12 +61,12 @@ class ExecutorExecutionContext(private val executor: Executor) : ExecutionContex
     override fun <T> execute(f: () -> T): Future<T> =
         Promise.make<T>(InPlaceExecutor).let { promise ->
             executor.execute {
-                //LESSON not property fandled exception
+                // LESSON not property handled exception
                 try {
                     val result = f()
                     promise.success(result)
                 } catch (e: Exception) {
-                    //NOTEST
+                    // NO TEST
                     promise.failure(e)
                 } catch (e: Throwable) {
                     logger().error("Unhandled throwable in executor", e)
@@ -95,7 +97,7 @@ class AsyncEffect<R : ExecutionContextProvider>(
     val localExecutionContext: Option<ExecutionContext> = Option.none()
 ) : Effect<R, Nothing>, Logging {
 
-    @Suppress("TooGenericExceptionCaught")
+    @Suppress("TooGenericExceptionCaught", "ThrowExpression")
     override fun <A> wrap(f: (R) -> A): (R) -> Pair<Out<Nothing, A>, R> =
         { r: R ->
             val asyncNmb = asyncCounter.getAndIncrement()
@@ -126,6 +128,13 @@ class AsyncEffect<R : ExecutionContextProvider>(
 
     companion object {
         private val asyncCounter = AtomicLong()
-
     }
+}
+
+class ThreadedExecutionContextProvider(threads: Int = 4)  : ExecutionContextProvider {
+    val executor = Executors.newFixedThreadPool(threads)
+    val executorUsingContext = ExecutorExecutionContext(executor)
+    override fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext
+    = local.getOrElse(executorUsingContext)
+
 }

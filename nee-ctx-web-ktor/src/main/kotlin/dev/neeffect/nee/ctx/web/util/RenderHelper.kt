@@ -3,6 +3,7 @@ package dev.neeffect.nee.ctx.web.util
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.neeffect.nee.ctx.web.ErrorHandler
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.toFuture
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
 import dev.neeffect.nee.effects.utils.merge
@@ -16,6 +17,7 @@ import io.ktor.response.respond
 import io.vavr.control.Either
 import kotlinx.coroutines.future.await
 
+@Suppress("ReturnUnit")
 class RenderHelper(
     val objectMapper: ObjectMapper,
     val errorHandler: ErrorHandler
@@ -86,9 +88,7 @@ class RenderHelper(
             }
         }
 
-
     internal fun serveError(errorResult: Any): OutgoingContent = errorHandler(errorResult)
-
 }
 
 sealed class ApiError {

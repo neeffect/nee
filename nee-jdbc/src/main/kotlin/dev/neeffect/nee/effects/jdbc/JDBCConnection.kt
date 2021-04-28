@@ -31,7 +31,7 @@ class JDBCConnection(
             JDBCTransaction(this)
         }.let { Either.right<TxError, TxStarted<Connection>>(it) }
 
-    //TODO handle in nested trx when
+    // TODO handle in nested trx when
     override fun continueTx(): Either<TxError, TxStarted<Connection>> =
         Either.right<TxError, TxStarted<Connection>>(JDBCTransaction(this)).also {
             if (!hasTransaction()) {
@@ -42,6 +42,7 @@ class JDBCConnection(
     override fun hasTransaction(): Boolean = !this.getResource().autoCommit
 
     override fun getResource(): Connection = this.connection
+
 
     override fun close(): Unit = getResource().let { conn ->
         if (conn.isClosed) {
@@ -60,7 +61,7 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
     Logging {
     override fun commit(): Pair<Option<TxError>, TxConnection<Connection>> =
         getResource().commit().let {
-            Pair(Option.none(), conn) //TODO what about autocommit?
+            Pair(Option.none(), conn) // TODO what about autocommit?
         }
 
     override fun rollback(): Pair<Option<TxError>, TxConnection<Connection>> =
@@ -72,6 +73,7 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
             Pair(Option.none<TxError>(), conn)
         }
 
+    @Suppress("ReturnUnit")
     override fun close() {
         logger().info("we do not close ongoing transaction")
     }

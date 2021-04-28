@@ -4,7 +4,7 @@ import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.monitoring.CodeNameFinder.guessCodePlaceName
 import io.vavr.collection.List
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 class TraceEffect<R : TraceProvider<R>>(private val tracerName: String) : Effect<R, Nothing> {
@@ -34,7 +34,6 @@ class TraceResource(
     val traces: List<TraceEntry> = List.empty<TraceEntry>()
 ) {
 
-
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun begin(tracerName: String): Pair<TraceResource, TraceEntry> =
         TraceEntry(tracerName, generateUUID(), nanoTime()).let { traceEntry ->
@@ -49,25 +48,24 @@ class TraceResource(
             )
         }
 
-
     private fun generateUUID(): UUID = UUID.randomUUID()
 
     private fun lastTrace() = this.traces.headOption()
 
     @Suppress("NOTHING_TO_INLINE")
-    inline fun putNamedPlace(name: CodeLocation = guessCodePlaceName()) =
-        this.traces.headOption().forEach {
+    inline fun putNamedPlace(name: CodeLocation = guessCodePlaceName()): Boolean =
+        this.traces.headOption().map {
             it.codeLocation.compareAndSet(null, name)
-        }
+        }.getOrElse(false)
 
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun putGuessedPlace(placeName: CodeLocation, f: Any) =
-        this.traces.headOption().forEach {
+        this.traces.headOption().map {
             it.codeLocation.compareAndSet(
                 null,
                 placeName.copy(customInfo = f.toString())
             )
-        }
+        }.getOrElse(false)
 
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun end(tracerName: String): TraceResource = lastTrace().let {
@@ -93,16 +91,12 @@ class TraceResource(
             this
         }
     }
-
-
 }
 
 object CodeNameFinder {
     @Suppress("NOTHING_TO_INLINE")
-    inline fun guessCodePlaceName(suggestedStackPosition: Int = 3): CodeLocation {
-        val stackTrace = Thread.currentThread().stackTrace
-        return findBestStackMatchingCodePlaceName(suggestedStackPosition, stackTrace)
-    }
+    inline fun guessCodePlaceName(suggestedStackPosition: Int = 3): CodeLocation =
+        findBestStackMatchingCodePlaceName(suggestedStackPosition, Thread.currentThread().stackTrace)
 
     fun findBestStackMatchingCodePlaceName(
         suggestedStackPosition: Int,
@@ -122,7 +116,6 @@ object CodeNameFinder {
             lineNumber = st.lineNumber
         )
 
-
     private fun calcCost(index: Int, suggestedStackPosition: Int, element: StackTraceElement) =
         (index - suggestedStackPosition) * (index - suggestedStackPosition) + nameCost(element)
 
@@ -133,10 +126,7 @@ object CodeNameFinder {
 
     private const val neeProjectClassesCost = 15
     private const val maxStackSearch = 10
-
-
 }
-
 
 interface Logger<T : Logger<T>> {
     fun log(entry: LogEntry): T
@@ -162,7 +152,6 @@ data class LogEntry(
     val message: EntryType
 )
 
-
 data class CodeLocation(
     val functionName: String? = null,
     val className: String? = null,
@@ -179,6 +168,4 @@ data class CodeLocation(
     private fun location() = (fileName ?: "?") + "@" + (lineNumber?.toString() ?: "?")
 }
 
-
 typealias NanoTime = () -> Long
-

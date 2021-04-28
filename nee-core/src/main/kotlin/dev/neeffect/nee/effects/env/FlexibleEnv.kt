@@ -43,18 +43,17 @@ inline fun <reified T : Any> FlexibleEnv.with(
     t: T
 ): FlexibleEnv = with(ResourceId(T::class), t)
 
-
 inline fun <reified T : Any> FlexibleEnv.with(
     id: ResourceId<T>,
     t: T
 ): FlexibleEnv = WrappedEnv(t, id, this)
 
-
+@Suppress("ThrowExpression")
 object EnvLeaf : FlexibleEnv {
     override fun <T : Any> get(id: ResourceId<T>): Option<T> = Option.none()
 
     override fun <T : Any> set(id: ResourceId<T>, t: T): FlexibleEnv =
-        throw IllegalArgumentException("Impossible to set resource of type ${id}")
+        throw IllegalArgumentException("Impossible to set resource of type $id")
 }
 
 /**

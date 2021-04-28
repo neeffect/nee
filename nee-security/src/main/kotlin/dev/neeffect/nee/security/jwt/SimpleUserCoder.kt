@@ -7,18 +7,16 @@ import io.vavr.control.Option
 import io.vavr.control.Try
 import io.vavr.kotlin.hashMap
 import io.vavr.kotlin.toVavrList
-import java.util.*
+import java.util.UUID
 
 class SimpleUserCoder : UserCoder<User, UserRole> {
-    override fun userToIdAndMapAnd(u: User): Pair<String, Map<String, String>> {
-
-        return u.id.toString() to hashMap(
+    override fun userToIdAndMapAnd(u: User): Pair<String, Map<String, String>> =
+        u.id.toString() to hashMap(
             loginKey to u.login,
             "id" to u.id.toString(),
             displayNameKey to u.displayName,
             rolesKey to u.roles.map { it.roleName }.joinToString(",")
         )
-    }
 
     override fun mapToUser(id: String, m: Map<String, String>): Option<User> =
         stringToUUID(id).flatMap { uuid ->

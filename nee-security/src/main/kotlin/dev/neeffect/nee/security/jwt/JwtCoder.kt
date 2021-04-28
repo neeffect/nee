@@ -18,7 +18,6 @@ data class JwtConfig(
     val signerSecret: String
 )
 
-
 open class JwtCoderConfigurationModule(
     cfg: JwtConfig,
     val timeProvider: TimeProvider = HasteTimeProvider()
@@ -33,12 +32,11 @@ open class JwtCoderConfigurationModule(
     open val verifier: Verifier by lazy {
         HMACVerifier.newVerifier(config.signerSecret)
     }
-
-
 }
 
 abstract class JwtConfigurationModule<USER, ROLE>(
-    cfg: JwtConfig, timeProvider: TimeProvider
+    cfg: JwtConfig,
+    timeProvider: TimeProvider
 ) : JwtCoderConfigurationModule(cfg, timeProvider) {
     open val jwtCoder: JwtCoder by lazy {
         JwtCoder(this)
@@ -72,8 +70,6 @@ class JwtCoder(private val jwtBaseConfig: JwtCoderConfigurationModule) {
     }.toEither().mapLeft { e -> JWTError.WrongJWT(e) }
 }
 
-
 sealed class JWTError {
     class WrongJWT(val cause: Throwable) : JWTError()
 }
-

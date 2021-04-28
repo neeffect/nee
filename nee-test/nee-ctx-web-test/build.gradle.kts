@@ -11,7 +11,9 @@ dependencies {
     implementation(kotlin("stdlib", KotlinCompilerVersion.VERSION))
     implementation(Libs.Ktor.serverCore)
     implementation(Libs.Ktor.serverTestHost)
-
+    implementation(Libs.Ktor.jackson)
+    implementation(Libs.Vavr.jackson)
+    implementation(Libs.Jackson.jacksonModuleKotlin)
 }
 
 

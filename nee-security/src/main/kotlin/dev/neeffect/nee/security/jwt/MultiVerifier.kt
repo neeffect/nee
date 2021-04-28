@@ -8,6 +8,7 @@ import io.vavr.collection.Seq
 class MultiVerifier(private val verifiers: Seq<Verifier>) : Verifier {
     override fun canVerify(algorithm: Algorithm?): Boolean = verifiers.any { it.canVerify(algorithm) }
 
+    @Suppress("ReturnUnit")
     override fun verify(algorithm: Algorithm?, message: ByteArray?, signature: ByteArray?): Unit =
         verifiers.filter { it.canVerify(algorithm) }.find { verifier ->
             try {
@@ -17,5 +18,4 @@ class MultiVerifier(private val verifiers: Seq<Verifier>) : Verifier {
                 false
             }
         }.map { Unit }.getOrElseThrow { InvalidJWTSignatureException() }
-
 }

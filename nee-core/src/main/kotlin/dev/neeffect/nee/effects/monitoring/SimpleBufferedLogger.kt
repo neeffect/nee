@@ -3,8 +3,6 @@ package dev.neeffect.nee.effects.monitoring
 import io.vavr.collection.Seq
 import io.vavr.collection.Vector
 
-//not tested
-
 data class SimpleBufferedLogger(private val buffer: Vector<LogMessage> = Vector.empty()) :
     Logger<SimpleBufferedLogger> {
 
@@ -12,10 +10,6 @@ data class SimpleBufferedLogger(private val buffer: Vector<LogMessage> = Vector.
         this.copy(buffer.append(LogMessage(entry)))
 
     fun getLogs(): Seq<LogMessage> = buffer
-
 }
 
 data class LogMessage(val traceEntry: LogEntry)
-
-
-

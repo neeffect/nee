@@ -9,7 +9,6 @@ import dev.neeffect.nee.security.oauth.OauthService
 import dev.neeffect.nee.security.oauth.SimpleOauthConfigModule
 import io.vavr.collection.Seq
 
-
 class OauthModule(
     oathConfig: OauthConfig,
     jwtConfig: JwtConfig,

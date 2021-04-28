@@ -4,7 +4,6 @@ import io.vavr.collection.HashMap
 import io.vavr.collection.Map
 import io.vavr.control.Option
 
-
 data class OauthConfig(
     val providers: Map<String, ProviderConfig> = HashMap.empty()
 ) {

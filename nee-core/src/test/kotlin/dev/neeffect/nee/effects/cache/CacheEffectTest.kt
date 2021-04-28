@@ -1,6 +1,7 @@
 package dev.neeffect.nee.effects.cache
 
 import dev.neeffect.nee.Nee
+import dev.neeffect.nee.effects.flatMap
 import dev.neeffect.nee.effects.test.get
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe

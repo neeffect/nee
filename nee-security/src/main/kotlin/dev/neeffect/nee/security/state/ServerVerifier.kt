@@ -12,7 +12,8 @@ import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
 import java.security.Signature
-import java.util.*
+import java.util.Base64
+import java.util.Random
 
 /**
  * Utility to use - for CSRF and similar
@@ -22,15 +23,13 @@ class ServerVerifier(
     private val keyPair: KeyPair = generateKeyPair()
 ) {
 
-    fun generateRandomSignedState(): String {
-
-        return ByteArray(randomStateContentLength).let { rndArray ->
+    fun generateRandomSignedState(): String =
+        ByteArray(randomStateContentLength).let { rndArray ->
             rng.nextBytes(rndArray)
             val encoded = Base64.getEncoder().encodeToString(rndArray)
             val signature = signArray(rndArray)
             encoded + "@" + signature
         }
-    }
 
     fun verifySignedText(text: String) =
         text.split("@").let { splitted ->
@@ -40,13 +39,12 @@ class ServerVerifier(
             }
         }
 
-    private fun signArray(data: ByteArray): String {
-        val sig: Signature = Signature.getInstance("SHA1WithRSA")
-        sig.initSign(keyPair.private)
-        sig.update(data)
-        val signatureBytes: ByteArray = sig.sign()
-        return Base64.getEncoder().encodeToString(signatureBytes)
-    }
+    private fun signArray(data: ByteArray): String =
+        Signature.getInstance("SHA1WithRSA").let { sig ->
+            sig.initSign(keyPair.private)
+            sig.update(data)
+            Base64.getEncoder().encodeToString(sig.sign())
+        }
 
     private fun verifyText(base64Text: String, signature: String): Try<Boolean> = Try.of {
         val sig: Signature = Signature.getInstance("SHA1WithRSA")
@@ -57,13 +55,14 @@ class ServerVerifier(
         sig.verify(signatureBytes)
     }
 
-
     companion object {
         const val randomStateContentLength = 16
-        fun generateKeyPair(): KeyPair {
-            val kpg = KeyPairGenerator.getInstance("RSA")
-            kpg.initialize(1024)
-            return kpg.genKeyPair()
+        private const val keySize = 1024
+        fun generateKeyPair(): KeyPair = with(
+            KeyPairGenerator.getInstance("RSA").apply {
+                initialize(keySize)
+            }) {
+            genKeyPair()
         }
 
         fun loadKeyPair(path: Path): Option<KeyPair> = Try.of {
@@ -79,14 +78,3 @@ class ServerVerifier(
         }.toOption()
     }
 }
-
-fun main() {
-    val keyPair = ServerVerifier.generateKeyPair()
-    val testKeyPath = Paths.get("tmp/testServerKey.bin")
-    Files.newOutputStream(testKeyPath).use {
-        ObjectOutputStream(it).use { objectOut ->
-            objectOut.writeObject(keyPair)
-        }
-    }
-}
-

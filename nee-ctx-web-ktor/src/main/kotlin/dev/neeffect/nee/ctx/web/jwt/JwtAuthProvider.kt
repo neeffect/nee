@@ -36,8 +36,6 @@ class JwtAuthProvider<USER, ROLE>(
                     SecurityErrorType.MalformedCredentials("wrong header $fullHeader")
                 )
             }
-
-
         }.getOrElse {
             Out.left<SecurityError, SecurityCtx<USER, ROLE>>(SecurityErrorType.NoSecurityCtx)
         }

@@ -11,7 +11,6 @@ interface A1<T : A1<T>> {
     }
 }
 
-
 interface A2<T : A2<T>> {
     fun get(): T
     fun getVal2(): String
@@ -33,7 +32,6 @@ fun main() {
         override fun getVal2(): String = y
 
     }
-
 
     val b1 = Test1("hello", "world")
     println(b1.getVal())

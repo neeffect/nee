@@ -1,21 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-//buildscript {
-////    repositories {
-////        mavenLocal()
-////        mavenCentral()
-////        jcenter()
-////    }
-//
-////    dependencies {
-////        classpath(kotlin("gradle-plugin", version = Libs.kotlin_version))
-////    }
-//}
-
 plugins {
     //java //- not needed probably
-    kotlin("jvm") version "1.4.30"
-    id("io.gitlab.arturbosch.detekt").version("1.5.0")
+    kotlin("jvm") version "1.4.32"
+    id("io.gitlab.arturbosch.detekt").version("1.16.0")
     //`kotlin-dsl` //TODO - read about it
     id("jacoco")
     id("maven-publish")
@@ -27,6 +15,7 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     jcenter()
 }
 
@@ -41,8 +30,11 @@ subprojects {
     version = Ci.publishVersion
 
     dependencies {
+        detektPlugins("pl.setblack:kure-potlin:0.5.0")
+        detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.15.0")
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
         implementation(Libs.Slf4J.api)
+        implementation(Libs.Kotlin.coroutinesJdk8)
     }
 
     repositories {
@@ -86,7 +78,6 @@ subprojects {
     }
 
     detekt {
-        failFast = true // fail build on any finding
         buildUponDefaultConfig = true // preconfigure defaults
         config = files("${rootDir}/config/detekt.yml")
         //baseline = file("$projectDir/config/baseline.xml")
@@ -97,8 +88,11 @@ subprojects {
                 true // similar to the console output, contains issue signature to manually edit baseline files
         }
     }
-}
 
+    tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        this.jvmTarget = "1.8"
+    }
+}
 
 tasks.register<JacocoReport>("generateMergedReport") {
     dependsOn(subprojects.map { it.getTasksByName("test", false) })
@@ -122,10 +116,8 @@ allprojects {
     }
 }
 
-
 nexusStaging {
     packageGroup = "pl.setblack" //optional if packageGroup == project.getGroup()
 }
-
 
 val publications: PublicationContainer = (extensions.getByName("publishing") as PublishingExtension).publications

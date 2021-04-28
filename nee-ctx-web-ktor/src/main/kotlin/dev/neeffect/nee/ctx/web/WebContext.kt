@@ -17,7 +17,6 @@ import dev.neeffect.nee.security.User
 import dev.neeffect.nee.security.UserRole
 import io.ktor.application.ApplicationCall
 
-
 data class WebContext<R, G : TxProvider<R, G>>(
     private val jdbcProvider: TxProvider<R, G>,
     private val securityProvider: SecurityProvider<User, UserRole>,
@@ -38,19 +37,15 @@ data class WebContext<R, G : TxProvider<R, G>>(
 
     private val renderHelper = RenderHelper(contextProvider.jacksonMapper(), errorHandler)
 
-
     override fun getTrace(): TraceResource = traceProvider.getTrace()
-
 
     override fun setTrace(newState: TraceResource): WebContext<R, G> =
         this.copy(traceProvider = traceProvider.setTrace(newState))
-
 
     override fun getConnection(): TxConnection<R> = jdbcProvider.getConnection()
 
     override fun setConnectionState(newState: TxConnection<R>) =
         this.copy(jdbcProvider = jdbcProvider.setConnectionState(newState))
-
 
     suspend fun serveText(businessFunction: ANee<WebContext<R, G>, String>) =
         businessFunction.perform(this).let { result ->
@@ -62,8 +57,4 @@ data class WebContext<R, G : TxProvider<R, G>>(
 
     suspend fun serveMessage(businessFunction: ANee<WebContext<R, G>, Any>) =
         serveMessage(businessFunction.perform(this))
-
-
 }
-
-

@@ -7,7 +7,6 @@ interface TimeProvider {
     fun getTimeSource(): TimeSource
 }
 
-
 class HasteTimeProvider(private val timeSource: TimeSource = Haste.TimeSource.systemTimeSource()) : TimeProvider {
     override fun getTimeSource(): TimeSource = timeSource
 }

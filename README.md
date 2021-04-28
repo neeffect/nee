@@ -1,4 +1,4 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/b7bc721d1d92494b90f5346b33dc398c)](https://www.codacy.com/manual/jarekratajski/nee?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neeffect/nee&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3613db6c1833407d9daa325d110b81ad)](https://www.codacy.com/gh/neeffect/nee/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neeffect/nee&amp;utm_campaign=Badge_Grade)
 
 # NEE
 
