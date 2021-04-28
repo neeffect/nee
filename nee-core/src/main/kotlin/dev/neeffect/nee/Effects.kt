@@ -1,6 +1,7 @@
 package dev.neeffect.nee
 
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.flatMap
 import dev.neeffect.nee.effects.utils.merge
 import io.vavr.control.Either
 

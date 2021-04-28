@@ -1,6 +1,7 @@
 package dev.neeffect.nee.ctx.web
 
 import dev.neeffect.nee.effects.security.SecurityErrorType
+import dev.neeffect.nee.effects.toFuture
 import dev.neeffect.nee.security.InMemoryUserRealm
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.be

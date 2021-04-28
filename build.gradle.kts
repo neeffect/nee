@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     //java //- not needed probably
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.4.32"
     id("io.gitlab.arturbosch.detekt").version("1.16.0")
     //`kotlin-dsl` //TODO - read about it
     id("jacoco")
@@ -30,7 +30,7 @@ subprojects {
     version = Ci.publishVersion
 
     dependencies {
-        detektPlugins("pl.setblack:kure-potlin:0.3.5-SNAPSHOT")
+        detektPlugins("pl.setblack:kure-potlin:0.5.0-SNAPSHOT")
         detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.15.0")
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
         implementation(Libs.Slf4J.api)

@@ -8,7 +8,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 
-class CoroutinesTest: DescribeSpec( {
+class CoroutinesTest : DescribeSpec({
     describe("Nee in coroutines") {
         val x = Nee.pure<Int, Int, Int> {
             1.also {
@@ -21,8 +21,8 @@ class CoroutinesTest: DescribeSpec( {
                     println("y")
                 }
             }
-        it ("should be processed") {
-            val z: Int = runBlocking{
+        it("should be processed") {
+            val z: Int = runBlocking {
                 with(1) {
                     val a: Int = x.go()()
                     val b = y.go()() + a
@@ -35,7 +35,7 @@ class CoroutinesTest: DescribeSpec( {
 
     describe("Nee from coroutines") {
         it("should create Nee instance") {
-            val x = suspend {1}
+            val x = suspend { 1 }
             val result = runNee {
                 x()
             }

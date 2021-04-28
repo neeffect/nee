@@ -1,5 +1,10 @@
 object Libs {
-    const val kotlin_version = "1.4.30"
+    const val kotlin_version = "1.4.32"
+
+    object Atomic {
+        private const val version = "0.15.0"
+        const val atomicFu = "org.jetbrains.kotlinx:atomicfu:$version"
+    }
 
     object H2 {
         private const val version = "1.4.200"
@@ -17,6 +22,8 @@ object Libs {
     object Ktor {
         private const val version = "1.5.1"
         const val serverCore = "io.ktor:ktor-server-core:$version"
+        const val serverHostCommon = "io.ktor:ktor-server-host-common:$version"
+        const val serverNetty = "io.ktor:ktor-server-netty:$version"
         const val clientCore = "io.ktor:ktor-client-core:$version"
         const val clientMockJvm = "io.ktor:ktor-client-mock-jvm:$version"
         const val clientJsonJvm = "io.ktor:ktor-client-json-jvm:$version"
@@ -41,6 +48,8 @@ object Libs {
         private const val version = "2.12.1"
         const val jacksonModuleKotlin = "com.fasterxml.jackson.module:jackson-module-kotlin:$version"
         const val jacksonAnnotations = "com.fasterxml.jackson.core:jackson-annotations:$version"
+        const val jacksonJsr310 = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0"
+
     }
 
     object Kotest {

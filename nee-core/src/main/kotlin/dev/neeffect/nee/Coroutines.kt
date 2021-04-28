@@ -1,9 +1,11 @@
 package dev.neeffect.nee
 
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.toFuture
 import io.vavr.concurrent.Promise
 import io.vavr.control.Either
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -57,3 +59,9 @@ private class NeeCoroutine<T>(
     override val coroutineContext: CoroutineContext
         get() = parentContext
 }
+
+fun <E, A> Out<E, A>.k(): suspend () -> Either<E, A> =
+    when (this) {
+        is Out.InstantOut -> { -> this.v }
+        is Out.FutureOut -> { -> this.futureVal.toCompletableFuture().await() }
+    }
