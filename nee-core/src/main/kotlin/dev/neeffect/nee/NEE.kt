@@ -46,7 +46,7 @@ typealias IO<A> = Nee<Any, Nothing, A>
  *  @param E error that can happen (because of effects)
  *  @param A expected result type
  */
-sealed class Nee<in R, E, out A>(internal val effect: Effect<@UnsafeVariance R, E>) {
+sealed class Nee<in R, out E, out A>(internal val effect: Effect<@UnsafeVariance R, @UnsafeVariance E>) {
     /**
      * Call Nee with given environment.
      *
@@ -55,7 +55,7 @@ sealed class Nee<in R, E, out A>(internal val effect: Effect<@UnsafeVariance R, 
     abstract fun perform(env: R): Out<E, A>
 
     abstract fun <B> map(f: (A) -> B): Nee<R, E, B>
-    abstract fun <B, R1 : R> flatMap(f: (A) -> Nee<R1, E, B>): Nee<R1, E, B>
+    abstract fun <B, R1 : R, E2 : @UnsafeVariance E> flatMap(f: (A) -> Nee<R1, E2, B>): Nee<R1, E, B>
 
     @Suppress("UNCHECKED_CAST")
     fun anyError(): ANee<R, A> = this as ANee<R, A>
@@ -122,8 +122,8 @@ internal class FNEE<in R, E, out A>(
     override fun <B> map(f: (A) -> B): Nee<R, E, B> =
         FNEE(effect) { r -> func(r).map(f) }
 
-    override fun <B, R1 : R> flatMap(f: (A) -> Nee<R1, E, B>): Nee<R1, E, B>
-        = FMNEE<R1, E, B, A>(effect as Effect<R1, E>, func, f)
+    override fun <B, R1 : R, E2 : E> flatMap(f: (A) -> Nee<R1, E2, B>): Nee<R1, E, B> =
+        FMNEE<R1, E, B, A>(effect as Effect<R1, E>, func, f)
 }
 
 @Suppress("UNCHECKED_CAST") // only needed because invariance in Effect
@@ -147,10 +147,10 @@ internal class FMNEE<R, E, out A, out A1>(
         mapped(a).map(f)
     })
 
-    override fun <B, R1:R> flatMap(f: (A) -> Nee<R1, E, B>): Nee<R1, E, B> =
-            FMNEE<R1, E, B, A1>(effect as Effect<R1, E>, func, { a: A1 ->
-        mapped(a).flatMap(f)
-    })
+    override fun <B, R1 : R, E2 : E> flatMap(f: (A) -> Nee<R1, E2, B>): Nee<R1, E, B> =
+        FMNEE<R1, E, B, A1>(effect as Effect<R1, E>, func, { a: A1 ->
+            mapped(a).flatMap(f)
+        })
 }
 
 @Suppress("UNCHECKED_CAST")

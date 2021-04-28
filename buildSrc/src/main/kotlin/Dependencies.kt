@@ -3,7 +3,7 @@ object Libs {
 
     object Atomic {
         private const val version = "0.15.0"
-        const val atomicFu =  "org.jetbrains.kotlinx:atomicfu:$version"
+        const val atomicFu = "org.jetbrains.kotlinx:atomicfu:$version"
     }
 
     object H2 {
@@ -48,6 +48,8 @@ object Libs {
         private const val version = "2.12.1"
         const val jacksonModuleKotlin = "com.fasterxml.jackson.module:jackson-module-kotlin:$version"
         const val jacksonAnnotations = "com.fasterxml.jackson.core:jackson-annotations:$version"
+        const val jacksonJsr310 = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.0"
+
     }
 
     object Kotest {

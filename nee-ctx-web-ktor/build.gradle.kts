@@ -17,6 +17,7 @@ dependencies {
     implementation(Libs.Ktor.serverCore)
     implementation(Libs.Vavr.jackson)
     implementation(Libs.Jackson.jacksonModuleKotlin)
+    implementation(Libs.Jackson.jacksonJsr310)
     implementation(Libs.Ktor.jackson)
     implementation(Libs.Ktor.serverHostCommon)
     implementation(Libs.Ktor.serverNetty)
