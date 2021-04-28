@@ -30,7 +30,7 @@ subprojects {
     version = Ci.publishVersion
 
     dependencies {
-        detektPlugins("pl.setblack:kure-potlin:0.5.0-SNAPSHOT")
+        detektPlugins("pl.setblack:kure-potlin:0.5.0")
         detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.15.0")
         // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
         implementation(Libs.Slf4J.api)
