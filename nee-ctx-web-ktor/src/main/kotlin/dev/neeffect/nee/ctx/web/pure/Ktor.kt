@@ -15,6 +15,8 @@ import io.ktor.jackson.JacksonConverter
 import io.ktor.routing.Route
 import io.ktor.routing.delete
 import io.ktor.routing.get
+import io.ktor.routing.head
+import io.ktor.routing.options
 import io.ktor.routing.patch
 import io.ktor.routing.post
 import io.ktor.routing.put
@@ -103,6 +105,32 @@ inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.patch(
     RoutingDef<R, G> { r, ctx ->
         with(r) {
             patch(path) {
+                val webContext = ctx.create(call)
+                webContext.serveMessage(f(call).perform(ctx.create(call)))
+            }
+        }
+    }
+
+inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.head(
+    path: String = "",
+    crossinline f: (ApplicationCall) -> Nee<WebContext<R, G>, Any, A>
+): RoutingDef<R, G> =
+    RoutingDef<R, G> { r, ctx ->
+        with(r) {
+            head (path) {
+                val webContext = ctx.create(call)
+                webContext.serveMessage(f(call).perform(ctx.create(call)))
+            }
+        }
+    }
+
+inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.options(
+    path: String = "",
+    crossinline f: (ApplicationCall) -> Nee<WebContext<R, G>, Any, A>
+): RoutingDef<R, G> =
+    RoutingDef<R, G> { r, ctx ->
+        with(r) {
+            options (path) {
                 val webContext = ctx.create(call)
                 webContext.serveMessage(f(call).perform(ctx.create(call)))
             }
