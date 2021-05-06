@@ -117,7 +117,7 @@ inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.head(
 ): RoutingDef<R, G> =
     RoutingDef<R, G> { r, ctx ->
         with(r) {
-            head (path) {
+            head(path) {
                 val webContext = ctx.create(call)
                 webContext.serveMessage(f(call).perform(ctx.create(call)))
             }
@@ -130,7 +130,7 @@ inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.options
 ): RoutingDef<R, G> =
     RoutingDef<R, G> { r, ctx ->
         with(r) {
-            options (path) {
+            options(path) {
                 val webContext = ctx.create(call)
                 webContext.serveMessage(f(call).perform(ctx.create(call)))
             }
