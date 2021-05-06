@@ -154,8 +154,6 @@ class PureKtorTest : DescribeSpec({
     }
 }
 
-
-
 typealias Error = String
 
 fun <R, G : TxProvider<R, G>> testApplication(
