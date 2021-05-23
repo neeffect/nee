@@ -13,6 +13,7 @@ import io.vavr.control.Option.none
 import io.vavr.kotlin.some
 import java.sql.Connection
 import java.sql.Savepoint
+import javax.sql.DataSource
 
 /**
  * Standard jdbc connection.
@@ -42,7 +43,6 @@ class JDBCConnection(
     override fun hasTransaction(): Boolean = !this.getResource().autoCommit
 
     override fun getResource(): Connection = this.connection
-
 
     override fun close(): Unit = getResource().let { conn ->
         if (conn.isClosed) {
@@ -96,6 +96,8 @@ class JDBCProvider(
         ConnectionWrapper.PooledConnection(pool)
     }, true)
 
+    fun dataSource(): DataSource? = connection.dataSource()
+
     override fun getConnection(): TxConnection<Connection> =
         JDBCConnection(connection.conn(), close)
 
@@ -107,12 +109,16 @@ sealed class ConnectionWrapper {
 
     abstract fun conn(): Connection
 
+    open fun dataSource(): DataSource? = null
+
     data class DirectConnection(private val connection: Connection) : ConnectionWrapper() {
         override fun conn(): Connection = connection
     }
 
     data class PooledConnection(private val pool: ComboPooledDataSource) : ConnectionWrapper() {
         override fun conn(): java.sql.Connection = pool.connection
+
+        override fun dataSource(): DataSource? = pool
     }
 }
 

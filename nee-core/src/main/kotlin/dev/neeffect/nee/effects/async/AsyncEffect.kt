@@ -131,10 +131,9 @@ class AsyncEffect<R : ExecutionContextProvider>(
     }
 }
 
-class ThreadedExecutionContextProvider(threads: Int = 4)  : ExecutionContextProvider {
+class ThreadedExecutionContextProvider(threads: Int = 4) : ExecutionContextProvider {
     val executor = Executors.newFixedThreadPool(threads)
     val executorUsingContext = ExecutorExecutionContext(executor)
-    override fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext
-    = local.getOrElse(executorUsingContext)
-
+    override fun findExecutionContext(local: Option<ExecutionContext>): ExecutionContext =
+        local.getOrElse(executorUsingContext)
 }

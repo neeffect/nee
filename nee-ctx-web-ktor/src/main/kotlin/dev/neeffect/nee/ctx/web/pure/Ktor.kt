@@ -5,6 +5,7 @@ import dev.neeffect.nee.IO
 import dev.neeffect.nee.Nee
 import dev.neeffect.nee.ctx.web.WebContext
 import dev.neeffect.nee.ctx.web.WebContextProvider
+import dev.neeffect.nee.effects.Out
 import dev.neeffect.nee.effects.tx.TxProvider
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -67,7 +68,13 @@ inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.post(
         with(r) {
             post(path) {
                 val webContext = ctx.create(call)
-                webContext.serveMessage(f(call).perform(ctx.create(call)))
+                try {
+
+                    webContext.serveMessage(f(call).perform(ctx.create(call)))
+                } catch (e:Exception) {
+                    e.printStackTrace()
+                    webContext.serveMessage(Out.left<Exception, Nothing>(e));
+                }
             }
         }
     }

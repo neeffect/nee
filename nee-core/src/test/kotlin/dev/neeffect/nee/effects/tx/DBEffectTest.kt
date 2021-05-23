@@ -7,6 +7,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.beInstanceOf
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.vavr.control.Option
 
 class DBEffectTest : BehaviorSpec({
     Given("TxEffects") {
@@ -107,7 +108,12 @@ class DBEffectTest : BehaviorSpec({
             Then("expect error as result") {
                 result.getLeft() should beInstanceOf(TxErrorType::class)
             }
+            Then("there are no commits") {
+                val res = db.getLog().find { it.msg == "Fail: (!) on commit transaction" }
+                res shouldBe Option.none()
+            }
         }
+
     }
 }) {
     companion object {
