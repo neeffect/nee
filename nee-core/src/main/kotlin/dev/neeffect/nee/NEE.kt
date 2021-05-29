@@ -76,7 +76,7 @@ sealed class Nee<in R, out E, out A>(internal val effect: Effect<@UnsafeVariance
 
         fun <E> fail(e: E): Nee<Any, E, Nothing> = FNEE(NoEffect()) { Out.left(e) }
 
-        fun <R, E> failOnly(e: E): Nee<R, E, Nothing> = FNEE(NoEffect()) { Out.left(e) }
+        fun <R, E, A> failOnly(e: E): Nee<R, E, A> = FNEE(NoEffect()) { Out.left(e) }
 
         /**
          * Same as pure, but adds tracing.
@@ -155,3 +155,5 @@ internal class FMNEE<R, E, out A, out A1>(
 
 @Suppress("UNCHECKED_CAST")
 fun <R, E, A> Nee<R, Nothing, A>.withErrorType() = this as Nee<R, E, A>
+
+fun <R, E, A, E1 : E> Nee<R, E1, A>.widerError() = this as Nee<R, E, A>

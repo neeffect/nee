@@ -4,7 +4,7 @@ import dev.neeffect.nee.IO
 import dev.neeffect.nee.Nee
 import java.util.concurrent.atomic.AtomicReference
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("UNUSED_PARAMETER", "TooManyFunctions")
 class AtomicRef<A>(value: A) {
 
     private val internal: AtomicReference<A> = AtomicReference(value)
@@ -35,6 +35,19 @@ class AtomicRef<A>(value: A) {
 
     fun <B> modify(f: (A) -> Pair<A, B>): IO<B> = modifyGet(f).map(Pair<A, B>::second)
 
+    fun updateAction(f: (A) -> IO<A>): IO<A> = this.get().flatMap { oldValue ->
+        val newIO = f(oldValue)
+        newIO.flatMap { newState ->
+            compareAndSet(oldValue, newState).flatMap { changed ->
+                if (changed) {
+                    IO.pure { newState }
+                } else {
+                    updateAction(f)
+                }
+            }
+        }
+    }
+
     fun <B> modifyGet(f: (A) -> Pair<A, B>): IO<Pair<A, B>> = Nee.pure {
         modifyImpure(f)
     }
@@ -43,6 +56,10 @@ class AtomicRef<A>(value: A) {
         val start = internal.get()
         val result = f(start)
         internal.compareAndSet(start, result)
+    }
+
+    fun compareAndSet(expected: A, newValue: A): IO<Boolean> = Nee.pure {
+        internal.compareAndSet(expected, newValue)
     }
 
     private fun <B> modifyImpure(f: (A) -> Pair<A, B>): Pair<A, B> = run {

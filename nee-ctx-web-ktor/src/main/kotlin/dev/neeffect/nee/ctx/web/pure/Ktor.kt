@@ -13,6 +13,7 @@ import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.jackson.JacksonConverter
+import io.ktor.request.receive
 import io.ktor.routing.Route
 import io.ktor.routing.delete
 import io.ktor.routing.get
@@ -69,11 +70,29 @@ inline fun <reified A : Any, R, G : TxProvider<R, G>> RouteBuilder<R, G>.post(
             post(path) {
                 val webContext = ctx.create(call)
                 try {
-
                     webContext.serveMessage(f(call).perform(ctx.create(call)))
-                } catch (e:Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
-                    webContext.serveMessage(Out.left<Exception, Nothing>(e));
+                    webContext.serveMessage(Out.left<Exception, Nothing>(e))
+                }
+            }
+        }
+    }
+
+inline fun <reified A : Any, R, G : TxProvider<R, G>, reified B> RouteBuilder<R, G>.postWithBody(
+    path: String = "",
+    crossinline f: (ApplicationCall) -> Nee<WebContext<R, G>, Any, A>
+): RoutingDef<R, G> =
+    RoutingDef<R, G> { r, ctx ->
+        with(r) {
+            post(path) {
+                val webContext = ctx.create(call)
+
+                try {
+                    webContext.serveMessage(f(call).perform(ctx.create(call)))
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    webContext.serveMessage(Out.left<Exception, Nothing>(e))
                 }
             }
         }
