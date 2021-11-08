@@ -22,6 +22,7 @@ import io.ktor.http.Parameters
 import io.vavr.concurrent.Future
 import io.vavr.control.Either
 import io.vavr.kotlin.option
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
@@ -59,6 +60,7 @@ class GithubOAuth<USER, ROLE>(
             )
         }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun getUserData(accessToken: String) = GlobalScope.future {
         val result: GithubUserData = oauthConfigModule.httpClient.get<GithubUserData>(
             scheme = "https",
@@ -71,6 +73,7 @@ class GithubOAuth<USER, ROLE>(
     }
 
     @SuppressWarnings("TooGenericExceptionCaught")
+    @OptIn(DelicateCoroutinesApi::class)
     private fun getTokens(code: String, redirectUri: String, state: String): CompletableFuture<OauthTokens> =
         GlobalScope.future {
             try {

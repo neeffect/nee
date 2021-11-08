@@ -262,6 +262,6 @@ abstract class JDBCBasedWebContextProvider :
 object DefaultJacksonMapper {
     val mapper = ObjectMapper()
         .registerModule(VavrModule())
-        .registerModule(KotlinModule())
+        .registerModule(KotlinModule.Builder().build())
         .registerModule(JavaTimeModule())
 }

@@ -24,6 +24,7 @@ import io.vavr.control.Option
 import io.vavr.control.Try
 import io.vavr.kotlin.option
 import io.vavr.kotlin.toVavrList
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.future.future
 import java.net.URL
@@ -102,8 +103,9 @@ class GoogleOpenId<USER, ROLE>(
         JSONWebKeySetHelper.retrieveKeysFromJWKS(url)
     }
 
-    // TODO - what is this stupid GlobalScope here? - clean it or test it
+    // TODO - what is this stupid GlobalScope here? - clean it or test it (see GlobalScope comment)
     @SuppressWarnings("TooGenericExceptionCaught")
+    @OptIn(DelicateCoroutinesApi::class)
     private fun callGoogle(code: String, redirectUri: String): CompletableFuture<OauthTokens> = GlobalScope.future {
         try {
             val result: OauthTokens = oauthConfigModule.httpClient.submitForm<OauthTokens>(
