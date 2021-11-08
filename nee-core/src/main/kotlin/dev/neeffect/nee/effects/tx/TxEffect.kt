@@ -2,9 +2,11 @@ package dev.neeffect.nee.effects.tx
 
 import dev.neeffect.nee.Effect
 import dev.neeffect.nee.effects.Out
+import dev.neeffect.nee.effects.async.EnvWithError
 import dev.neeffect.nee.effects.async.executeAsyncCleaning
 import dev.neeffect.nee.effects.utils.Logging
 import dev.neeffect.nee.effects.utils.logger
+import dev.neeffect.nee.effects.utils.merge
 import io.vavr.collection.List
 import io.vavr.control.Option
 import java.util.concurrent.atomic.AtomicLong
@@ -70,7 +72,7 @@ sealed class TxErrorType : TxError {
     /**
      * Unhandled java exception occured.
      */
-    data class InternalException(val cause: java.lang.Exception) : TxErrorType()
+    data class InternalException(val cause: Throwable) : TxErrorType()
 }
 
 /**
@@ -156,25 +158,28 @@ class TxEffect<DB, R : TxProvider<DB, R>>(private val requiresNew: Boolean = fal
     ): Pair<Out<TxError, A>, TxStarted<DB>> =
         executeAsyncCleaning(res, {
             f(res)
-        }, { r ->
-            if (!continueOldTransaction) {
-                logger().debug("commiting Tx ($txNumber)")
-                startedTransaction.commit().also {
-                    it.second.close()
+        }, { r: EnvWithError<R> ->
+            r.error.map {
+                startedTransaction.rollback() // TODO maybe not always
+                r
+            }.getOrElse {
+                if (!continueOldTransaction) {
+                    logger().debug("committing Tx ($txNumber)")
+                    startedTransaction.commit().also {
+                        it.second.close()
+                    }
+                    r
+                } else {
+                    logger().debug("not committed Tx ($txNumber) - continued")
+                    r
                 }
-                r
-            } else {
-                logger().debug("not commited Tx ($txNumber) - continued")
-                r
             }
         }).let { result ->
-            Pair(
-                try {
-                    Out.right<TxError, A>(result)
-                } catch (e: Exception) {
-                    Out.left<TxError, A>(TxErrorType.InternalException(e))
-                }, startedTransaction
-            )
+            Pair(result.mapLeft {
+                Out.left<TxError, A>(TxErrorType.InternalException(it))
+            }.map {
+                Out.right<TxError, A>(it)
+            }.merge(), startedTransaction)
         }
 
     companion object {

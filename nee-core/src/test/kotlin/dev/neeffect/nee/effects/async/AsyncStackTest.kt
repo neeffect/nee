@@ -11,8 +11,8 @@ internal class AsyncStackTest : DescribeSpec({
             val dirty = stack.onClose { env ->
                 env.copy(test = env.test + 7)
             }
-            val cleaned = dirty.cleanUp(env)
-            cleaned.second.test shouldBe 8
+            val cleaned = dirty.cleanUp(EnvWithError(env))
+            cleaned.second.r.test shouldBe 8
         }
         it("executes 2 actions on cleanup") {
             val dirty = stack.onClose { env ->
@@ -20,11 +20,19 @@ internal class AsyncStackTest : DescribeSpec({
             }.onClose { env ->
                 env.copy(test = env.test + 11)
             }
-            val cleaned = dirty.cleanUp(env)
+            val cleaned = dirty.cleanUp(EnvWithError(env))
 
-            cleaned.second.test shouldBe 19
+            cleaned.second.r.test shouldBe 19
+        }
+        it ("stores error action") {
+            val f: ()->String =  {throw IllegalStateException()}
+            val res = executeAsyncCleaning(7, f, {env ->
+                env
+            })
+            res.isLeft shouldBe true
         }
     }
+
 }) {
 
     data class MyEnv(val test: Long)

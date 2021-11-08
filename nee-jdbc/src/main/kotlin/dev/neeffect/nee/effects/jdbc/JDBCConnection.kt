@@ -11,8 +11,11 @@ import io.vavr.control.Either
 import io.vavr.control.Option
 import io.vavr.control.Option.none
 import io.vavr.kotlin.some
+import java.io.PrintWriter
 import java.sql.Connection
 import java.sql.Savepoint
+import java.util.logging.Logger
+import javax.sql.DataSource
 
 /**
  * Standard jdbc connection.
@@ -43,7 +46,6 @@ class JDBCConnection(
 
     override fun getResource(): Connection = this.connection
 
-
     override fun close(): Unit = getResource().let { conn ->
         if (conn.isClosed) {
             logger().warn("connection already closed")
@@ -61,7 +63,10 @@ class JDBCTransaction(val conn: JDBCConnection, val savepoint: Option<Savepoint>
     Logging {
     override fun commit(): Pair<Option<TxError>, TxConnection<Connection>> =
         getResource().commit().let {
-            Pair(Option.none(), conn) // TODO what about autocommit?
+            if (!savepoint.isDefined ) {
+                getResource().autoCommit = true
+            }
+            Pair(Option.none(), conn) // TODO what about autocommit? NOT Tested
         }
 
     override fun rollback(): Pair<Option<TxError>, TxConnection<Connection>> =
@@ -96,6 +101,8 @@ class JDBCProvider(
         ConnectionWrapper.PooledConnection(pool)
     }, true)
 
+    fun dataSource(): DataSource = connection.dataSource()
+
     override fun getConnection(): TxConnection<Connection> =
         JDBCConnection(connection.conn(), close)
 
@@ -107,12 +114,16 @@ sealed class ConnectionWrapper {
 
     abstract fun conn(): Connection
 
+    open fun dataSource(): DataSource = WrappedDataSource(conn())
+
     data class DirectConnection(private val connection: Connection) : ConnectionWrapper() {
         override fun conn(): Connection = connection
     }
 
     data class PooledConnection(private val pool: ComboPooledDataSource) : ConnectionWrapper() {
         override fun conn(): java.sql.Connection = pool.connection
+
+        override fun dataSource(): DataSource = pool
     }
 }
 
@@ -122,3 +133,45 @@ data class JDBCConfig(
     val user: String,
     val password: String = ""
 )
+
+
+class WrappedSqlConnection(connection: Connection) : Connection by connection {
+    override fun close() {
+        println("ignored closing  connection")
+    }
+}
+
+// TODO provide tests (useful in testing tools)
+class WrappedDataSource(private val conn: Connection) : DataSource {
+    override fun getLogWriter(): PrintWriter {
+        TODO("Not yet implemented")
+    }
+
+    override fun setLogWriter(out: PrintWriter?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setLoginTimeout(seconds: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLoginTimeout(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getParentLogger(): Logger {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : Any?> unwrap(iface: Class<T>?): T {
+        TODO("Not yet implemented")
+    }
+
+    override fun isWrapperFor(iface: Class<*>?): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getConnection(): Connection = WrappedSqlConnection(this.conn)
+
+    override fun getConnection(username: String?, password: String?): Connection = getConnection()
+}

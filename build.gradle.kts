@@ -48,6 +48,7 @@ subprojects {
         jvmTarget = "1.8"
         javaParameters = true
         allWarningsAsErrors = true
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
 
     val compileTestKotlin: KotlinCompile by tasks
